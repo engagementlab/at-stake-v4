@@ -1,0 +1,68 @@
+{{!< default}}
+{{!-- 
+/**
+ * @Stake v3.0
+ * Developed by Engagement Lab, 2016-2017
+ * ==============
+ * 
+ * Script include for mobile native app-only logic
+ * ==========
+ */
+--}}
+var doc = $('body');
+
+/*
+	* Run actions called for by mobile native app.
+  *
+  * @param {String} Name of the action
+	*
+*/	
+var mobileAction = function(strAction) {
+
+	// Called upon mobileCallback event and posts response to mobile native app
+	function callback(action) {
+
+		var response = {status: "okeydokey", action: action};
+
+		if(isApple) {
+		
+	    try {
+	        webkit.messageHandlers.callbackHandler.postMessage(response);
+	    } catch(err) {
+	        console.log('The native context does not exist.');
+	    }
+
+	  }
+	  else if(isAndroid) {
+
+	  	Android.webViewResponse(JSON.stringify(response));
+
+	  }
+	  else {
+	  	//????
+	  }
+
+	}
+
+	// Listen for 'mobileCallback' event anywhere on document
+	doc.on('mobileCallback', function() { callback(strAction) });
+
+	switch(strAction) {
+
+		case "login":
+
+			$('#btn_new_game').click();
+
+			break;
+
+		case "new":
+
+			$('#btn_new_game').click();
+
+			break;
+
+
+	}
+	{{!-- return "okeydokey"; --}}
+
+}

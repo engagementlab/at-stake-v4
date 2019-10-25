@@ -1,0 +1,197 @@
+{{!-- DECIDE PHASE UI --}}
+<div id="decide">
+
+	{{!-- INITIAL --}}
+	<div class="screen initial">
+
+		{{> component/instructions 
+				decider=true
+				heading="Read the text in the blue box aloud"
+				body="Once you finish speaking the instructions to other players, press next to continue"
+		}}
+
+		{{> component/instructions 
+				heading="Listen to the Decider"
+				body="The Decider is about to choose a winner!"
+		}}
+
+		{{> component/speech 
+				decider=true
+				body="Now that we have heard everyone's proposals, it is time for me to decide a winner!"
+		}}
+
+		{{> component/speech 
+				body="Now that we have heard everyone's proposals, it is time for me to decide a winner!"
+		}}
+
+	</div>
+
+	{{!-- PITCH SELECTION AND WINNER DISPLAY --}}
+	{{!-- this is where phase re-loads with the data of the winning player --}}
+	<div class="screen restart">
+
+		{{#if winner}}
+
+			{{!-- winner modal --}}
+			<div id="winner-modal" class="modal inner-modal" data-duration="{{config.decideDuration}}" data-next="next_screen">
+				<div class="inner inner-winner">
+
+					<h1>Congratulations, <strong>{{winner.username}}</strong>!</h1>
+					<h2>{{pluralize winner.username}} proposal was selected by the Decider and gets all the coins in the pot!</h2>
+
+			    <div id="reward-icon" class="decided player-box">
+				    <div class="coins">{{potAmount}}</div>
+					  <div class="info">
+						  <h1>{{winner.username}}</h1>
+					    <h2>{{winner.role.title}}</h2>
+				    </div>
+				  </div>
+
+				</div>
+			</div>
+
+			{{!-- <span id="modifier" class="hidden-el" data-inner_modal="true"></span> --}}
+
+		{{else}}
+		
+			{{!-- choice box for choosing pitch --}}
+			{{> component/choice 
+					pitches=true
+					decider=true
+			}}
+
+			{{!-- notification for non-deciders --}}
+			{{> component/choice 
+					pitches=true
+			}}
+
+		{{/if}}
+
+	</div>
+
+	{{!-- AGENDA ITEMS INTRO --}}
+	<div class="screen">
+
+		{{> component/instructions 
+				decider=true
+				heading="Read the text in the blue box aloud"
+				body="Once you finish speaking the instructions to other players, press next to continue."
+		}}
+
+		{{> component/instructions 
+				heading="Listen to the Decider"
+				body="The Decider is about to determine if your agenda items are in the winning proposal!"
+		}}
+
+		{{> component/speech 
+				decider=true
+				body="Now that we have a winning proposal, let's reveal everyone's hidden agenda items and determine if you will receive bonus coins!"
+		}}
+
+		{{> component/speech 
+				body="Now that we have a winning proposal, let's reveal everyone's hidden agenda items and determine if you will receive bonus coins!"
+		}}
+
+	</div>
+
+	{{!-- AGENDA ITEMS --}}
+	<div class="screen">
+		{{#each players}}
+			{{#each role.agendaItems}}
+
+				{{!-- Agenda item choice --}}
+				<div class="inner-modal decider agenda_item" {{#unless @first}}style="display:none"{{/unless}}>
+					<div class="inner choice">
+
+						<div class="role form">
+							
+							<h1>{{this}}</h1>
+							<h2>The Decider is reviewing this agenda item to determine if it is in the winning proposal.</h2>
+							
+								<button id="btn_yes" class="btn btn-default post-button submit" data-event="game:agenda_yes" data-keep_open="true" data-package='{{../uid}}'>
+					        Yes
+					      </button>
+
+								<button id="btn_no" class="btn btn-default post-button submit" data-event="game:agenda_no" data-keep_open="true" data-package='{{../uid}}'>
+					        No
+					      </button>
+
+						</div>
+
+					</div>
+				</div>
+
+				{{!-- Decider is choosing --}}
+				<div class="inner-modal player agenda_item">
+					<div class="inner choice">
+						<h1>{{this}}</h1>
+						<h2>The Decider is reviewing this agenda item to determine if it is in the winning proposal.</h2>
+				  </div>
+				</div>
+
+				{{!-- Congrats modal --}}
+				<div class="inner-modal agenda_item yes" data-duration="{{../../config.decideDuration}}" data-next="{{nextAgendaEvent ../../playerCount @../index @last}}">
+					<div class="inner">
+						<h1>Congratulations, <strong>{{../username}}</strong>!</h1>
+						<h2>Your agenda item - <span class="item">{{this}}</span> - was included in the proposal. You win {{agendaReward ../../config.rewardAmounts @index}} coins</h2>
+
+					    <div id="reward-icon" class="decided player-box">
+						    <div class="coins"></div>
+							  <div class="info">
+								  <h1>{{../username}}</h1>
+							    <h2>{{../role.title}}</h2>
+						    </div>
+						  </div>
+				  </div>
+				</div>
+
+				{{!-- "Sorry" modal --}}
+				<div class="inner-modal agenda_item no" data-duration="{{../../config.decideDuration}}" data-next="{{nextAgendaEvent ../../playerCount @../index @last}}">
+					<div class="inner">
+						<h1>Sorry, <strong>{{../username}}..</strong>.</h1>
+						<h2>Your agenda item - <span class="item">{{this}}</span> - was not included in the winning proposal</h2>
+
+					    <div id="player-{{../icon}}" class="decided player-logo player-box">
+						    <div class="coins"></div>
+							  <div class="info">
+								  <h1>{{../username}}</h1>
+							    <h2>{{../role.title}}</h2>
+						    </div>
+						  </div>
+				  </div>
+				</div>
+
+			{{/each}}
+		{{/each}}
+
+		<span id="modifier" class="hidden-el" data-inner_modal="true"></span>
+
+	</div>
+
+	{{!-- PHASE ENDS --}}
+	<div class="screen">
+
+		{{> component/instructions 
+				decider=true
+				heading="Press next for Score phase"
+				body="Once you finish speaking the instructions to other players, press next to continue"
+		}}
+
+		{{> component/instructions 
+				heading="Listen to the Decider"
+				body="Get ready to see your score!"
+		}}
+
+		{{> component/speech 
+				decider=true
+				advance=true
+				body="Congratulations, everyone! Now we will see everyone's new score and find out who is in the lead."
+		}}
+
+		{{> component/speech 
+				body="Congratulations, everyone! Now we will see everyone's new score and find out who is in the lead."
+		}}
+
+	</div>
+
+</div>

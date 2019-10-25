@@ -1,0 +1,50 @@
+<div class="rolecard-inner inner">
+
+	<div class="role-info card">
+
+        <button id="btn-close-role-card" class="btn" type="submit" name="submit" data-keep_enabled="true">
+            {{{cloudinaryUrl '/v1540845195/at-stake/icons/close.svg' height=25}}}
+        </button>
+		
+		<h2 class="title">Team Info</h2>
+	
+	</div>
+
+	<div class="agenda-wrap team toggle">
+        {{#each this}}
+            {{#if username}}
+                <div class="player-wrap">
+                    <div class="info">
+                        <h2>{{username}}</h2>
+                        {{!-- {{{jsonPrint this}}} --}}
+                        {{#if needs}}
+                            {{needs.[0]}}
+                                <br />—<br />
+                            {{needs.[1]}}
+                        {{/if}}
+                    </div>
+                    <div class="check">                        
+                        <div class="goal"><span class="star">&#9733;</span> {{secretGoal}}</div>
+
+                        <label class="switch form">
+                            {{#ifeq @index 0}}
+                                <detail class="tooltip-content">When a player meets their secret goal, you can check it off. They'll score extra points at the end of the game.</detail>
+                            {{/ifeq}}
+                            <input type="checkbox" class="btn submit" 
+                                {{#unless goatMet}}
+                                data-event="player:met_goal" data-package='{"uid":"{{uid}}"}'
+                                {{else}}
+                                checked="checked" disabled="disabled"
+                                {{/unless}}
+                            >
+                            <span class="slider round">
+                            </span>
+                        </label>
+                    </div>
+
+                </div>
+            {{/if}}
+        {{/each}}
+	</div>
+
+</div>

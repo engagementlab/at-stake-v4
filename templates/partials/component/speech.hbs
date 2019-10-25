@@ -1,0 +1,19 @@
+{{!-- 
+
+* COMPONENT: Speech Bubble 
+* @param {Bool} decider - Is decider speech?
+* @param {Bool} advance - Is last bubble of phase?
+* @param {Bool} active_player - Show this speech only for active player?
+* @param {Bool} inactive_player - Show this speech only for inactive player?
+* @param {String} body - Speech bubble body text
+* @param {String} secondary - Speech bubble secondary text, showing under body
+
+--}}
+<blockquote class="speech {{showHide this}} {{#ifeq scenario true}}blue{{/ifeq}} {{#ifeq bold true}}bold{{/ifeq}} {{#ifeq decider true}}form{{/ifeq}}">
+
+  <p>{{body}}</p>
+
+  {{#if secondary}}
+	  <div>{{secondary}}</div>
+  {{/if}}
+</blockquote>

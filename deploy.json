@@ -1,0 +1,49 @@
+ {
+  "apps" : [{
+    "name": "Learning Games",
+    "script": "server.js",
+    "exec_interpreter": "/home/node/.nvm/versions/node/v8.11.1/bin/node",
+    "env_production": {
+      "NODE_ENV": "production"
+    },
+    "env_staging": {
+      "NODE_ENV": "staging"
+    }
+  }],
+  "deploy" : {
+
+    "sdk-staging" : {
+      "user": "node",
+      "host": "159.203.174.12",
+      "repo": "git@github.com:engagementgamelab/el-web-sdk.git",
+      "ref": "origin/keystone-4.0",
+      "path": "/srv/framework",
+      "pre-deploy-local" : "echo 'Cloning and running npm install. Be patient.';",
+      "post-deploy" : "cd /srv/framework/current/ ; npm i ; npm update ; grunt compile --sites=at-stake --env staging ; nvm use ; pm2 restart 0",
+      "env": {
+        "NODE_ENV": "staging"
+      }
+    },
+
+    "staging" : {
+      "user": "node",
+      "host": "159.203.174.12",
+      "repo": "git@github.com:engagementgamelab/at-stake-v3.git",
+      "ref": "origin/v3.1",
+      "path": "/srv/at-stake-v3",
+      "pre-deploy-local" : "echo 'NPM linking at-stake-v3 and restarting app.'; git pull git@github.com:engagementgamelab/el-web-sdk.git master;",
+      "post-deploy" : "npm i ; npm update ; cd /srv/framework/current/ ; nvm use  ; npm i ; grunt compile --sites=at-stake --env staging ; NODE_ENV=staging pm2 restart 'server'"
+    },
+    
+    "production" : {
+      "user": "node",
+      "host": "104.236.109.221",
+      "repo": "git@github.com:engagementgamelab/at-stake-v3.git",
+      "ref": "origin/production",
+      "path": "/srv/at-stake-v3",
+      "pre-deploy-local" : "echo 'NPM linking at-stake-v3 and restarting app.';",
+      "post-deploy" : "npm i ; npm update ; cd /srv/framework/current/ ; grunt compile --sites=at-stake --env production ; NODE_ENV=production pm2 restart 'server'"
+    }
+
+  }
+}

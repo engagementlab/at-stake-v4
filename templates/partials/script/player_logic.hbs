@@ -1,0 +1,445 @@
+{{!< default}}
+{{!-- 
+/**
+ * @Stake v3.0
+ * Developed by Engagement Lab, 2016-2017
+ * ==============
+ * 
+ * Script includes partial for PLAYERS global client logic
+ * ==========
+ */
+--}}
+
+var isEmulated = window.frameElement && window.frameElement.getAttribute('data-emulated');
+
+$(document).ready(function() {
+
+    function noSleeping() {
+        // Prevent device sleep
+        var noSleep = new NoSleep();
+        noSleep.enable();
+
+        document.removeEventListener('click', noSleeping);
+    }
+    // Enable no sleep on first click/tap
+    document.addEventListener('click', noSleeping, false);
+
+});
+
+// Tap away any errors
+$(document).on('click touchstart', 'div.error:not(.menu)', function() {
+    $(this).hide();
+});
+
+// Remove debugging for emulated (debug) player
+if(isEmulated)
+    $('#debugging').remove();
+
+
+/*
+    Logs the player in
+*/
+var playerLogin = function(data) {
+
+    gameCode = data.code;
+
+    $('.navbar').slideUp();
+    
+    // Open socket connection
+    if(!socket) {
+        socket = io('//{{host}}', {path: '/at-stake-socket/', 'reconnection': true,'reconnectionDelay': 500,'maxReconnectionAttempts':Infinity});
+        registerEvents();
+    }
+
+    $('gameContent').addClass('lobby');
+
+    playerName = $('#player-name').val();
+    playerName = playerName.replace(' ','');
+
+    sessionStorage.setItem('username', playerName);
+
+    // Open socket connection
+    if(!socket) { 
+        socket = io('//{{host}}', {path: '/at-stake-socket/', 'reconnection': true,'reconnectionDelay': 500,'maxReconnectionAttempts':Infinity});
+        registerEvents();
+    } 
+
+    // Log player in
+    socket.emit('login:submit', emitData({username: playerName, uid: data.uid}));
+
+}
+
+/*
+    Checks if this client is logged in as a player already
+*/
+var checkIfLoggedIn = function() {
+
+    // Disallow private/incognito
+    if(isPrivate) {
+
+        $('.form').show();
+        $('.form input').hide();
+        $('#error-private-mode').trigger('show');
+
+        return;
+    }
+    
+    // Check if game code and uid saved to session (player is already logged in)
+    if(!sessionStorage.getItem('gameCode')) {
+        var isAndroid = /Android/ig.test(navigator.userAgent);
+
+        $('.form.login').show();
+
+        // Login form animation
+        {{#ifnoteq section 'game-preloaded'}} 
+        if(!isEmulated)  
+            loginFromTo('start', 'name');
+        else
+        {{/ifnoteq}}
+            $('#player-name, #btn_submit_name').removeClass('hidden-el');
+
+        // For Android only, move input boxes into view on phones
+        if(isAndroid) {
+            $('.form input')
+            .focus(function() { 
+                $('#logo_ec').addClass('mobile');
+            })
+            .blur(function() { 
+                $('#logo_ec').removeClass('mobile');
+            });
+        }
+
+        $('#player-name').keydown(function(evt) {
+            
+            if(evt.keyCode == 13)
+                $('#btn_submit_name').click();
+
+            if(evt.keyCode === 32) 
+                return false;
+
+        });
+        $('#access_code').keydown(function(evt) {
+            
+            if(evt.keyCode == 13)
+                $('#btn_submit_code').click();
+
+        });
+
+        return;
+    }
+    else {
+
+        // Open socket connection
+        if(!socket) { 
+            $('#rejoin').show();
+            $('#name').hide();
+            $('#rejoin #code').text(sessionStorage.getItem('gameCode'));
+            $('#rejoin #access_code_hidden').val(sessionStorage.getItem('gameCode'));
+
+            $('#btn_submit_rejoin').click(function() {
+                
+                isDecider = sessionStorage.getItem('isModerator');
+                socket = io('//{{host}}', {path: '/at-stake-socket/', 'reconnection': true, 'reconnectionDelay': 500, 'maxReconnectionAttempts': Infinity});
+                registerEvents();
+
+            });
+        } 
+
+    }
+
+    gameCode = sessionStorage.getItem('gameCode');
+    playerName = sessionStorage.getItem('username');
+
+}
+
+/* 
+    New game button handling
+*/
+newGameHandler = function() {
+
+    // $('#choices .btn').css('opacity', '1');
+    
+    /* 
+     Get info for player when they ask to start new game
+    */
+    $('#btn_new_game').click(function() {
+
+        if( ($.trim( $('#decks').html() ).length > 0) && $('#decks').hasClass('glide--carousel') ) {
+            
+            loginNewGame();
+            return;
+        }
+
+        function selectBtnListener() {
+
+            $('#decider #decks .btn_submit').click(function(evt) {
+                var data = {};
+                var deckName = $(".deck.ui-state-active h2 span").text();
+
+                data.deciderName = $('#player-name').val();
+
+                if(!data.deciderName) {
+                    $('.submission .error').text('Please enter your name!').fadeIn();
+                    return;
+                }
+
+                data.deckId = $(".deck.ui-state-active").data('id');
+                data.accessCode = $('#share_code .access-code span').text();
+
+              $.post(
+                  "/api/create/",
+                    data)
+                    .done(function(data) {
+
+                        if(data.sessionCreated) {
+
+                            setupDecider();
+                            var gameCodeHtml = '';
+                            
+                            $('#login').remove();
+
+                        loginFromTo('new', 'lobby', .09);
+
+                        _.each(data.accessCode.split(''), function(char, i) {
+                          gameCodeHtml += '<span>' + char + '</span>';
+                      });
+
+                        // Ensure login is gone and all decide UI shows
+                        $('#name,#join').remove();
+
+                        $('#decider .create').hide();
+                        $('#decider').show();
+                        $('#lobby').addClass('wait');
+
+                        $('#player-name').val(data.decider);
+
+                        // Analytics
+                        {{#ifeq environment "production"}}
+                        ga('send', 'event', 'Login', 'Username', data.decider);
+                        ga('send', 'event', 'Login', 'New Game', data.accessCode);
+                        ga('send', 'event', 'Game', 'Deck Name', deckName);
+                   
+                        smartlook('tag', 'created_game', 'yes');
+                        smartlook('tag', 'username', username);
+                        smartlook('tag', 'code', data.accessCode);
+                        {{/ifeq}}
+                
+                        }
+                    })
+                    .fail(function(xhr, status, error) {
+
+                        if(xhr.responseJSON.error)							
+                            $('#decider .error').text(xhr.responseJSON.error).fadeIn();
+
+                    });
+
+            });
+
+        }
+
+        $.get(
+            "/api/generate",
+            function( data ) {
+
+                gameCode = data.code;
+
+                $('#decks')
+                 .html(data.html)
+                 .promise()
+                 .done(function() {
+
+                    loginNewGame(function() {
+
+                        // Tell mobile action has completed
+                        $('body').trigger('mobileCallback');
+                        $('#decks').accordion({
+                            collapsible: true,
+                            active: false,
+                            beforeActivate: function( event, ui ) {
+                                // Hide/show deck descriptions
+                                $.each($('h2.deck').not(ui.newPanel.context), function( key, value ) {
+                                    $(value).find('.description').fadeOut(150);
+                                });
+
+                                $(ui.newPanel.context).find('.description').fadeIn(500);
+                            }
+                        });
+
+                        selectBtnListener();
+
+                    });
+
+                 });
+
+                 var gameCodeMarkup = '';
+                _.each(data.code.split(''), function(char, i) {
+                    gameCodeMarkup += '<span>' + char + '</span>';
+                });
+                
+                $('.access-code').html(gameCodeMarkup);
+                $('#gameContent').addClass('lobby');
+
+            }
+        );
+
+    });
+
+}
+
+/*
+ Save player name and advance to next screen
+*/
+$(document).on('click', '.btn.submit_name', function(evt) {
+
+    var data = getFormData($(this));
+    var errorBox = $('.form .error');    
+
+    // Hide errors during typing
+    $('.form input').keyup(function() {
+        $('.form input').removeClass('invalid');
+    });
+
+    if(!data.name || data.name.length === 0) {
+        $('.form #player-name').addClass('invalid');
+        errorBox.text('You need to enter a name!').fadeIn(function() {
+            $(this).delay(3000).fadeOut('slow');
+        }); 
+
+        return;
+    }
+
+    data.name = data.name.replace(' ','');
+    sessionStorage.setItem('username', data.name);
+
+    $('#username').text(data.name);
+
+    // Show new game/join
+    loginFromTo('name', 'choices', 1, function() {
+        // Setup new game button handler and callbacks
+        newGameHandler();
+    });
+    
+
+});
+
+/* 
+ Logs player into game with room code and name
+*/
+$(document).on('click', '.btn.game_login', function(evt) {
+
+    var data = getFormData($(this));
+    var errorBox = $('.form .error');
+
+    // Hide errors during typing
+    $('.form input').keyup(function() {
+        $('.form input').removeClass('invalid');
+    });
+
+    // Player entered code?
+    if(!data.code || data.code.length === 0) {
+        $('.form #access_code').addClass('invalid');
+        errorBox.text('You need to enter a room code!').fadeIn(function(){
+            $(this).delay(3000).fadeOut('slow');
+        }); 
+
+        return;
+    }
+    // Player entered name?
+    else if(data.reconnect === undefined && (!data.name || data.name.length === 0)) {
+        $('.form #player-name').addClass('invalid');
+        errorBox.text('You need to enter a name!').fadeIn(function(){
+            $(this).delay(3000).fadeOut('slow');
+        }); 
+
+        return;
+    }
+    var username = data.name;
+
+    // Create uid for player
+    if(!sessionStorage.getItem('uUID')) {
+        playerUID = Math.floor(Math.pow(10, 10-1) + Math.random() * (Math.pow(10, 10) - Math.pow(10, 10-1) - 1));
+        sessionStorage.setItem('uUID', playerUID);
+    }
+    else 
+        playerUID = sessionStorage.getItem('uUID');
+
+    // Disable button and show loading modal
+    if(!data.disable) {
+        $(evt.currentTarget).attr('disabled', 'disabled');
+        $('#loading-modal').fadeIn(250);
+    }
+    
+    $.post(
+        "/login",
+        data,
+        function( data ) {
+
+            $('.form input').removeClass('invalid');
+
+            if(data.error_code) {
+
+                switch(data.error_code) {
+
+                    case 'game_not_found': 
+                        $('.form #access_code').addClass('invalid');
+                        
+                        // Session does not exist, make sure to clear data from storage
+                        sessionStorage.removeItem('gameCode');
+                        sessionStorage.removeItem('playerSubmission');
+                        break;
+
+                    case 'no_username':
+                    case 'username_taken':
+                        $('.form #player-name').addClass('invalid');
+                        break;
+
+                    case 'game_active': 
+                        $('.form #access_code').addClass('invalid');
+                        break;
+
+                }
+                $('.btn.game_login').removeAttr('disabled');
+                errorBox.text(data.msg).fadeIn(function(){
+                    $(this).delay(3000).fadeOut('slow');
+                });
+                loadToggle(false, true);
+
+                return;
+
+            }
+
+            $('.login.input').fadeOut(function() {
+                $('#lobby').addClass('wait');
+                $('.login.waiting').fadeIn();
+            });
+
+            ga('send', 'event', 'Login', 'Username', username);
+
+            data.uid = playerUID;
+            playerLogin(data);                          
+
+            {{#ifeq environment "production"}}                   
+                smartlook('tag', 'username', username);
+                smartlook('tag', 'code', gameCode);
+            {{/ifeq}}
+
+            loginFromTo('join', 'lobby', .7);
+
+        }
+    );
+
+});
+
+// Check if this client is logged in on server
+window.onload = checkIfLoggedIn();
+
+// Load events for players
+{{> script/player_events }}
+
+{{#ifeq debug true}}
+    // Debugging view
+    {{#ifeq section 'play'}}
+        $('#access_code').val('TEST');
+        $('#player-name').val('Player_' + Math.floor(Math.random() * (10 - 1 + 1)) + 1);
+    {{/ifeq}}
+{{/ifeq}}
