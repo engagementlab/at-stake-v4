@@ -1,0 +1,39 @@
+// Lobby 
+@keyframes player-login {
+    from {
+    	bottom: 20px;
+    }
+    to {
+    	bottom: 100px;
+    }
+}
+
+
+// Stages 
+@keyframes enter-stage {
+	from {
+		height: 23px;
+		width: 23px;
+	}
+	to {
+		height: 40px;
+		width: 40px;
+	}
+}
+
+@keyframes exit-stage {
+	from {
+		top: 0px;
+		left: 0px;
+		position: relative;
+		height: 40px;
+		width: 40px;
+	}
+	to {
+		top: 0px;
+		left: 0px;
+		position: relative;
+		height: 23px;
+		width: 23px;
+	}
+}

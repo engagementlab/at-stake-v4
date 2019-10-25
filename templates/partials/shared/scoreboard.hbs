@@ -1,0 +1,77 @@
+<div id="scoreboard">
+
+	{{!-- INITIAL --}}
+	<div class="screen initial" data-animation="scoreboard">
+		<span id="modifier" class="hidden-el" data-hide_bottom_bar="true"></span>
+
+		{{> component/instructions 
+				all_players=true
+				heading=(combine "Round " round " Results")
+		}}
+
+		{{!-- {{> component/instructions 
+				all_players=true
+				heading=(combine "Round " round " Results")
+				body="Displayed are each player's coins gained or lost in the last round."
+		}}
+
+		{{> component/instructions 
+				all_players=true
+				heading=(combine "Round " round " Results")
+				body="Here are your scores updated to reflect the results from the last round."
+		}}
+
+		{{> component/instructions 
+				all_players=true
+				heading=(combine "Round " round " Results")
+				body="This shows who is in the lead! If this is not the end of the game, you recieved new roles and a new Decider for the next round!"
+		}} --}}
+
+		<section id="ranking">
+				
+			{{#each players}}
+
+				<div id="player-{{icon}}" class="player-logo" data-rank="{{rank}}">
+					<div class="rank starting">{{ordinalPosition @index}}</div>
+					<div class="rank current">{{ordinalPosition rank}}</div>
+			    <div class="coins starting">{{coins.starting}}</div>
+			    <div class="coins delta {{numSignString coins.delta}}" style="background-image:url('https://res.cloudinary.com/engagement-lab-home/image/upload/v1490979430/at-stake/layout/icon-yourcoins.svg')">{{numSign coins.delta}}</div>
+			    <div class="coins current">{{coins.current}}</div>
+				  <div class="info">
+					  <h1>{{lowerCase username}}</h1>
+				    <h2>{{lowerCase role.title}}</h2>
+			    </div>
+			  </div>
+
+			{{/each}}
+
+		</section>
+  	{{#ifnoteq round 3}}
+
+		  <div class="form decider speech">
+		    <button class="next-step submit scoreboard hidden-el" data-event="game:next_round">Next!</button>
+			</div>
+			
+		{{else}}
+		
+			{{!-- winner modal --}}
+			<div class="modal inner-modal" data-hide="true" data-duration="{{config.winnerDuration}}">
+				<div class="inner">
+
+					<h1>Congratulations, <strong>{{winner.username}}</strong>!</h1>
+					<h2>You are the winner of the game! You had the most coins after three rounds.</h2>
+
+          {{{cloudinaryUrl "v1494006833/at-stake/layout/trophy.svg" }}}
+
+				</div>
+			</div>
+			
+			<div class="form decider speech">
+		    <button class="next-step submit scoreboard debrief hidden-el" data-event="game:next">Go to Debrief</button>
+			</div>
+
+		{{/ifnoteq}}
+
+	</div>
+
+</div>

@@ -1,0 +1,786 @@
+{{!< default}}
+{{!-- 
+/**
+ * @Stake v3
+ * Developed by Engagement Lab, 2016-2017
+ * ==============
+ * 
+ * Script includes partial for PLAYERS socket.io events
+ * ==========
+ */
+--}}
+
+var clockInterval,
+    eventCountdown,
+    timeoutClock,
+    countdownAnim,
+    countdownPaused,
+    playerWasReconnected,
+    startAnim = new TimelineLite({paused: true}).fromTo($('#btn-start-game'), 1, {scale:0, autoAlpha:0}, {scale:1, autoAlpha:1, visibility:'visible', ease:Elastic.easeOut});
+
+// If true, screen doesn't advance right away via 'game:next',
+// it is saved in nextScreenData and advanced to later
+var waitForNextScreen = false,
+    nextScreenData;
+
+var resetSession = function() {
+
+    // Remove saved game code, uid, markup, and set to not reconnected
+    sessionStorage.removeItem('gameCode');
+    sessionStorage.removeItem('uUID');
+    sessionStorage.removeItem('markup');
+    sessionStorage.removeItem('lastDuration'); 
+    sessionStorage.setItem('reconnected', false);
+
+}
+
+var startStopwatch = function(timerDuration, timerCurrent) {
+    
+    var currentTime = timerCurrent ? timerCurrent*1000 : 0,
+        maxDuration = timerDuration*1000,
+        timer = $('.timer_wrap button'),
+        text = $('.timer_wrap h1');
+
+        timer.addClass('running');
+        timer.css('background', 'linear-gradient(90deg, #0067d8 0%, #000 0%)');
+
+    $('#skip').fadeIn();
+    
+    clockInterval = setInterval(function() {
+    
+        currentTime += 1000;
+        var perc = (currentTime/maxDuration)*100;
+        timer.css('background', 
+            'linear-gradient(90deg, #0067d8 ' + perc + '%, #000 ' + perc + '%)'); 
+        text.text(moment().startOf("day").add(currentTime).format('mm:ss'));
+
+        if(perc === 100) {
+
+            clearInterval(clockInterval);
+            timer.addClass('done');
+            timer.removeClass('running');
+            timer.css('background', '');
+            $('#skip').fadeOut(function() {
+                $('#times-up, #go-to').fadeIn();
+            });
+
+        }
+
+    }, 1000);
+
+}
+
+var startEventQueue = function() {
+
+    var time = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
+    
+    eventCountdown = setTimeout(function() {
+        showEvent();
+    }, time*1000);
+
+}
+
+var screenReady = function() {
+
+    if(currentPhaseIndex === 0) {
+        $('.timer_wrap button').removeClass('disabled');
+        $('.timer_wrap button').removeAttr('disabled');
+        $('.not-ready').fadeOut();
+    }
+
+    else if(currentPhaseIndex === 1) {
+        $('.timer_wrap button').removeClass('disabled');
+        $('.timer_wrap button').removeAttr('disabled');
+
+        // Begin random events
+        if(isDecider)
+            startEventQueue();
+
+    }
+
+}
+
+var showEvent = function() {
+
+    // Pick first event in list
+    var thisEvt = $('#events .event:first');
+
+    $('#events').show();
+    thisEvt.show();
+    showTooltips();
+
+    thisEvt.find('.buttons button').on('click', (function(evt) {   
+        
+        thisEvt.remove();
+        $('#events').hide();
+
+        globalClickHandler(evt.currentTarget);
+        startEventQueue();
+
+    }));
+
+    clearTimeout(eventCountdown);
+
+}
+
+var setupScreen = function(screenName, index, timerDuration) {
+
+    // Add trigger to go to next step on next-step buttons
+    $('.next-step').click(function(evt) {
+        nextPhaseScreen();
+    });
+
+    // Add trigger for stopwatch
+    $('#btn-start-timer').click(function(evt) {
+        startStopwatch(timerDuration);
+    });
+
+    // Reset screen index
+    currentScreenIndex = (index === undefined) ? 0 : index;
+
+    $(isDecider ? '.player' : '.decider').remove();
+    // Remove non-facilitator bg
+    if(isDecider)
+        $('.screen').removeClass('bg');
+
+    if(screenName == 'debrief') {
+        $('#gameContent').removeClass('in-game');
+        $('#bottom-bar').hide();
+    }
+    else {
+        $('#bottom-bar').show();
+        $('#gameContent').addClass('in-game');
+    }
+
+    sessionStorage.setItem('markup', $('#gameContent').html());
+    sessionStorage.setItem('role', $('#role-card').html());
+    sessionStorage.setItem('screenName', screenName);
+
+    // Animate initial
+    screenOpen($('.screen:not(.skip):eq(' + currentScreenIndex + ')'));
+
+    runMods();
+
+    if(!inIntro)
+        $('#overlay').trigger('hide');  
+
+    // Hooks for ranking screen
+    if(screenName === 'ranking' && isDecider) {
+        $('#btn-ready').click(function(evt) {
+            nextRankingScreen($(evt.currentTarget));
+        });
+    }
+
+    openInterstitial();
+}
+
+var playerDisconnected = function(timeoutTime, names) {
+    
+    if(!names || names.length === 0)
+        return;
+    
+    var modal = $('#error-player-disconnected');
+    modal.find('#player').text(names.join(', '));
+    
+    if(!modal.is(':visible'))
+        modal.trigger('show');
+
+}
+
+var setupRoleCard = function(markup) {
+
+    $('#role-card').html(markup).promise().done(function() {
+
+        $('#overlay').on('opened', function(evt) {
+            
+            $('#btn-close-role-card').on('click', function(evt) {
+                ion.sound.play("back");
+                $('#overlay').trigger('hide');
+                deleteTooltips();
+            });
+
+        });
+
+        $('#btn-role-card, #btn-facilitator').on('click', function(evt) {
+            ion.sound.play("click1");
+            openInnerModal('role');
+            deleteTooltips();
+        });
+        $('#btn-team-info').on('click', function(evt) {
+            ion.sound.play("click1");
+            openInnerModal('team');
+        });
+        $('#btn-call-vote').on('click', function(evt) {
+            socket.emit('player:callvote', emitData());
+        });
+
+        if(playerName !== undefined)
+            $('#bottom-bar #name').text(playerName);
+
+        $('#bottom-bar #role').text($('.role-info .title').text());
+        
+    });
+
+    $('#btn-role-card, #btn-call-vote').css('display', isDecider ? 'none' : 'block');
+    $('#btn-facilitator, #btn-team-info').css('display', !isDecider ? 'none' : 'block');
+
+}
+
+socketEvents = function(eventId, eventData) {
+
+    switch (eventId) {
+
+        case 'connect':
+
+            // prevent scrolling on connect
+            $('#wrapper').css('overflow-y', 'hidden').css('position', 'fixed');
+
+            ion.sound.play("player_pink");
+            
+            if(sessionStorage.getItem('gameCode')) {
+                // Check if player is active in game
+                socket.emit('login:active', {
+                  gameId: sessionStorage.getItem('gameCode'), 
+                  username: sessionStorage.getItem('username'),
+                  uid: sessionStorage.getItem('uUID'),
+                  decider: isDecider
+                });
+            }
+
+            if(isDecider) {
+                // Session started, let's sign-up the decider for this room
+                socket.emit('room', emitData({type: 'decider', username: $('#player-name').val(), uid: playerUID}));
+            }
+            else {
+                // Connected, let's sign-up for to receive messages for this room
+                socket.emit('room', emitData({type:'player'}));
+            }
+
+            $('#gameContent').addClass('player-grid');
+
+            $('.login.form').fadeOut(function() { $('.login.waiting').fadeIn(function(){
+                {{!-- $('.lobby#join').addClass('player-grid'); --}}
+            }); });
+            
+            break;
+
+        case 'disconnect':
+
+            if(gameEnded)
+                return;
+
+            // Remove saved sesh
+            resetSession();
+
+            // if ($('.modal'))
+            //     $('.modal').fadeOut();
+
+            // Show main menu w/ error
+            openInnerModal('menu', false, false, 'disconnected');
+
+            break;
+
+        case 'player:loggedin':
+            
+            ion.sound.play("player_pink");
+
+            playerWasReconnected = false;
+
+            if (isDecider)
+                $('#btn-role-card').css('visibility', 'hidden');
+
+            $('#debug-info').text('Player id: ' + eventData.id);
+
+            playerId = eventData.id;
+
+            var gameCodeMarkup = '';
+            
+            _.each(eventData.code.split(''), function(char, i) {
+                gameCodeMarkup += '<span>' + char + '</span>';
+            }); 
+
+            $('#game_code .access-code').html(gameCodeMarkup);
+
+            // Analytics
+            ga('send', 'event', 'Login', 'Success', 'Joined Game "' + eventData.code + '"');  
+
+            break;
+
+        case 'player:reconnected': 
+
+            if(playerWasReconnected)
+                return;
+
+            // Analytics
+            ga('send', 'event', 'Game', 'Event', 'reconnected');
+
+            // Set local player state as reconnected
+            playerWasReconnected = true;
+
+            isDecider = eventData.is_decider;
+
+            // var markup = sessionStorage.getItem('markup');
+            // var roleCard = sessionStorage.getItem('role');
+
+            if (sessionStorage.getItem('screenName') !== 'debrief')
+                $('#bottom-bar').show();
+
+            if (isDecider)
+                $('#btn-role-card').css('visibility', 'hidden');
+
+            setupRoleCard(eventData.role);
+
+            break;
+
+        case 'player:lost':
+
+            // A current player lost from session
+            var timeLeft = eventData.timeout;
+
+            if(timeoutClock)
+                clearInterval(timeoutClock);
+
+            playerDisconnected(timeLeft, eventData.names);
+
+            countdownPaused = true;
+
+            break;
+
+        case 'players:update':
+
+            var staticPlayers = $('.player-static');
+            var currentPlayers = _.map(eventData.players, function(player){
+                return {name: player.username, icon: player.index};
+            });
+
+            var playersNeeded = {{#ifeq debug true}}2{{else}}3{{/ifeq}}
+
+            // Are all players connected?
+            if(eventData.all_connected) {
+                $('#error-player-disconnected').trigger('hide');
+
+                if(timeoutClock)
+                    clearInterval(timeoutClock);
+
+                countdownPaused = false;
+            }
+
+            // A player has re-joined
+            if(eventData.state === 'player_rejoined')
+                playerDisconnected(eventData.timeout_remaining, eventData.disconnected_players);
+
+            // Allow to start?
+            if(currentPlayers.length === playersNeeded)
+                startAnim.play();
+            else if(currentPlayers.length < playersNeeded)
+                startAnim.reverse();
+
+            $('.player-grid .list').empty();
+
+            _.each(currentPlayers, function(player, index) {
+
+                var nameFormatted = (player.name.length <= 15) ? player.name : player.name.substring(0, 15) + "...";
+                var index = player.icon;
+
+                $('.player-grid .list').append('<div id="player-' + index + '" class="col-sm-12 player-logo col-centered"><p>' + nameFormatted + '</p></div>');
+
+            });
+
+            break;
+
+        case 'player:assignrole':
+
+            // Save game code for resuming
+            // sessionStorage.setItem('gameCode', gameCode);
+
+            setupRoleCard(eventData);
+
+            break;
+
+        case 'player:updatedata':
+
+            break;
+
+        case 'players:voted':
+
+            if(!isDecider && !eventData.yes) {
+                $('#vote #content').remove();
+                $('#vote #results').show();
+            }
+
+            if(eventData.yes && isDecider)
+                socket.emit('game:next', emitData(true));
+            else {
+                if(eventData.votecallerid === playerUID) {
+                    $('#btn-try-again').show();
+                    $('#votecaller').show();
+                    $('#btn-try-again').click(function() {            
+                        socket.emit('player:vote_end', emitData());
+                    });
+                }
+                $('#voter').show();
+            }
+
+            break;
+
+        case 'players:vote_ended':
+
+                TweenLite.to($('#vote'), 1, {autoAlpha:0, display:'none', onComplete: function() {
+                    $('#vote').remove();
+                }});
+
+            break;
+
+        case 'player:callvote':
+
+            if($('#vote').length > 0) return;
+
+            $('#gameContent').prepend(eventData)
+            .promise()
+            .done(function() {
+
+                $(isDecider ? '.player' : '.decider').remove();
+
+            });
+
+            break;
+
+        case 'player:show_event':
+
+            // Show breaking news events for non-facilitator
+            if(!isDecider) {
+                var thisEvent = $('#events .event:eq(' + eventData + ')');
+                $('#events').show();
+                thisEvent.show();
+                thisEvent.click(function(evt) {
+                    $('#events').hide();
+                    $(evt.currentTarget).remove();
+                });
+            }
+
+            break;
+
+        case 'game:ready':
+        
+            screenReady();
+
+            break;
+
+        case 'game:intro':
+
+			$('#join-bg').css('opacity', 0);
+            $('.waiting, #decider, #join').fadeOut(function() {
+                openIntro();
+            });
+            inIntro = true;
+
+            break;
+
+        case 'game:start':
+
+            $('#agenda-items .role:visible').remove();
+            $('#agenda-items .role').first().show();
+
+            // Analytics
+            ga('send', 'event', 'Game', 'Event', 'Game Started');  
+
+            // Show bottom bar
+            $('#bottom-bar').fadeIn();
+
+            break;
+
+        case 'game:skip_rules':
+
+            $.when($('.screen.rules-screen').remove()).then(
+                function() {
+                    
+                    // Local session update
+                    sessionStorage.setItem('markup', $('#gameContent').html());
+
+                    $('.skip-rules').trigger('show');
+
+                    runMods();
+
+            });
+
+            break;
+
+        case 'game:next_screen':
+        
+            if(isDecider)
+                ion.sound.play("click3");
+
+            $('#btn-more-time').click(function() {
+                ion.sound.stop("clic /k3");
+                ion.sound.play("player_yellow");
+            });
+
+            $('#btn-cancel').click(function() {
+                ion.sound.stop("click3");
+                ion.sound.play("player_red");
+            });
+
+            $("#winner-btn").click(function(){
+                ion.sound.play("player_orange");
+            });
+
+            // Only occurs for non-decider, since decider sends this
+            // Or if forced, do this for all players
+            if(!isDecider || eventData.force)
+                nextPhaseScreen();
+                
+            if(inIntro) {
+                nextIntroScreen();
+                return;
+            }
+            
+            break;
+
+        case 'game:next_phase':
+
+            $('#btn-cancel').click(function() {
+                ion.sound.stop("click3");
+                ion.sound.play("player_red");
+            });
+
+            if(isDecider)
+                ion.sound.play("click3");
+
+            if ($('#background-logo').css('display', 'none'))
+                $('#background-logo').show();
+
+            // Don't show yet?
+            if(waitForNextScreen) {
+                nextScreenData = eventData;
+                return;
+            }
+
+            if (eventData.html) {
+                updateGameContent(eventData.html, function() {
+
+                    nextPhase();
+                    setupScreen(eventData.name, undefined, eventData.timerLength);
+
+                });
+            }
+            else {
+                updateGameContent(eventData, function() {
+
+                    nextPhase();
+                    setupScreen(eventData.name);
+
+                });
+            }          
+
+            // Save game code for resuming
+            sessionStorage.setItem('gameCode', gameCode);
+            
+            break;
+
+        case 'game:refresh_screen':
+            
+            // Don't show yet?
+            if(waitForNextScreen) {
+                nextScreenData = eventData;
+                return;
+            }
+
+            updateGameContent(eventData.html, function() {
+
+                if(eventData.phase !== undefined)
+                    currentPhaseIndex = eventData.phase;
+
+                setupScreen(undefined, eventData.screen);
+
+                // If timer running, update to current duration
+                if(eventData.timerRunning)
+                    startStopwatch(eventData.timerLength, eventData.timerDuration);
+
+                // Players already marked as ready
+                if(eventData.ready)
+                    screenReady();
+
+                if(!isDecider) {
+
+                    // Move immediately to restart point in current phase, by removing screens before it and showing it
+                    $($('.screen')[currentScreenIndex]).prevAll().remove();
+
+                    // Hide any previously hidden elements
+                    $('.screen.restart').show();
+
+                }
+
+                openInnerModal();
+            });
+
+            break;
+
+        case 'game:met_goal':
+
+            showGoalNotification(eventData);
+
+            break;
+
+        case 'game:met_need':
+
+            showNeedNotification(eventData)
+
+            break;
+
+        case 'game:ending':
+
+            $('#error-box').text(eventData);
+            $('#error-box').show(function(){
+                $('.form .error').delay(3000).fadeOut('slow');
+            });
+
+            break;
+
+        case 'game:ended':
+
+            // Reset game session data and send back to logn
+            resetSession();
+
+            // Analytics
+            ga('send', 'event', 'Game', 'Event', 'Game Ended');  
+
+            updateGameContent(eventData, function() {
+                openInnerModal(null, true, true);
+                window.location = window.location;
+            });
+
+            break;
+
+        case 'game:resumed':
+
+            $('#error-box').hide();
+
+            break;
+
+        case 'game:notfound':
+
+            if(isDecider) return;
+
+            // If game not found, show name entry and clear session
+            loginFromTo('start', 'name');
+            resetSession();
+
+            $('.form.login').show();
+
+            break;
+            
+         case 'game:countdown':
+
+            ion.sound.stop("click3");
+            ion.sound.play("alarm_single");
+
+            // Enable call for vote
+            if(eventData.name === "deliberateCountdown") {
+                $('#btn-call-vote').removeClass('disabled');
+                $('#btn-call-vote').removeAttr('disabled');
+            }
+
+            break;
+
+        case 'game:countdown_ending':
+            $('.form .error').fadeIn().html(eventData);
+            $('.form .error').delay(3000).fadeOut('slow');
+
+            break;
+
+        case 'game:countdown_end':
+
+            ion.sound.play("alarm");
+            $('.player-roles, .speech').hide();
+            $('#time-up').fadeIn();
+            
+            timerActive = false;
+           
+             break;
+
+        case 'game:countdown_player':
+            
+            // Close "(playername) is deciding...." modal
+            var modal = $('#more-time-wrapper');
+          
+            $('#overlay').trigger('hide');            
+
+            break;
+
+        case 'game:player_done':
+            
+            // Close "(playername) is deciding...." modal
+            var modal = $('#more-time-wrapper');
+          
+            $('#overlay').trigger('hide');            
+            $('#btn-next-player').fadeIn();
+
+            if(eventData.phase === 'doubledown' && isDecider) {
+                setTimeout(function() {
+                    socket.emit((eventData.end ? 'game:next_screen' : 'game:next_player'), emitData(true));
+                }, 600);
+            } else if (eventData.phase === 'pitch' && isDecider) {
+                setTimeout(function() {
+                    socket.emit((eventData.end ? 'game:next' : 'game:next_player'), emitData(true));
+                }, 600);
+            }
+
+            break;
+
+        case 'game:phase_over':
+            
+            $('#btn-next-stage').fadeIn();
+
+            break;
+
+        case 'game:decider':
+
+            isDecider = eventData.facilitator;
+            if(isDecider) 
+                setupRoleCard(eventData.role);
+
+            // Analytics
+            if(isDecider)
+                ga('send', 'event', 'Game', 'Event', 'Became Decider');  
+
+            break;
+
+        case 'game:team_info':
+
+            $('#team-info').html(eventData);
+
+            break;
+
+        case 'game:end':
+
+            updateGameContent(eventData, function() {
+                if(isDecider)
+                    TweenLite.to($('#btn-start-over'), 1, {autoAlpha:1, delay:4, display:'block'});
+
+                $('#bottom-bar').hide();
+
+            });
+            
+            break;
+
+        case 'coins:add':
+        case 'coins:remove':
+
+            // Analytics
+            ga('send', 'event', 'Game', 'Event', 'Coins - ' + eventData.type);  
+
+            $('#' + eventData.type + '-coins span').text(eventData.amt);
+
+            
+
+            break;
+
+        default:
+
+            console.warn('No handler found for event "' + eventId + '" in socketEvents.');
+
+            break;
+
+    }
+
+};

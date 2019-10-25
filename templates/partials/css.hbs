@@ -1,0 +1,45 @@
+{{!< default}}
+{{!-- 
+/**
+	* Engagement Lab Website
+	* Developed by Engagement Lab, 2015
+	* ==============
+	* 
+	* Document includes partial 
+	* ==========
+	*/
+--}}
+
+<!-- DOCS START -->
+{{#ifeq environment "development"}}
+	
+	{{!-- DEVELOPMENT --}}
+	
+	{{!-- Bootstrap non-responsive for group view --}}
+
+  <link rel="stylesheet" href="https://res.cloudinary.com/engagement-lab-home/raw/upload/v1490910324/at-stake/bootstrap.min.css" rel="stylesheet">
+
+	{{!-- Core layout --}}
+	<link href="/styles/core.css" rel="stylesheet"/>
+
+	{{!-- Bower plugins --}}
+	{{!-- <link rel="stylesheet" href="/bower_components/glidejs/dist/css/glide.core.css"> --}}
+	{{!-- <link rel="stylesheet" href="/bower_components/glidejs/dist/css/glide.theme.css"> --}}
+
+{{else}}
+
+	{{!-- PRODUCTION/STAGING --}}
+  <link rel="stylesheet" href="https://res.cloudinary.com/engagement-lab-home/raw/upload/v1490910324/at-stake/bootstrap.min.css" >
+	<link href="{{cdnAsset product='at-stake' env=environment type='css' }}" rel="stylesheet">
+
+{{/ifeq}}
+
+<link class="favicon" rel="icon" type="image/png" href="{{cdnAsset product='at-stake' path='images/favicons/favicon_32' type='ico' fetch='image'}}" sizes="32x32">
+<link class="favicon" rel="icon" type="image/png" href="{{cdnAsset product='at-stake' path='images/favicons/favicon_16' type='ico' fetch='image'}}" sizes="16x16">
+
+<link class="favicon" rel="shortcut icon" href="{{cdnAsset product='at-stake' path='images/favicons/favicon_32' type='ico' fetch='image'}}">
+<link class="favicon" rel="apple-touch-icon-precomposed" sizes="144x144" href="{{cdnAsset product='at-stake' path='images/favicons/favicon_144' type='png' fetch='image'}}">
+<link class="favicon" rel="apple-touch-icon-precomposed" sizes="114x114" href="{{cdnAsset product='at-stake' path='images/favicons/favicon_114' type='png' fetch='image'}}">
+<link class="favicon" rel="apple-touch-icon-precomposed" sizes="72x72" href="{{cdnAsset product='at-stake' path='images/favicons/favicon_72' type='png' fetch='image'}}">
+{{!-- For non-Retina iPhone, iPod Touch, and Android 2.1+ devices: --}}
+<link class="favicon" rel="apple-touch-icon-precomposed" href="{{cdnAsset product='at-stake' path='images/favicons/favicon_57' type='png' fetch='image'}}">

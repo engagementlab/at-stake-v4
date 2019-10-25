@@ -1,0 +1,126 @@
+{{!-- RANKING UI --}}
+<div id="ranking">
+
+	{{!-- WAIT FOR RANK --}}
+	<div class="screen player">
+
+		{{> component/instructions 
+				heading="Call To Vote"
+		}}
+
+		<div id="content" class="content">
+
+            <h1>Everyone agreed with the proposal!</h1>
+            Wait as the facilitator reviews.
+
+        </div>
+
+        <div id="results">
+            
+        </div>
+    
+	</div>
+
+	{{!-- RANKING --}}
+	<div class="screen decider">
+
+		{{> component/instructions 
+				decider=true
+				heading="Vote Ranking"
+				body="Rate how well the team's proposal meets the criteria below."
+		}}
+
+        <div id="pt1" class="form">
+            <h2>Did the team meet any secret goals?</h2>
+
+            {{#each players}}
+
+                <div class="check toggle">              
+                    <p>{{username}}</p>
+                    <div class="goal">{{secretGoal}}</div>
+
+                    <label class="switch form">
+                        {{#ifeq @index 0}}
+                            <detail class="tooltip-content">When a player meets their secret goal, you can check it off. They'll score extra points at the end of the game.</detail>
+                        {{/ifeq}}
+                        <input type="checkbox" class="btn submit" 
+                            {{#unless goatMet}}
+                            data-event="player:met_goal" data-package='{"uid":"{{uid}}"}'
+                            {{else}}
+                            checked="checked" disabled="disabled"
+                            {{/unless}}
+                        >
+                        <span class="slider round">
+                        </span>
+                    </label>
+                </div>
+
+            {{/each}}
+        </div>
+
+        <div id="pt2" class="form" style="display:none">
+            <h2>Did the team meet their needs?</h2>
+
+            {{#each players}}
+                <div class="user toggle">
+                    <p>{{username}}</p>
+
+                    <div class="needs">
+                        <div class="need">    
+                            <label class="switch">
+                                <input type="checkbox" class="btn submit" data-event="player:met_need" data-package='{"uid":"{{uid}}", "index":"0"}'>
+                                <span class="slider round"></span>
+                            </label>
+                            {{#if needs}}
+                                <span>{{needs.[0]}}</span>
+                            {{else}}
+                                <span>Example need 1</span>
+                            {{/if}}
+                        </div>
+                        <div class="need">    
+                            <label class="switch">
+                                <input type="checkbox" class="btn submit" data-event="player:met_need" data-package='{"uid":"{{uid}}", "index":"1"}'>
+                                <span class="slider round"></span>
+                            </label>
+                            {{#if needs}}
+                                <span>{{needs.[1]}}</span>
+                            {{else}}
+                                <span>Example need 2</span>
+                            {{/if}}
+                        </div>
+                    </div>
+
+                    <hr{{#if @last}} style="display:none"{{/if}} />
+
+                </div>
+            {{/each}}
+        </div>
+
+        <div id="pt3" class="form" style="display:none">
+
+            <h2>Equity</h2>
+            <input type="range" id="equity" min="1" value="1" max="5" step="1">
+            <div class="labels">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+
+            <h2>Inclusivity</h2>
+            <input type="range" id="inclusivity" min="1" value="1" max="5" step="1">
+            <div class="labels">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+
+            <h2>Creativity</h2>
+            <input type="range" id="creativity" min="1" value="1" max="5" step="1">
+            <div class="labels">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+        </div>
+		
+		<button id="btn-ready" class="btn" type="submit" name="submit">
+			Continue
+		</button>
+
+	</div>
+
+</div>

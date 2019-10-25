@@ -1,0 +1,900 @@
+{{!< default}}
+{{!-- 
+/**
+ * @Stake v3.0
+ * Developed by Engagement Lab, 2016-2017
+ * ==============
+ * 
+ * Script include for global logic
+ * ==========
+ */
+--}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script src="https://unpkg.com/tippy.js@3/dist/tippy.all.min.js"></script>
+<script type="text/javascript">
+
+	var socket,
+	socketEvents,
+	gameCode,
+	deck,
+	gameEnded = false,
+	timerActive = false,
+    playersReady = false,
+	
+	gameContainer,
+	playerId,
+	playerUID,
+	playerName,
+	isDecider,
+    currentTooltips = [],
+	timeline = new TimelineLite(),
+	mobileDetect = new MobileDetect(window.navigator.userAgent),
+	
+	isDevice = false,
+	inIntro = false,
+
+	{{#if mobile}}
+		isDevice = true,
+	{{/if}}
+
+	isApple = mobileDetect.is('iOS'),
+	isAndroid = mobileDetect.is('Android') || mobileDetect.match('Android'),
+	isMobile = (isAndroid || isApple);
+
+  {{#ifnoteq section 'homepage'}}
+
+	// Can be set by any event logic waiting for content update
+	var updateContentCallback,
+
+	// Absolute positioning global
+	maxWidth = 425,
+
+	// For countdown debugging
+  countdownPaused = false,
+
+  // Tracks current phase index and the screen during each phase
+  currentPhaseIndex = -1,
+  currentScreenIndex = 0,
+
+	// Sound declaration
+  sfxPath = 'https://res.cloudinary.com/engagement-lab-home/video/upload/v1492187090/at-stake/sfx/';
+  {{#ifeq env "development"}}
+  	sfxPath = '/sfx/';
+  {{/ifeq}}
+
+  var absolutes = [],
+			windowsize = $(window).width(),
+			bodysize = $('#wrapper').width(),
+			wrapperLeft = $('#wrapper').offset().left,
+			extraWindow = (windowsize - bodysize)/2;
+
+	ion.sound({
+    sounds: [
+        {
+            name: "button_tiny"
+        },
+        {
+            name: "add_coin"
+        },
+        {
+            name: "alarm_single"
+        },
+        {
+            name: "alarm",
+        },
+        { 
+            name: "back"
+        },
+        {
+            name: "click1"
+        },
+        {
+            name: "click2"
+        },
+        {
+            name: "click3"
+        },
+        {
+            name: "coins"
+        },
+        {
+            name: "confirm"
+        },
+        {
+            name: "player_green"
+        },
+        {
+            name: "player_orange"
+        },
+        {
+            name: "player_pink"
+        },
+        {
+            name: "player_red"
+        },
+        {
+            name: "player_yellow"
+        }
+    ],
+    volume: 0.5,
+    path: sfxPath,
+    preload: true
+  });
+
+  // All possible socket event IDs
+	eventIds = [
+
+		{{#ifnoteq environment "production"}}
+		'debug:pause',
+		'debug:end',
+		{{/ifnoteq}}
+
+		'connect',
+		'disconnect',
+		'game:last',
+
+		'player:loggedin',
+		'player:inactive',
+		'player:reconnected',
+		'player:lost',
+		'players:update',
+		'player:finished',
+		'player:agenda_item',
+		'player:assignrole',
+		'player:updatedata',
+		'player:callvote',
+		'player:vote',
+		'players:ready',
+		'players:voted',
+		'players:vote_ended',
+		'player:show_event',
+		
+		'game:error',
+		'game:tutorial',
+		'game:intro',
+		'game:roles_done',
+		'game:start',
+		'game:next',
+		'game:next_phase',
+		'game:next_screen',
+		'game:next_round',
+		'game:next_item',
+		'game:ending',
+		'game:ended',
+		'game:end',
+		'game:resumed',
+		'game:notfound',
+		'game:countdown',
+		'game:countdown_ending',
+		'game:countdown_end',
+		'game:countdown_player',
+		'game:phase_over',
+		'game:round_over',
+		'game:player_done',
+		'game:survey',
+		'game:advance',
+		'game:decider',
+		'game:refresh_screen',
+		'game:ready',
+		'game:team_info',
+		'game:event',
+		'game:met_goal',
+		'game:met_need',
+
+		'game:rank_next',
+		'game:rank_prev',
+		'game:ranking'
+	
+	];
+
+	/* 
+		Manually position absolutely-positioned elements on window re-size
+	*/
+	var finishResize = function() {
+
+		// Show wrapper now that resize is complete
+		$('#wrapper').css('visibility', 'visible');
+
+	}
+	
+	var setAbsolutes = function(absolutes) {
+
+		_.each(absolutes, function(item) {
+
+			var position = {};
+
+			// Check current positions
+			if ($(item).css('left') && $(item).css('left') !== null && $(item).css('left') !== undefined && $(item).css('left') !== 'auto')
+				position.left = $(item).css('left');
+
+			if ($(item).css('right') && $(item).css('right') !== null && $(item).css('right') !== undefined && $(item).css('right') !== 'auto')
+				position.right = $(item).css('right');
+
+			// If left, set it. 
+			if (position.left){
+				position.left =+ wrapperLeft;
+			}
+			//If right, set it.
+			if (position.right) {
+				position.right =+ extraWindow;
+				$(item).css('right', position.right);
+			}
+
+			// Call finish function after xxx milaseconds
+			var finish = _.debounce(finishResize, 500);
+			finish();
+
+		});
+
+	};
+
+	// Locally-scoped methods
+	var findAbsolutes = function() {
+
+		windowsize = $(window).width(),
+		bodysize = $('#wrapper').width(),
+		extraWindow = (windowsize - bodysize)/2;
+
+		// Get all absolutely-positioned elements
+		var outerAbsolutes = 
+		$('#wrapper :not(#gameContent *, #homeContent *, .modal, .notification, #bottom-bar, #background-logo *)')
+		.filter(function(){
+		  return ($(this).css('position') == 'absolute');
+		});
+
+		setAbsolutes(outerAbsolutes);
+
+	};
+
+	findAbsolutes();
+
+	var showTooltips = function() {
+		
+		// Setup any tooltips
+		var tooltips = $('.tooltip-content');
+		if(tooltips.length > 0) {
+			_.each(tooltips, function(tip, ind) {
+
+				// Is supposed to show?
+				var data = $(tip).data();
+				var isEmpty = Object.keys(data).length === 0;
+				if((data.screen === currentScreenIndex &&
+					data.phase === currentPhaseIndex) ||
+					isEmpty) {
+
+					// Skip if parent element not visible yet
+					if(!$(tip).parent().is(':visible')) return;
+				
+					var content = $(tip).text();
+					var element = $(tip).parent()[0];
+					// Delete content
+					$(tip).remove();
+
+					// Make/show tooltip
+					var tooltip = tippy(element, { content: content, theme: "default", placement: "top", arrow: true });
+					currentTooltips.push(tooltip.instances[0]);
+
+					element._tippy.show();
+
+				}
+
+			});
+		}
+	}
+
+	var deleteTooltips = function() {
+
+		_.each(currentTooltips, function(tip, ind) {
+			tip.destroy();
+		});
+		currentTooltips = [];
+
+
+	}
+
+	/* 
+	 Associate provided data object with current game ID
+	*/
+	var emitData = function(data) {
+
+		if(gameCode === undefined && typeof(data.code) !== 'undefined')
+			gameCode = data.code;
+
+		return { gameId: gameCode, msgData: data };
+	
+	};
+
+	/* 
+	 Obtains the embedded data ('data-key="something"') object from the provided submit button
+	*/
+	var getFormData = function(submitElement) {
+
+		var pkg;
+
+		if(submitElement[0].dataset === undefined)
+			return undefined;
+		
+		try {
+			pkg = JSON.parse(submitElement[0].dataset.package);
+		}
+		catch(e) {
+			pkg = submitElement[0].dataset.package;
+		}
+
+		if($.isPlainObject(pkg)) {
+			$.each(Object.keys(pkg), function( key, value ) {
+
+				if(pkg[value] !== undefined) {
+					if(pkg[value].toString().indexOf('#') === 0)
+					  pkg[value] = $(pkg[value].toString()).val();
+				}
+
+			});
+		}
+		else if(!submitElement.is('button'))
+			pkg = $(pkg).val();
+
+		return pkg;
+
+	};
+
+	/* 
+		Util to convert seconds to h:mm:ss
+	*/
+	var secondsToHms = function(d) {
+
+	  d = Number(d);
+	  var h = Math.floor(d / 3600);
+	  var m = Math.floor(d % 3600 / 60);
+	  var s = Math.floor(d % 3600 % 60);
+
+	  var hourDisplay = '<span id="h">' + (h > 0 ? h + ":" + (m < 10 ? "0" : "") : "") + '</span>';
+	  var minsDisplay = '<span id="m">' + m + '</span>';
+	  var secondsDisplay = '<span id="s">' + (s < 10 ? "0" : "") + s + '</span>';
+
+	  return (hourDisplay + minsDisplay + ":" + secondsDisplay); 
+
+	};
+
+  /**
+  * Util to inject markup into game content container and run any callbacks
+  *
+  * @param {String} content HTML to use
+  * @param {Function} callback Function to call after HTML updated
+  * @param {Boolean} pauseAnimate Don't animate screen back in; instead pass animate function to callback to use later
+  * @class global
+  * @name updateGameContent
+  */
+	var updateGameContent = function(content, callback, pauseAnimate) {
+
+		// Inject markup content and fire callback when done
+		gameContainer.html(content)
+								 .promise()
+								 .done(function() {
+			
+										if(!pauseAnimate) {
+										
+										 		if(callback)
+											 		callback();
+
+											 	if(updateContentCallback)
+												 	updateContentCallback();
+
+										
+										}
+										else {
+
+											 	if(updateContentCallback)
+												 	updateContentCallback();
+
+										}
+
+								    // Hide loading
+								    $('#loading-modal').fadeOut(250);
+
+								 });
+
+		if($('#top-header').length > 0) {
+			var topBar = $('#top-header').detach();
+			topBar.after('#nav-close-wrapper');
+		}
+	}
+
+	var nextPhase = function() {
+
+	    currentPhaseIndex++; 
+	    $('#overlay').hide();
+
+	    // Analytics
+	    {{!-- var phaseName = $('#stages-bar .icon:eq('+currentPhaseIndex+') span').text(), --}}
+					{{!-- phaseNameFormatted = phaseName.charAt(0).toUpperCase() + phaseName.slice(1); --}}
+		{{!-- ga('send', 'event', 'Game', 'Phase', phaseNameFormatted);   --}}
+
+	}
+
+	var nextPhaseScreen = function(keepModalsOpen) {
+	    
+	    currentScreenIndex++;
+      
+      // Hide any overlay if visible and its modal does not have 'keep_open' attribute
+      if(!keepModalsOpen && $('#overlay').is(':visible') && $('#overlay .inner-modal').data('keep_open') === undefined)
+	      $('#overlay').trigger('hide');
+
+	    $.when($($('.screen:not(.skip)')[0]).remove()).then(function() {
+
+	        var newScreen = $('.screen:not(.skip)')[0];
+	        $(newScreen).trigger('show');
+
+			runMods();
+			
+		});
+
+	}
+
+	var openInnerModal = function(selector, force, noAnimate, message) {
+
+			if(!selector)
+				selector = '';
+
+			var modalSelector = $('#gameContent .screen:visible .inner-modal' + selector).first();
+
+			if(selector === 'menu') {
+
+				if(message) {
+					$('#game-menu #header').hide();
+					$('#game-menu #message-'+message).show();
+				}
+
+				modalSelector = $('#main_menu');
+
+			}
+			else if(selector === 'role')
+				modalSelector = $('#role-card');
+			else if(selector === 'team')
+				modalSelector = $('#team-info');
+
+			if(modalSelector.length === 0)
+				return;
+
+	    $('#overlay').empty();
+
+	    if(!_.isEmpty(modalSelector.data())) {
+
+		    // If modal set to 'clone' mode, keep copy in current parent
+	    	if(modalSelector.data('clone') === true)
+			    modalSelector.clone().appendTo(modalSelector.parent());
+
+			  // If modal has 'wait' mode enabled, open only if current countdown is over
+		    if(modalSelector.data('wait') === true)
+		    	if(timerActive) return;
+
+			  // If modal has 'hide' mode enabled, open only if forced
+		    if(modalSelector.data('hide') === true)
+		    	if(!force) return;
+
+		  }
+
+	    $.when($('#overlay').append(modalSelector.first())).then(function() {
+		    $('#overlay').trigger('show', [noAnimate]);
+		});
+		
+	    var modalDuration = $('#overlay .inner-modal').data('duration');
+
+	    if(modalDuration) {
+	        var modalTimeout = setTimeout(function() {
+
+	            var gotoNext = $('#overlay .inner-modal').data('next');
+
+							$('#overlay').on('hidden', function(evt) {
+								$(evt.currentTarget).off('hidden');
+		            if(gotoNext === 'next_screen')
+			            nextPhaseScreen();
+
+		            else if(gotoNext === 'next_modal')
+			            openInnerModal();
+							});
+
+	            clearTimeout(modalTimeout);
+
+	            $('#overlay').trigger('hide');
+
+	        }, modalDuration*1000);
+	    }
+	    
+	    $('#overlay .inner-modal:not(.player) .post-button').click(function(evt) {
+
+	    		if($(evt.currentTarget).data('keep_open'))
+	    			return;
+
+          $('#overlay').trigger('hide');	        
+
+	    });
+
+	}
+
+	var runMods = function() {
+
+		var modifier = $('.screen:first span#modifier');
+
+		// Engage any template script modifiers
+		if(modifier.length > 0) {
+
+			if(modifier.data().hide_next) 
+		 		$('#btn-next').fadeOut();
+			
+			else if(modifier.data().hide_bottom_bar) 
+		 		$('#bottom-bar').fadeOut();
+			
+			if(modifier.data().highlight) 
+				$(modifier.data().highlight).addClass('highlight');
+
+			// Move modal inside partial to top-level overlay and assign button events
+			if(modifier.data().inner_modal)
+	      openInnerModal();
+
+		}
+
+	}
+
+	/*
+	    Hide/show loading modal
+	*/
+	var loadToggle = function(show, fast) {
+	 
+	    if(fast) {
+	        // Hide/show loading w/o anim
+	        $('#loading-modal').toggle(show);
+	    }
+	    else {
+	        // Hide/show loading
+	        $('#loading-modal').fadeTo(250, (show ? 1 : 0), 'easeInOutQuart');
+	    }
+
+	}
+
+	var registerEvents = function() {
+
+    {{#ifnoteq environment "production"}}
+        
+        socket.on('connect_timeout', function() {
+           console.warn('Client timed out when connecting.');
+           {{!-- debugger; --}}
+        });
+        socket.on('disconnect', function() {
+           console.warn('Client was disconnected!');
+           {{!-- debugger; --}}
+        });
+        socket.on('reconnecting', function() {
+           console.log('Reconnecting.');
+           {{!-- debugger; --}}
+        });
+        socket.on('reconnect_attempt', function() {
+           console.log('Trying to reconnect!');
+           {{!-- debugger; --}}
+        });
+        socket.on('reconnect_error', function(err) {
+           console.error('Reconnect error: %s', err);
+           {{!-- debugger; --}}
+        });
+
+        console.log('Connecting to game "' + gameCode + '".');
+
+    {{/ifnoteq}}
+
+    $.each(eventIds, function(index, id) {
+      
+      socket.on(id, function(eventData) {
+
+            {{#ifnoteq environment "production"}}
+
+                $('#last-event').text('last event: ' + id);
+
+                console.log("EVENT ID: ", id);
+
+            {{/ifnoteq}}
+            
+            socketEvents(id, eventData);
+
+            if(typeof(gameEvents) == "function")
+                gameEvents(id, eventData);
+
+        });
+
+    });
+
+	}
+
+	var setupDecider = function() {
+
+		isDecider = true;
+		sessionStorage.setItem('isModerator', true);
+
+		// Accesscode may be provided by server when debugging
+		var gameCodeHtml = '';
+		if(!gameCode) {
+			gameCode = '{{accessCode}}';
+
+			_.each(gameCode.split(''), function(char, i) {
+				gameCodeHtml += '<span>' + char + '</span>';
+			});
+
+			// Ensure login is gone and all decide UI shows
+			$('#name,#join,#choices').remove();
+			$('#share_code .access-code').html(gameCodeHtml);
+			$('#decider .create').hide();
+			$('#decider').show();
+			$('#decider .waiting, #decider-debugging').show();
+			$('#lobby').addClass('wait');
+			$('#player-name').val('Player_' + Math.floor(Math.random() * (10 - 1 + 1)) + 1);
+			$('#join-bg').css('opacity', 1);
+			$('#player-name').css('opacity', 0);
+		}
+
+		// Create uid for player
+		if(!sessionStorage.getItem('uUID')) {
+			playerUID = Math.floor(Math.pow(10, 10-1) + Math.random() * (Math.pow(10, 10) - Math.pow(10, 10-1) - 1));
+			sessionStorage.setItem('uUID', playerUID);
+		}
+		else 
+			playerUID = sessionStorage.getItem('uUID');
+		
+		// Open socket connection
+		socket = io('//{{host}}', {path: '/at-stake-socket/', 'reconnection': true,'reconnectionDelay': 500,'maxReconnectionAttempts':Infinity});
+		registerEvents();
+
+	}
+
+	{{#if mobile}}
+		{{!-- LOAD MOBILE METHODS IF MOBILE DEVICE --}}
+		{{> script/mobile}}
+	{{/if}}
+
+	$(window).on('resize', function () {
+		
+		if(isMobile)
+			return;
+
+		// Hide content wrapper during resize
+		$('#wrapper').css('visibility' ,'hidden');
+
+		// Adjust absolutely-position elements for desktop only
+		findAbsolutes();
+
+	});
+
+	window.onload = function() {
+
+	  // Detect if browser is in private/ingonito mode and if so, prevent any execution and show warning message
+		detectPrivateMode(function(isPrivate) {
+
+			var mainMenuHandler = function() {
+
+				$('#overlay').on('opened', function(evt) {
+
+					$('#overlay #btn-menu-back').click(function(evt) {
+						$('#overlay').trigger('hide');
+					});
+					$('#overlay #btn-reconnect').click(function(evt) {
+						window.location = window.location;
+					});
+					$('#overlay #btn-quit').click(function(evt) {
+						quitOpenClose(true);
+					});
+					$('#overlay #btn-quit-yes').click(function(evt) {
+						socket.emit('game:exit', emitData());
+					});
+					$('#overlay #btn-quit-no').click(function(evt) {
+						quitOpenClose(false);
+					});
+
+				});
+
+				$('#btn-menu').click(function(evt) {	
+
+					openInnerModal('menu');
+
+				});
+
+			}
+
+			// Initialize layout
+			findAbsolutes();
+
+			// Main menu buttons bind
+			mainMenuHandler();
+
+			$("#nav-dropdown").on('click', function() {
+				$('.nav-dropdown').show();
+				$('#nav-close').show();
+
+				openAnim.play(0);
+
+			});
+			$('#nav-close').on('click', function() {
+
+				closeAnim.play();
+
+			});
+				
+			// GA include
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			{{#ifeq environment "production"}}
+
+				ga('create', 'UA-64617433-7', 'auto');
+			  ga('send', 'pageview');
+
+			{{/ifeq}}
+
+			{{#ifeq environment "staging"}}
+
+			  ga('create', 'UA-64617433-6', 'auto');
+			  ga('send', 'pageview');
+
+			{{/ifeq}}
+
+			{{#ifeq environment "development"}}
+
+				if(!isPrivate) {
+					// For socket debugging
+					localStorage.debug = '*';
+				}
+
+			{{/ifeq}}
+
+			// Load animations
+			{{> script/player_animation section=section}}
+			//sfx?
+			{{> script/sfx_button_calls}}
+
+			$(document).ready(function() {
+
+				// Get reference to main content div
+				gameContainer = $('#gameContent');
+
+				if(isMobile) {
+
+					{{#ifnoteq section 'homepage'}}
+						var gameHeight = $(window).height();
+						$('#wrapper').height(gameHeight);
+						$('body, html').css('overflow', 'hidden');
+						$(gameContainer).addClass('isMobile');
+					{{/ifnoteq}}
+
+					{{#unless mobile}}
+
+						{{#ifeq environment "production"}}
+						// Configure app badge to show if mobile browser on /play
+						if(isMobile) {
+							var mobileRemoved = isAndroid ? 'ios' : 'android';
+							$('.buttonLink.desktop, .buttonLink.' + mobileRemoved).remove();
+							$('#lobby .form').remove();
+							$('#lobby .mobile').show();
+						}
+						{{/ifeq}}
+					{{/unless}}
+				}
+		
+				{{#ifnoteq viewType 'landing'}}
+
+						function globalClickHandler(target) {
+
+							var event = $(target).data().event;
+							var pkg = getFormData($(target));
+
+							// Emit event to socket
+							socket.emit(event, emitData(pkg));
+
+							// If autohide defined for this form, remove the element defined by 'data-hide' on the '#submitted' dom
+							if($(target).data().autohide) {
+								new TimelineLite()
+								.to('#' + $('#submitted').data('hide'), .5, {scale:0, autoAlpha:0, display:'none'})
+								.from($('#submitted'), .5, {scale:0, autoAlpha:0});
+							}
+
+							// Disable form button unless explicitly prevented, and show loading...
+							if(!$(target).data().keep_enabled) {
+								$(target).attr('disabled', 'disabled');
+								loadToggle(true);
+							}
+
+						}
+						/**
+						 * Listen for forms that dispatch socket events.
+						 *
+						 * ### Examples:
+						 *
+						 * @class global
+						 */
+						$(document).on('click', '.form .submit', function(evt) {
+						    globalClickHandler(evt.currentTarget)					    
+						});
+
+				{{/ifnoteq}}
+
+				// PLAYER LOGIC
+				{{> script/player_logic section=section}}
+
+			// WAITING FOR PLAYERS (OLD SESSION)
+			{{#ifeq section 'game-preloaded'}}	
+						
+				setupDecider();
+
+			{{/ifeq}}
+
+					{{> script/decider_logic section=section}}
+
+	    {{#ifeq environment "development"}}
+
+				function templateLoad() {
+
+					var selected = $('#template_selector');
+
+					if(selected.prop('selectedIndex') > 0)
+				    socket.emit('game:load_screen', emitData({ index: selected.prop('selectedIndex') }));
+
+				}
+				$("#template_reload").click(function() {
+
+					templateLoad();
+
+				});
+				$("#template_selector").change(function() {
+
+					templateLoad();
+					screensAnim.stop();
+				
+				});
+				$("#countdowns_pause").click(function(evt) {
+
+					var btn = $(evt.currentTarget);
+					socket.emit('debug:pause', emitData());
+
+					if(!$(btn).data('resume')) {
+						$(btn).text('resume countdowns');
+						$(btn).data('resume', 'true');
+					}
+					else {
+						$(btn).text('pause countdowns');
+						$(btn).data('resume', 'false');
+					}
+
+				});				
+				$("#generate_players").click(function() {
+
+					$("#generate_players").text('loading...');
+
+					$('#gameContent').remove();
+					$('#emulate-players').fadeIn();
+					
+					$('#emulate-players iframe').attr('src', 'http://localhost:3000/play/debug');
+				});
+
+		{{/ifeq}}
+
+			});
+
+		});
+
+	}
+
+	{{else}}
+	
+	window.onload = function() {
+	// Configure 'play links'
+	if(isMobile) {
+		var mobileRemoved = isAndroid ? 'ios' : 'android';
+		$('.buttonLink.desktop, .buttonLink.' + mobileRemoved).remove();
+	}
+	else {
+		$('.buttonLink.ios, .buttonLink.android').remove();
+	}
+	$('.buttonLink').show();
+
+	};
+
+	{{/ifnoteq}}
+</script>

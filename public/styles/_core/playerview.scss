@@ -1,0 +1,1564 @@
+#background-logo {
+	position: absolute;
+	bottom: -40px;
+	left: 0px;
+	width: 219px;
+	z-index: 1;
+	opacity: 0.7;
+}
+
+#overlay {
+	background-color: $greyish-brown-70;
+}
+
+#wrapper.game-wrap {
+	background-color: $background-color;
+}
+
+#gameContent {
+	@include linear_transition(filter, 0.5s);
+	z-index: 100;
+	height: 100%;
+	text-align: center;
+	padding: 0;
+	padding-bottom: 8px;
+	overflow-y: scroll;
+
+	// Immediate child 
+	&> div {
+		height: 100%;
+		overflow: hidden;
+	}
+
+	// During the gameplay
+	&.in-game {
+		height: calc(100% - 90px);
+
+		// Show buttons
+		footer#bottom-bar {
+			display: block;
+		}
+
+	}
+
+	// Blur all contents during modal
+	&.blur {
+		@include filter(blur, 2.9px);
+	}
+
+	#join-bg {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		z-index: -1;
+		opacity: 0;
+
+		background-image: url('https://res.cloudinary.com/engagement-lab-home/image/upload/e_brightness:-60,f_auto/v1540489023/at-stake/bg/night.png');
+		background-repeat: no-repeat;
+		background-size: cover;
+
+		@include transition(opacity .25s ease-in-out);	
+	}
+
+}
+
+#main_menu {
+
+	.btn {
+		margin-bottom: 6%;
+	}
+
+	#btn-menu-back {
+
+		background: none;
+		box-shadow: none;
+
+		height: 32px;
+		width: 64px;
+
+		text-align: center;
+		float: right;
+		font-size: 12px;
+		line-height: 1.17;
+
+		padding-top: 1%;
+		padding-left: 5%;
+
+		img {
+			height: 25px;
+		}
+
+	}
+
+	#btn-reconnect,
+	#btn-quit-no {
+		@include gradient-vertical($blue-light, $blue-dark, 90%, 10%);
+	}
+
+	#btn-quit {
+		margin-top: -5%;
+		@include gradient-vertical($pink-red-two, $pink-dark, 90%, 10%);
+	}
+
+	#btn-quit-yes {
+		@include gradient-vertical($pink-red-two, $pink-dark, 90%, 10%);
+	}
+
+}
+
+// Players
+.player-logo {
+
+	height: 60px;
+	width: 70%;
+	display: inline-block;
+	padding: 0px;
+	background-repeat: no-repeat;
+	// background-size: contain;
+	color: $grey-dark;
+
+	background-position: 20px 0px;
+	background-size: 40px 40px;
+
+	p {
+		display: inline-block;
+		color: $grey-dark;
+		text-transform: uppercase;
+		line-height: 60px;
+		padding-left: 80px;
+	}
+
+	&.lg {
+		height: 128px !important;
+		width: 128px !important;
+		background-size: 128px 128px;
+		background-position: 0px 0px;
+	}
+
+	&#player-0 {
+		background-image: $player-one-logo;
+	}
+
+	&#player-1 {
+		background-image: $player-two-logo;
+	}
+
+	&#player-2 {
+		background-image: $player-three-logo;
+	}
+
+	&#player-3 {
+		background-image: $player-four-logo;
+	}
+
+	&#player-4 {
+		background-image: $player-five-logo;
+	}
+}
+
+// Default button shadow and margin
+.btn {
+
+	@include button($bluegreen, $yellow);
+		
+	&#btn_yes {
+		background-color: $blue-light;
+		border-bottom: 4px solid $dark-sky-blue;
+	}
+
+	&#btn_no {
+		background-color: $sunflower;
+		border-bottom: 4px solid $tangerine;
+	}
+
+}
+
+.btn_cap {
+	width: 100%;
+	margin: 0px auto;
+	margin-bottom: 25px;
+	line-height: 1.33;
+	font-size: 12px;
+	height: 32px;
+	font-family: AvenirNext-Medium;
+	color: #fafafa;
+	font-weight: 500;
+
+	&.pink {
+		color: $pink-dark;
+	}
+}
+
+.subtitle {
+	color: $strawberry;
+	font-weight: 600;
+	font-size: 13px;
+	text-align: center;
+	margin: 0px;
+}
+
+.caption {
+	font-family: $avenir-reg;
+	font-size: 12px;
+}
+
+.white {
+	color: white;
+}
+
+.light {
+	line-height: normal;
+}
+
+// Highlight/glow for any block element
+@include keyframes(highlight-pulse) {
+	0% {
+		box-shadow: 0 0 15px 10px $color-orange
+	}
+
+	60% {
+		box-shadow: 0 0 0px 0px $color-orange
+	}
+
+	100% {
+		box-shadow: 0 0 15px 10px $color-orange
+	}
+}
+
+.highlight {
+	@include animation('highlight-pulse 3s infinite');
+}
+
+
+.form {
+
+	&#decider,
+	&#decider-controls {
+		position: absolute;
+		bottom: 0px;
+		width: 100%;
+		left: 0px;
+		max-height: 80px;
+		margin: 0px;
+
+		input {
+			width: 100%;
+			left: 0px;
+			// height:100%;
+			margin: 0px;
+			position: absolute;
+			bottom: 0px;
+			background-color: $turquoise-dark;
+		}
+
+		.next-step {
+			background-color: $turquoise-dark;
+			color: white;
+			border-radius: 5px;
+			box-shadow: 0 2px 0 0 rgba(235, 235, 235, 0.75);
+			border: solid 1px #ebebeb;
+			width: 112px;
+			height: 24px;
+		}
+
+		#btn-next {
+			background-color: transparent;
+			border: 0px;
+		}
+
+		@at-root .form {
+			min-height: 0px;
+		}
+
+	}
+
+	&.role {}
+}
+
+input.post-button {
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	margin-bottom: 0px;
+	background-color: $turquoise-dark;
+	z-index: 1000;
+}
+
+.ended-container {
+	background-color: white;
+	margin: 0 auto;
+}
+
+.winner {
+	background-color: white;
+}
+
+// HIDE ANY DECIDER-ONLY VIEWS BY DEFAULT
+#decider,
+#decider-controls {
+	display: none;
+}
+
+.screen {
+	display: none;
+	float: none;
+	margin: 0 auto;
+	height: 100%;
+	&.bg {
+		background-image: url("https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_320/v1543356372/at-stake/bg/bg-screen.png");
+	}
+}
+
+// Add background to any "read out loud" decider instructions
+.read {
+	background: $blue-dark;
+	padding: 10px;
+	color: white;
+}
+
+// Timer Animation
+.timer_wrap {
+	border: solid 1px #fafafa;
+	margin: 0 auto;
+	&.think,
+	&.deliberate {
+		height: 216px;
+
+		&.running {
+			.body {
+				margin-top: 35px;
+				background-color: $background-color;
+			}
+		}
+	}
+
+	&.running {
+		display: none;
+	}
+
+	&.player {
+		pointer-events: none;
+		cursor: normal;
+	}
+
+	.body.pitch {
+		color: white;
+		display: inline-block;
+		// margin-top: 48%;
+		font-size: 16px;
+		width: 100%;
+		padding: 8px 6px;
+		background-color: transparent;
+		height: 48px;
+		text-align: center;
+		font-family: AvenirNext-DemiBold;
+	}
+
+	.active_player {
+		font-size: 20px;
+		padding: 4px;
+		margin-top: 0px;
+		width: 100%;
+		background-color: $background-color;
+		height: 48px;
+		font-family: AvenirNext-Bold;
+		text-shadow: 0 2px 0 $turquoise-dark;
+
+		span {
+			text-shadow: none;
+			font-size: 16px;
+			color: white;
+			font-family: AvenirNext-Bold;
+		}
+	}
+
+	button {
+		@include button($bluegreen, $yellow);
+		max-width: 196px;
+
+		&.disabled {
+			@include button($grey-white, $grey-shadow);
+		}
+
+		&.running {
+			background: linear-gradient(90deg, $cerulean-blue, #000 0%);
+		}
+
+		&.done {
+			background-image: none;
+			background-color: $strawberry-two;
+		}
+	}
+
+	svg {
+		margin: 0px auto;
+		margin-top: -40px;
+		max-width: 152px;
+	}
+
+	h1 {
+		font-family: $header-type;
+		font-size: 16px;
+		margin-top: 1%;
+		font-family: AvenirNext-Bold;
+	}
+
+	p {
+		color: white;
+		display: inline-block;
+		letter-spacing: -0.8px;
+		font-size: 16px;
+		width: 100%;
+		padding: 8px 6px;
+		background-color: $background-color;
+		height: 48px;
+		text-align: center;
+		font-family: AvenirNext-DemiBold;
+
+	}
+
+	.progressbar-text {
+		font-size: 46px;
+		letter-spacing: -2.1px;
+		margin-top: -76%;
+		color: white !important;
+		font-family: AvenirNext-DemiBold;
+	}
+
+	&.running {
+
+		.timer {
+			margin-top: 45px;
+		}
+
+		.progressbar-text {
+			top: 44% !important;
+		}
+
+		.speech {
+			position: relative;
+			z-index: 1;
+			margin-top: -58px;
+		}
+
+		p {
+			font-family: Roboto;
+			font-size: 19px;
+			font-weight: bold;
+			line-height: 1.21;
+			letter-spacing: 0.5px;
+			text-align: center;
+			color: $cerulean-blue;
+
+			&.body {
+				margin: 0px;
+				color: black;
+				font-size: 13px;
+				@include semibold-type;
+			}
+
+			&.active_player {
+				text-shadow: 0 2px 0 $turquoise-dark;
+
+				span {
+					text-shadow: none;
+					font-size: 16px;
+					color: white;
+					font-family: AvenirNext-Bold;
+				}
+			}
+
+		}
+	}
+}
+
+// More Time Card/Pitch Choice
+.inner-modal {
+	display: none;
+	position: relative;
+	text-align: center;
+	height: 100%;
+	width: 100%;
+	left: 0px;
+	top: 0px;
+
+	h1 {
+		font-family: $avenir-reg;
+		font-size: 20px;
+
+		strong {
+			font-family: $header-type;
+		}
+	}
+
+	h2 {
+		font-family: $body-type;
+		font-size: 16px;
+
+		color: $light-greenish-blue;
+	}
+
+	&#new-decider {
+		.coins {
+			margin-left: -3%;
+			margin-top: -2%;
+			color: $color-white;
+		}
+
+		h1#round {
+			@include text-shadow(0, 2px, 0px, rgba(85, 85, 85, 0.24));
+			font-family: $avenir-reg;
+			font-size: 40px;
+			margin: 0px;
+		}
+
+		h2 {
+			margin: 4px 8px;
+			width: 100%;
+
+			span {
+				color: $color-white;
+			}
+		}
+
+		.player-box {
+			width: 100%;
+			margin: 4px auto;
+
+			h2 {
+				margin: 0px;
+			}
+		}
+	}
+
+	&#more-time-wrapper {
+
+		#btn-more-time {
+			line-height: 64px;
+			height: 64px;
+			background-color: $blue-light;
+			background-size: 60px 60px;
+			background-position: 3px center;
+			background-repeat: no-repeat;
+			background-image: url("https://res.cloudinary.com/engagement-lab-home/image/upload/v1486743650/at-stake/layout/coin-icon-mobile.svg");
+
+			.coins {
+				position: relative;
+				float: left;
+				padding-left: 21px;
+				font-size: 16px;
+			}
+		}
+
+		#btn-empty {
+			background-color: darken($blue-light, 30%);
+			border-bottom: 5px $blue-dark solid;
+			@include box-shadow(0px, 2px, 0px, darken($background-color, 10%));
+		}
+
+		#btn-cancel {
+			border-bottom: 5px $orange-dark solid;
+			background-color: $sunflower;
+			@include box-shadow(0px, 2px, 0px, darken($background-color, 10%));
+		}
+
+	}
+
+	&.winner {
+
+		h1:not(.coins) {
+			font-size: 32px;
+			font-family: $body-type;
+			@include text-shadow(0, 2px, 2px, rgba(0, 0, 0, 0.24));
+		}
+
+		h2 {
+			font-family: AvenirNext-Bold;
+			font-size: 20px;
+
+			color: $tiffany-blue;
+		}
+
+	}
+
+	&.agenda_item {
+
+		display: none;
+
+		h1 {
+			@include text-shadow(0, 2px, 2px, rgba(0, 0, 0, 0.24));
+		}
+
+		h2 {
+			font-family: AvenirNext-Bold;
+			font-size: 16px;
+			color: white;
+
+			.item {
+				color: $light-greenish-blue;
+			}
+		}
+
+		.choice {
+			h1 {
+				font-family: AvenirNext-Bold;
+				line-height: 1.13;
+				letter-spacing: -1.4px;
+				font-size: 32px;
+				margin: 0px;
+			}
+
+			h2 {
+				font-family: AvenirNext-DemiBold;
+				font-size: 20px;
+				color: $light-greenish-blue;
+			}
+		}
+
+		.player-box {
+			h2 {
+				text-shadow: none;
+			}
+		}
+
+	}
+
+	&.decider {
+		.inner {
+			padding: 8px;
+		}
+
+		.role {
+
+			#btn_yes,
+			#btn_no {
+
+				margin-bottom: 0px;
+
+				* {
+					margin: 0px;
+					font-size: 20px;
+					font-family: AvenirNext-Bold;
+
+
+				}
+			}
+		}
+	}
+
+	.coins {
+		position: relative;
+		float: left;
+		// margin-top: 10%;
+		font-size: 16px;
+	}
+
+	.decide-winner {
+		height: 432px !important;
+
+		h1 {
+			font-family: $header-type;
+			font-size: 20px;
+		}
+
+		#winner-btn {
+
+			.info {
+				width: 188px !important;
+			}
+
+		}
+
+	}
+
+	.inner {
+
+		position: relative;
+		height: 70%;
+		width: 90%;
+		margin: 0 auto;
+		top: 60px;
+		background-color: white;
+		color: black;
+// 		padding: 8px;
+
+		.player-logo {
+
+			margin: 10px auto;
+			height: 60px;
+			border-radius: 30px;
+
+			&#btn-more-time {
+				span {
+					font-size: 12px;
+				}
+
+				height: 64px;
+				font-size: 20px;
+				background-color: $color-red;
+				background-size: 50px 50px;
+				background-position: 3px center;
+				background-repeat: no-repeat;
+				background-image: url("https://res.cloudinary.com/engagement-lab-home/image/upload/v1486743650/at-stake/layout/coin-icon-mobile.svg");
+			}
+
+			&#btn-cancel {
+				background-color: $orange-dark;
+			}
+
+			.info {
+				position: relative;
+				float: right;
+				width: 80%;
+				margin-top: 4px;
+				height: 40px;
+				font-family: AvenirNext-Bold;
+			}
+
+		}
+
+		.player-box {
+
+			width: 96%;
+			border-radius: 0px;
+			padding-left: 12%;
+			font-size: 20px;
+			font-family: $header-type;
+			margin: 4px auto;
+			height: 48px;
+			background-repeat: no-repeat;
+			background-position: 40px center;
+			background-size: 40px 40px;
+			background-color: $aquamarine;
+
+			&.decided {
+				padding-left: 0px;
+				width: 100%;
+				margin-top: 20px;
+			}
+
+			&#reward-icon {
+				.coins {
+					margin-top: -8px;
+					line-height: 64px;
+					width: 64px;
+					height: 64px;
+					padding: 0px !important;
+					background-repeat: no-repeat;
+					background-image: url("https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,w_64/v1490979430/at-stake/layout/icon-yourcoins.svg");
+				}
+			}
+
+			&:not(#reward-icon) {
+				.coins {
+					padding-top: 40px;
+					width: 40px;
+				}
+			}
+
+			h1 {
+				color: $color-white;
+				margin: 0;
+				font-size: 20px;
+				font-family: AvenirNext-DemiBold;
+				@include text-shadow(0, 2px, 0, $color-teal);
+			}
+
+			h2 {
+				color: $color-white;
+				line-height: 1;
+				margin: 0;
+				font-size: 16px;
+				font-family: AvenirNext-DemiBold;
+			}
+
+			.info {
+				position: relative;
+				float: right;
+				width: 204px;
+				margin-top: 4px;
+				height: 40px;
+				font-family: AvenirNext-Bold;
+			}
+
+		}
+
+	}
+}
+
+// Player role card
+.rolecard-inner {
+	@include semibold-type;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.15;
+	letter-spacing: 0px;
+
+	#btn-role-done {
+		@include button($cerulean-blue, $yellow);
+	}
+
+	#btn-close-role-card {
+		background: none;
+		box-shadow: none;
+		height: 32px;
+		width: 64px;
+		text-align: center;
+		float: right;
+		
+		margin-top: 3%;
+		img {
+			height: 25px;
+		}
+
+	}
+
+	.role-info {
+
+		&.card {
+			background-color: $bluegreen;
+			margin: 0px;
+			padding-bottom: 0px;
+
+			.title {
+				text-align: left;
+				font-family: $header-type;
+				font-size: 20px;
+				padding: 4%;
+				color: white;
+				margin: 0px;
+			}
+		}
+		
+		.title {
+			font-family: $roboto;
+		}
+	}
+
+	.agenda-wrap {
+		overflow-y: scroll;
+		overflow-x: hidden;
+		width: 100%;
+		height: 100%;
+		background: white;
+	
+		.header {
+			font-family: $header-type;
+			font-size: 18px;
+			margin-top: 18px;
+		}
+		.goal {
+			width: 90%;
+			text-align: left;
+			.star {
+				margin: 0;
+				padding-top: 3px;
+				padding-left: 1%;
+			}
+		}
+		.star {
+			display: inline-block;
+			color: $yellow;
+			background-color: $cerulean-blue;
+			border-radius: 50%;
+			height: 20px;
+			width: 20px;
+			padding-top: 2px;
+			margin: 2%;
+			font-size: 13px;
+		}
+
+		&.team {
+			.player-wrap {
+				display: flex;
+				flex-direction: column;
+				padding: 3%;
+				width: 100%;
+				&:nth-child(even) {
+					background-color: #f4f4f4;
+				}
+			}
+
+			.info {
+				text-align: left;
+				h2 {
+					margin-top: 0;
+					font-family: $roboto;
+					font-size: 20px;
+					font-weight: bold;
+					color: black;
+				}
+			}
+
+			.check {
+				display: flex;
+				align-items: baseline;
+				flex-direction: row;
+				white-space: pre-wrap;
+				justify-content: space-between;
+				margin-top: 4%;
+			}
+		}
+
+		#needs {
+			background-color: #f4f4f4;
+			padding: 15px;
+			#div {
+				&::before {
+					content: '\2014';
+					color: $bluegreen;
+				}
+			}
+		}
+	}
+
+	.agenda-item {
+		.agenda {
+			margin: 5px auto;
+			margin-top: 0;
+			display: inline-block;
+			text-align: center;
+			line-height: 1.2;
+		}
+	}
+
+}
+
+#rules {
+	height: 100%;
+
+	.screen {
+		// These are hidden by default
+		display: none;
+	}
+}
+
+.rules-screen {
+	min-height: 400px;
+
+	.main-rule {
+		font-family: AvenirNext-Bold;
+		font-size: 16px;
+		font-weight: bold;
+		line-height: 1;
+		letter-spacing: 0px;
+		color: #fafafa;
+	}
+
+	.secondary-rule {
+		font-family: AvenirNext;
+		font-size: 16px;
+		letter-spacing: -0.7px;
+		color: #ebebeb;
+	}
+
+	.skip {
+		background: transparent;
+		border: 0px;
+		color: white;
+		position: absolute;
+		left: 20%;
+		bottom: 40%;
+	}
+
+	.next-step {
+		background: transparent;
+		border: 0px;
+		color: white;
+		position: absolute;
+		right: 20%;
+		bottom: 40%;
+	}
+}
+
+// Screen instructions
+.instruction {
+	font-size: 16px;
+	margin-bottom: 16px;
+	font-family: AvenirNext;
+	background-color: white;
+	padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 5%;
+
+	div {
+		@include semibold-type;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 1.15;
+	}
+
+	h1 {
+		font-family: Roboto;
+		font-size: 13px;
+		font-weight: 900;
+		line-height: 2.46;
+		letter-spacing: 1px;
+		text-align: center;
+		text-transform: uppercase;
+		color: $bluegreen;
+	}
+
+	.rules-image {
+		height: 180px;
+
+		img {
+			height: 180px;
+		}
+	}
+
+	// Inactive player - hide this bubble
+	&.hiding {
+		display: none;
+	}
+}
+
+// Speech bubbles
+blockquote.speech {
+	position: relative;
+	text-align: center;
+	border: none;
+
+	p {
+		color: black;
+		font-size: 13px;
+		@include semibold-type;
+
+		&.body {
+			font-family: Roboto;
+			font-size: 19px;
+			font-weight: bold;
+			line-height: 1.21;
+			letter-spacing: 0.5px;
+			color: $cerulean-blue;
+		}
+
+		&.active_player {
+			text-shadow: 0 2px 0 $turquoise-dark;
+
+			span {
+				text-shadow: none;
+				font-size: 16px;
+				color: white;
+				font-family: AvenirNext-Bold;
+			}
+		}
+
+	}
+
+	// Inactive player - hide this bubble
+	&.hiding {
+		display: none;
+	}
+
+	&.blue {
+		background-color: $cerulean-blue;
+		p {
+			@include semibold-type;
+			font-size: 13px;
+			line-height: 1.23;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+			color: white;
+		}
+		div {
+			font-family: $header-type;
+			font-size: 19px;
+			line-height: 1.21;
+			letter-spacing: 0.5px;
+			color: white;		  
+		}
+	}
+
+	&.bold {
+
+		p {
+			@include semibold-type;
+			text-transform: uppercase;
+		}
+		div {
+			font-family: $header-type;
+			color: $cerulean-blue;
+		}
+	}
+
+}
+
+.speech {
+
+	// "Next buttons"
+	button {
+		position: absolute;
+		color: $color-white;
+		display: flex;
+		background: none;
+		border: none;
+		right: 10%;
+		bottom: 75px;
+		font-family: "AvenirNext-Bold";
+
+		&.timer {
+			// 	&:before {
+			//   left: 103px;
+			// }
+		}
+
+		&.scoreboard {
+			height: 32px;
+			font-size: 24px;
+			right: 0px;
+			bottom: inherit;
+			color: $color-white;
+		}
+	}
+}
+
+.player-roles {
+	.grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr 1fr;
+
+		.player {
+			border: solid 2px black;
+			div {
+				font-family: $roboto;
+			}
+
+			&.facilitator {
+				color: #a0a0a0;
+			}
+		}
+	}
+}
+
+// TIME'S' UP UI 
+#time-up {
+	display: none;
+	background-color: $strawberry-two;
+	color: white;
+}
+
+#deliberate {
+
+	#events {
+		background-color: $cerulean-blue;
+		@include box-shadow(0, 0, 8px, rgba(0, 0, 0, 0.25));
+		display: none;
+
+		&.player {
+			text-align: center;
+			padding: 4%;
+			cursor: pointer;
+			background-color: $strawberry-two;
+			h3 {
+				text-align: center;
+			}
+			span {
+				font-family: $roboto;
+				font-size: 12px;
+				font-weight: 500;
+				letter-spacing: 0.1px;
+				color: #a4050f;
+			}
+		}
+
+		h3 {
+			text-transform: uppercase;	
+			font-size: 13px;
+			font-weight: 600;
+			line-height: 1.23;
+			text-align: left;
+		}
+		.event {
+			display: none;
+			color: white;
+		}
+		.content {
+			display: flex;
+			flex-direction: row;
+			align-items: center;			
+			justify-content: space-between;
+
+			div {
+				margin: 0;
+				padding-left: 4%;
+			}
+			.buttons {
+				display: flex;
+				flex-direction: column;
+				button {
+					width: 50px;
+					height: 50px;
+					margin: 0;
+					padding: 0;
+					background-image: none;
+					background-color: $bluegreen;
+
+					&:nth-child(2) {
+						background-color: $strawberry-two;
+					}
+				}
+			}
+		}
+	}
+
+}
+
+// Scoreboard 
+#scoreboard {
+
+	.instruction {
+		&:nth-child(2) {
+			display: none;
+		}
+
+		&:nth-child(3) {
+			display: none;
+		}
+
+		&:nth-child(4) {
+			display: none;
+		}
+	}
+
+	#ranking {
+		margin-top: 16px;
+		background-color: $turquoise-dark;
+		border: solid 2px #fafafa;
+		padding: 3%;
+
+		display: -webkit-flex;
+		/* Safari */
+		display: flex;
+
+		flex-direction: column;
+
+		.rank.starting {
+			visibility: hidden;
+		}
+
+	}
+
+	.player-logo {
+		background-color: $background-color;
+		width: 287px;
+		border-radius: 0px;
+		font-size: 20px;
+		font-family: $header-type;
+		margin: 10px auto;
+		height: 48px;
+
+		background-position: 47px center;
+		background-size: 40px 40px;
+
+		.rank {
+			text-align: left;
+			padding-top: 3%;
+			padding-left: 3%;
+			float: left;
+			width: 31px;
+			height: 48px;
+			font-size: 16px;
+			margin-right: 8px;
+			font-family: $body-type;
+			color: $grey-white;
+
+			&.current {
+				display: none;
+			}
+		}
+
+		.coins {
+			float: left;
+			font-size: 24px;
+			padding-top: 9%;
+			width: 54px;
+			height: 54px;
+			color: $color-white;
+
+			&.delta {
+				display: none;
+
+				&.negative {
+					color: $color-pink;
+					@include text-shadow(0, 1px, 0, $pink-light)
+				}
+
+				&.positive {
+					color: $tiffany-blue;
+					@include text-shadow(0, 1px, 0, $turquoise-dark);
+				}
+			}
+
+			&.current {
+				display: none;
+			}
+		}
+
+		h1 {
+			color: $color-white;
+			margin: 0;
+			margin-top: 10px;
+			font-size: 20px;
+			font-family: $header-type;
+			text-shadow: none;
+		}
+
+		h2 {
+			color: $color-white;
+			margin: 0px;
+			font-size: 16px;
+			font-family: $header-type;
+		}
+
+		.info {
+
+			position: relative;
+			float: right;
+			width: 184px;
+			margin-top: 4px;
+			height: 40px;
+			font-family: AvenirNext-Bold;
+
+			h1 {
+				margin: 0;
+			}
+		}
+
+	}
+}
+
+// INTERSTITIAL
+#interstitial {
+	position: absolute;
+	z-index: 100;
+	height: 100%;
+	width: 100%;
+	left: 0;
+	top: 0;
+	background-image: linear-gradient(120deg, $true-blue 0%, rgba(255,255,255,0) 1%);
+	color: white;
+
+	img {
+		max-width: 90vw;
+		display: none;
+	}
+	h1 {
+		display: none;		
+		font-size: 36px;
+	}
+	h2 {
+		display: none;
+		font-size: 18px;
+	}
+}
+
+// VOTING
+#vote {
+	position: absolute;
+	z-index: 100;
+	height: 100%;
+	width: 100%;
+	background: white;
+
+
+	.player {
+		#content {
+			background-color: $bubble-gum-pink;
+		}
+	}
+	.content {
+		color: white;
+		padding: 3%;
+		min-height: 420px;
+	
+		h1 {
+			font-family: $header-type;
+			font-size: 36px;
+		}
+		h2 {
+			font-size: 18px;
+		}
+	}
+	#content {
+		&.decider {
+			h1 {
+				color: $cerulean-blue;
+			}
+		}
+		button {
+			width: 120px;
+			height: 50px;
+			&#btn-no {
+				background-image: linear-gradient(to bottom, $strawberry-two 95%, $yellow 5%)
+			}
+		}
+	}
+	#results {
+		display: none;
+		background-color: $strawberry-two;
+		
+		#btn-try-again, div {
+			display: none;
+		}
+	}
+}
+
+// RANKING
+#ranking {
+	
+    margin-left: 3%;
+    margin-right: 3%;
+
+	h2 {
+		font-family: $header-type;
+		font-size: 20px;
+	}
+	.labels {
+		font-weight: bold;
+		display: flex;
+		justify-content: space-between;
+		padding-left: 1%;
+		padding-right: 1%;
+	}
+
+	.player {
+		#content {
+			color: white; 
+			background-color: $bluegreen;
+			height: 100%;
+			h1 {
+				font-family: $header-type;
+				font-size: 36px;
+			} 
+		}
+	}
+
+	.user {
+		p {
+			padding-bottom: 3%;
+		}
+		hr {
+			width: 85%;
+			border-bottom: 2px solid #e1e1e1;
+		}
+
+		.needs {
+			display: flex;
+			flex-direction: row;
+			align-content: center;
+			justify-content: space-around;
+
+			.need {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+		}
+	}
+
+}
+
+// GAME END
+#end {
+	#btn-start-over {
+		display: none;
+	}
+	
+	.text {
+		border: solid 2px black;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 1.38;
+		letter-spacing: 0px;
+		text-align: center;
+		color: black;
+	}
+}
+
+// BOTTOM BAR
+footer#bottom-bar {
+	position: absolute;
+	display: inline-flex;
+	flex-direction: column;
+	font-size: large;
+	width: 100%;
+	bottom: 0px;
+	left: 0px;
+	height: 90px;
+	padding-top: 5px;
+	max-width: 425px;
+	z-index: 1000;
+
+	// GOAL MET NOTIFICATION
+	#secret-goal {
+	    display: flex;
+	    align-items: center;
+    	flex-direction: row;
+    	justify-content: space-around;
+		width: 100%;
+		height: 30px;
+		margin-top: 0;
+		position: absolute;
+		font-family: $header-type;
+		font-size: 12px;
+		text-align: center;
+		background-color: $yellow;
+	}
+
+	#info {
+		display: flex;
+		z-index: 10;
+    	position: relative;
+    	background-color: white;
+		align-items: center;
+		width: 100%;
+	}
+
+	.col-sm-6,
+	.col-xs-6 {
+		padding-left: 8px;
+		padding-right: 8px;
+		height: 100%;
+	}
+
+	#name-role {
+		width: 56%;
+		text-align: center;
+		#role {
+			font-family: $header-type;
+			font-size: 20px;
+  			line-height: 1.6;
+  			letter-spacing: 0.6px;
+			display: block;
+		}
+	}
+
+	button {
+		margin: 5px;
+		color: white;
+		font-size: 16px;
+		border-radius: 0px;
+		background-repeat: no-repeat;
+		box-shadow: 0px;
+		border: 0px;
+		background-size: 24px 24px;
+		background-position: 8px center;
+
+		&.disabled {
+			img {
+				@include filter(grayscale, 100%);
+			}
+		}
+
+		&#btn-menu {
+			background-image: url('https://res.cloudinary.com/engagement-lab-home/image/upload/v1492806723/at-stake/layout/menu.svg');
+			background-color: $orange-light;
+			border-bottom: 3px $orange-dark solid;
+		}
+	}
+}

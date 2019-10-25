@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+    <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <title> {{env}}</title>
+        <meta name="description" content="@stake is a role playing game that fosters creativity and empathy in small group deliberation.">
+        <meta name="author" content="Engagement Lab at Emerson College">
+        <meta name="theme-color" content="#00dcba">
+
+        <meta name="apple-itunes-app" content="app-id=1115782392">
+        
+        {{#ifeq section 'play'}}
+            {{!-- Mobile Meta --}}
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+            {{#ifeq env "production"}}
+
+                <script type="text/javascript">
+                    window.smartlook||(function(d) {
+                    var o=smartlook=function(){ o.api.push(arguments)},h=d.getElementsByTagName('head')[0];
+                    var c=d.createElement('script');o.api=new Array();c.async=true;c.type='text/javascript';
+                    c.charset='utf-8';c.src='https://rec.smartlook.com/recorder.js';h.appendChild(c);
+                    })(document);
+                    smartlook('init', 'e8a77969b13f06c2f19a4afa7c9cc3333887ac7c');
+                </script>
+            
+            {{/ifeq}}
+        
+        {{else}}
+         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        {{/ifeq}}
+        {{!-- Open Graph --}}
+        <meta property="og:image" content="http://res.cloudinary.com/engagement-lab-home/image/upload/v1494604113/at-stake/layout/logo_3x.png" />
+
+        {{!-- Load web SDK's core script/docs --}}
+        {{!-- {{> core environment=env}} --}}
+
+        {{!-- Load our CSS/docs --}}
+        {{> css environment=env section=section}}
+    </head>
+    
+    <body class="body{{#if mobile}} mobile{{/if}}">
+        {{#ifeq section "comingsoon"}}
+            {{> nav_comingsoon}}
+            <div class="col-sm-12">
+        {{else}}
+        
+            {{#ifeq section "index"}}
+                {{> nav}}
+                <div class="container">
+            {{/ifeq}}
+            
+        {{/ifeq}}
+
+        <div id="wrapper" class="{{#ifeq section 'homepage'}}home-wrap{{else}}game-wrap{{/ifeq}}">
+
+            <div id="overlay" class="modal"></div>
+
+            {{!-- PRE-FILLED MODALS --}}
+            {{#ifnoteq section 'homepage'}}
+    
+                <section id="error-disconnected" class="modal error-modal">
+                </section>
+
+                <section id="error-player-disconnected" class="notification">
+                    <div id="text" class="col-sm-10 col-xs-12 col-centered">
+                      {{!-- <h1>Ummm...</h1> --}}
+                      <span id="player"></span> disconnected.
+                    </div>
+                </section>
+
+                <section id="error-private-mode" class="modal error-modal">
+                    <div id="text" class="col-sm-10 col-xs-12 col-centered">
+                      <h1>Sorry!</h1>
+                      <h2>You cannot play in private/incognito browsing mode. Please try again in a non-private window or tab.</h2>
+                    </div>
+                </section>
+
+                <section id="error-size" class="modal error-modal">
+                    <div id="text" class="col-sm-10 col-xs-12 col-centered">
+                      <h1>Sorry!</h1>
+                      <h2>Your screen size is too small to play.</h2>
+                      <h3>If you are on mobile, download the @Stake App in the App Store or Google Play. You can also try resizing your browser window, use the browser zoom function to make your window smaller, or changing your computer resolution to make your window bigger. If none of these options work, we might not support your device. Please email us at info@elab.emerson.edu for more information or assistance!</h3>
+                    </div>
+                </section>
+
+                {{!-- game menu --}}
+                <div id="main_menu" class="inner-modal" data-clone="true">
+                    <div class="form choices inner">
+
+                        <section id="game-menu">
+
+                            <div id="header" class="row">
+                        
+                                <button id="btn-menu-back" class="btn" type="submit" name="submit" data-keep_enabled="true">
+                                    {{{cloudinaryUrl '/v1494604113/at-stake/layout/shape.svg' height=auto}}}
+                                </button>
+
+                            </div>
+
+                            <div id="logo-header">
+                                {{{cloudinaryUrl "v1490382407/at-stake/layout/logo.svg" }}} 
+                            </div>
+                          
+                            <div id="message-disconnected" class="col-sm-8 col-centered error menu" style="display:none">
+                              It looks like the game is not responding for some reason. Try reconnecting or playing later!
+                            </div>
+
+                            <button id="btn-reconnect" class="btn" type="submit" name="submit" data-keep_open="true" data-keep_enabled="true">
+                                Quit
+                            </button>
+                            {{!-- <div class="btn_cap">Press this button if you are experiencing technical problems or are prompted to refresh.</div> --}}
+
+                            {{!-- <button id="btn-quit" class="post-button submit btn" type="submit" name="submit" data-keep_open="true" data-keep_enabled="true">
+                                Quit game
+                            </button> --}}
+                            {{!-- <div class="btn_cap pink"><strong>Warning:</strong> this will end the current game for everyone! You will be taken back to game login.</div> --}}
+                            
+                        </section>
+
+                        <section id="game-quit" style="display:none">
+
+                            <h1>Are you <strong>sure</strong>? This will end the game for all players!</h1>
+
+                            <button id="btn-quit-yes" class="post-button submit btn" type="submit" name="submit" data-keep_open="true">
+                                Ok
+                            </button>
+                            <button id="btn-quit-no" class="post-button submit btn" type="submit" name="submit" data-keep_open="true" data-keep_enabled="true">
+                                Cancel
+                            </button>
+
+                        </section>
+
+                    </div>
+                </div>
+
+                {{!-- ROLE CARD OVERLAY --}}
+                <section id="role-card" class="inner-modal" data-clone="true" data-keep_open="true">
+
+                </section>
+                {{!-- TEAM INFO OVERLAY --}}
+                <section id="team-info" class="inner-modal" data-clone="true" data-keep_open="true">
+
+                </section>
+
+            {{/ifnoteq}}
+
+            {{#ifeq debug true}}
+                {{!-- DEBUGGING --}}
+                <div id="debugging" class="form" style="position: fixed;top: 0;">
+                    
+                    <div id="debug-info">
+                    </div>
+
+                    <div id="decider-debugging">
+
+                        <br /><button id="countdowns_pause" data-resume="false" class="submit">pause countdowns</button>
+                        <br /><button id="end_game" data-event="debug:end" class="submit">end game</button>
+
+                        <div id="slider-gsap">
+                        </div>
+
+                        <select id="template_selector" name="template_selector_player">
+                          <option value="">choose:</option>
+
+                                {{#each gameScreens}}
+                                  <option value="{{this}}">{{this}}</option>
+                                {{/each}}
+                        </select>
+
+                    </div>
+
+                  <button id="generate_players">generate players</button>
+                </div>
+
+            {{/ifeq}}
+
+            {{#ifnoteq section 'homepage'}}
+
+                <div class="col-sm-12 col-lg-12" id="gameContent">
+                    <div id="join-bg"></div>
+                    {{> shared/resuming }}
+
+                    <!-- BODY CONTENT START -->
+                    {{{body}}}
+
+                </div>
+
+                <footer id="bottom-bar" style="display: none">
+
+                    <div id="secret-goal">
+                        {{{cloudinaryUrl '/v1494604113/at-stake/icons/star.svg' height=auto}}}
+                        <span>You accomplished your secret goal!</span>
+                        {{{cloudinaryUrl '/v1494604113/at-stake/icons/star.svg' height=auto}}}
+                    </div>
+
+                    <div id="info">
+                        <button id="btn-role-card" class="player">
+                            <detail class="tooltip-content" data-phase="0" data-screen="1">You can access your character info here at any point during the game</detail>
+                            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1492806723/at-stake/icons/role">
+                        </button>
+
+                        <button id="btn-facilitator" class="decider">
+                            <detail class="tooltip-content" data-phase="0" data-screen="1">You can access your character info here at any point during the game</detail>
+                            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540839844/at-stake/icons/facilitator">
+                        </button>
+
+                        <div id="name-role">
+                            <span id="name"></span>
+                            <span id="role"></span>
+                        </div>
+                        <button id="btn-team-info"><img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1541022175/at-stake/icons/teaminfo.svg"></button>
+                        <button id="btn-call-vote" class="disabled" disabled="disabled">
+                            <detail class="tooltip-content" data-phase="1" data-screen="1">You can now <b>call a vote</b> at any time if you feel your team has reached a solution</detail>
+                            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1541097057/at-stake/icons/calltovote.svg">
+                        </button>
+                    </div>
+                                        
+                </footer>
+
+            {{else}}
+
+                <div id="homeContent">
+
+                    <!-- BODY CONTENT START -->
+                    {{{body}}}
+
+                </div>
+
+            {{/ifnoteq}}
+
+                {{#ifeq debug true}}
+                    {{#ifnoteq viewType 'decider'}}
+                      <div id="emulate-players" style="display:none">
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <iframe src="" data-emulated='true' width="400" height="400" sandbox="allow-scripts allow-same-origin"></iframe>
+                      </div>
+                  {{/ifnoteq}}
+                {{/ifeq}}
+            </div><!-- /.container -->
+
+            <!-- page-wrapper end -->
+            {{#ifeq env "development"}}
+                {{> script/development host=socketHost environment=env section=section subSection=sub_section}}
+            {{else}}
+                {{> script/production host=socketHost environment=env section=section}}
+            {{/ifeq}}
+
+        </div>
+
+    </body>
+</html>

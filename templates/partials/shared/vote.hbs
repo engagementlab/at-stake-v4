@@ -1,0 +1,61 @@
+{{!-- VOTING UI --}}
+<div id="vote">
+	<div id="content" class="content decider">
+
+		{{> component/instructions 
+				decider=true
+				heading="Call To Vote"
+				body="Listen to the proposal. If it passes, you will have to rate it."
+		}}
+
+		{{> component/speech
+				decider=true
+				body="Problem Scenario"
+				secondary=question
+				bold=true
+		}}
+
+
+		{{{cloudinaryUrl 'v1541693946/at-stake/icons/ballotbox-black' width=200 format='png'}}}
+
+		<h1>{{username}} called a vote!</h1>
+
+	</div>
+
+	<div class="player form">
+
+		{{> component/instructions 
+				heading="Call To Vote"
+				body="Listen to the proposal. Decide if the proposal fits your needs."
+		}}
+		<div id="content" class="content">
+
+			{{{cloudinaryUrl 'v1541693946/at-stake/icons/ballotbox' width=200 format='png'}}}
+						
+			<h1>{{username}} called a vote!</h1>
+			<h2>Are you satisfied with this proposal?</h2>
+			
+			<button id="btn-yes" class="btn submit player" type="submit" name="submit" data-event="player:vote" data-package="yes">
+				Yes
+			</button>
+			
+			<button id="btn-no" class="btn submit player" type="submit" name="submit" data-event="player:vote" data-package="no">
+				No
+			</button>
+
+		</div>
+
+	</div>
+
+	<div id="results" class="content player">
+
+		<h1>Not everyone agreed with the proposal.</h1>
+		<div id="votecaller">Revise your proposal and submit again.</div>
+		<div id="voter">Waiting for {{username}} to dismiss this vote.</div>
+		
+		<button id="btn-try-again" class="btn player" type="submit" name="submit">
+			Try Again
+		</button>
+
+	</div>
+</div>

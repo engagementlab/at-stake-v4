@@ -1,0 +1,180 @@
+{{!-- DELIBERATE PHASE UI --}}
+<div id="deliberate">
+	
+	{{!-- INTRO/WAIT --}}
+	<div class="screen form">
+
+		{{> component/interstitial 
+			title="Deliberation"
+			phase=2
+		}}
+
+		{{> component/instructions 
+				decider=true
+				heading="Deliberate"
+				body="need instruction text"
+		}}
+
+		{{> component/instructions 
+				heading="Deliberate"
+				body="Think of solutions to the problem scenario below. Consider your teammates' needs when deliberating. Keep in mind equity, fidelity,  and cost effectiveness."
+		}}
+
+		{{> component/speech
+				body="Problem Scenario"
+				secondary=question
+				scenario=true
+		}}
+	
+		<button id="btn-ready" class="btn submit player" type="submit" name="submit" data-event="game:ready" data-package="timer">
+			Ready
+		</button>
+
+		{{> component/speech
+				decider=true
+				body="Problem Scenario"
+				secondary=question
+				scenario=true
+		}}
+
+		{{!-- Show timer if already running --}}
+		{{#ifeq timerRunning false}}
+			{{> component/timer 
+					decider=true
+					disabled=true
+			}}
+		{{else}}
+			{{> component/timer 
+					decider=true
+					disabled=false
+			}}
+		{{/ifeq}}
+
+		<div id="events" class="decider form">
+			{{#each events}}
+				<div class="event">
+					<div class="content">
+						
+						<div>
+							<h3>New Event</h3>
+						 	<h1>{{text}}</h1>
+						</div>
+		
+						<div class="buttons">
+							<button id="btn-confirm" class="btn submit" type="submit" name="submit" data-event="game:event" data-package='{ "state":"confirm", "index":"{{@index}}" }'>	
+								{{#ifeq @index 0}}<detail class="tooltip-content">You can choose to accept or ignore events that will complicate players' solutions.</detail>{{/ifeq}}
+								&#x2714;
+							</button>
+							<button id="btn-reject" class="btn submit" type="submit" name="submit" data-event="game:event" data-package='{ "state":"reject", "index":"{{@index}}" }'>
+								&#65794;
+							</button>
+						</div>
+						
+					</div>
+				</div>
+			{{/each}}
+		</div>
+
+	</div>
+
+	{{!-- DELIBERATE (NON-FACILITATOR) --}}
+	<div class="screen">
+
+		{{> component/instructions 
+				decider=true
+				heading="Deliberate"
+				body="need instruction text"
+		}}
+
+		{{> component/instructions 
+				heading="Deliberate"
+				body="Think of solutions to the problem scenario below. Consider your teammates' needs when deliberating. Keep in mind equity, fidelity,  and cost effectiveness."
+		}}
+		
+		{{> component/speech
+				body="Problem Scenario"
+				secondary=question
+				scenario=true
+		}}
+
+		{{> component/speech
+				decider=true
+				scenario=true
+				body="Problem Scenario"
+				secondary=question
+		}}
+
+		<div class="player-roles col-sm-6 player">
+
+			<h1>Team's Needs</h2>
+			<div class="grid">
+				{{#each players}}
+					<div class="player{{#if isFacilitator}} facilitator{{/if}}">
+						{{username}}
+						{{#if isFacilitator}}
+							<div>Facilitator</div>
+						{{else}}
+							<div>{{needs.[0]}}<br />{{needs.[1]}}</div>
+						{{/if}}
+					</div>
+				{{/each}}
+			</div>
+
+		</div>
+
+		<div id="events" class="player form">
+			<div id="content">
+				{{#each events}}
+					<div class="event">
+						<h3>Breaking News</h3>
+						<div>{{text}}</div>
+						<span>tap to dismiss</span>
+					</div>
+				{{/each}}
+			</div>
+		</div>
+
+
+		<div id="time-up" class="player">
+
+			{{{cloudinaryUrl 'v1540488090/at-stake/bg/clock' width='319'}}}
+			<h1>Time's up!</h1>
+			<h3>This would be a good time to call to vote</h3>
+		</div>
+
+
+		{{!-- Show the following only when facilitator re-joins after leaving --}}
+		{{> component/timer 
+				decider=true
+				disabled=false
+		}}
+
+		<div id="events" class="decider form">
+			{{#each events}}
+				<div class="event">
+					<div class="content">
+						
+						<div>
+							<h3>New Event</h3>
+						 	<h1>{{text}}</h1>
+						</div>
+		
+						<div class="buttons">
+							<button id="btn-confirm" class="btn submit" type="submit" name="submit" data-event="game:event" data-package='{ "state":"confirm", "index":"{{@index}}" }'>	
+								{{#ifeq @index 0}}<detail class="tooltip-content">You can choose to accept or ignore events that will complicate players' solutions.</detail>{{/ifeq}}
+								&#x2714;
+							</button>
+							<button id="btn-reject" class="btn submit" type="submit" name="submit" data-event="game:event" data-package='{ "state":"reject", "index":"{{@index}}" }'>
+								&#65794;
+							</button>
+						</div>
+						
+					</div>
+				</div>
+			{{/each}}
+		</div>
+
+
+	</div>
+
+</div>

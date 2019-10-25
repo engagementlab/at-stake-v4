@@ -1,0 +1,120 @@
+{{!-- 
+
+* COMPONENT: Choice Box 
+* @param {Bool} active_player - Show this choice dialog only for active player?
+
+--}}
+
+{{!-- Decide phase --}}
+{{#ifeq pitches true}}
+
+	{{!-- Decider modal --}}
+	{{#ifeq decider true}} 
+
+		<div class="inner-modal {{showHide this}}">
+			<div class="form decider inner decide-winner">
+				<h1>Choose the player who had the <strong>best</strong> proposal</h1>
+				<div id="winner-btn">
+				{{#each players}}
+			    <button id="player-{{icon}}" class="post-button submit player-box player-logo btn" data-event="game:proposal_selected" data-package='{{uid}}' data-keep_open="true" type="submit" name="submit">
+				    <div class="coins"></div>
+					  <div class="info">
+						  <h1>{{username}}</h1>
+					    <h2>{{role.title}}</h2>
+				    </div>
+				  </button>
+				{{/each}}
+				</div>
+			</div>
+		</div>
+
+	{{!-- Non-decider modal --}}
+	{{else}}
+
+		<div class="inner-modal {{showHide this}}">
+			<div class="inner decide-winner">
+				<h1>The decider is about to choose a winning proposal</h1>
+				<h2>Whoever wins receives all the coins in the coin pot!</h2>
+
+				{{#each players}}
+			    <div id="player-{{icon}}" class="player-box player-logo" style="cursor:default;">
+				    <div class="coins"></div>
+					  <div class="info">
+						  <h1>{{username}}</h1>
+					    <h2>{{role.title}}</h2>
+				    </div>
+				  </div>
+				{{/each}}
+		  </div>
+		</div>
+
+	{{/ifeq}}
+
+  <span id="modifier" class="hidden-el" data-inner_modal="true"></span>
+
+{{!-- Pitch and Double-down phase choice modals --}}
+{{else}}
+
+	{{!-- Active player's modal --}}
+	{{#ifeq active_player true}}
+
+		<div id="more-time-wrapper" class="{{showHide this}} inner-modal" data-clone="true" data-wait="true">
+			<div class="form choice inner pitch-box" id="more-time">
+
+				{{#ifeq doubledown true}}
+
+				  <h1>Pay <strong>{{config.doubledownTimeCost}} coins</strong> to the pot to double down?</h1>
+				  <h2>Speak, uninterupted, for {{config.doubledownSeconds}} seconds. The floor is yours!</h2>
+
+				{{else}}
+
+				  <h1>Pay <strong>{{config.extraTimeCost}} coins</strong> to the pot to continue pitching?</h1>
+				  <h2>Receive an additional {{config.extraSeconds}} seconds to continue pitching your proposal.</h2>
+
+				{{/ifeq}}
+
+			  <button id="btn-more-time" data-event="game:more_time" data-keep_enabled="true" data-package="{{player.uid}}" class="post-button submit btn" type="submit" name="submit">
+			    <div class="coins">
+
+						{{#ifeq doubledown true}}
+							{{config.doubledownTimeCost}}
+						{{else}}
+							{{config.extraTimeCost}}
+						{{/ifeq}}
+
+					</div>
+			    Buy more time
+		    </button>
+			  <button id="btn-empty" class="post-button submit btn" type="submit" name="submit" disabled="disabled">
+			    Not enough coins!
+		    </button>
+			  <button id="btn-cancel" data-event="game:turn_done" class="post-button submit btn" type="submit" name="submit">No thanks!</button>
+
+			</div>
+		</div>
+
+		{{#ifeq doubledown true}}
+		  <span id="modifier" class="hidden-el" data-inner_modal="true"></span>
+		{{/ifeq}}
+
+	{{!-- Waiting for other player --}}
+	{{else}}
+
+		<div id="more-time-wrapper" class="{{showHide this}} inner-modal" data-clone="true" data-wait="true">
+			<div class="inner">
+				<div id="player-{{activePlayer.index}}" class="player-logo lg">
+			  </div>
+				<h1>Waiting for {{activePlayer.username}}</h1>
+					<h2>
+						{{activePlayer.username}} is deciding if they want to {{#ifeq doubledown true}}double down{{else}}buy more time{{/ifeq}}. Hang tight!
+					</h2>
+		  </div>
+		</div>
+
+		{{#ifeq doubledown true}}
+		  <span id="modifier" class="hidden-el" data-inner_modal="true"></span>
+		{{/ifeq}}
+
+	{{/ifeq}}
+
+{{/ifeq}}

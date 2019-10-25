@@ -1,0 +1,29 @@
+{{!-- 
+
+* COMPONENT: Timer 
+* @param {Bool} preview - Just show timer 'start' button?
+* @param {Bool} stopwatch - 
+* @param {Bool} button - Timer is start button for decider?
+* @param {String} body - Speech bubble body text for when 'preview' is true
+
+--}}
+{{#ifeq decider true}}
+  {{!-- TIMER at 0 --}}
+  <div class="timer_wrap decider form">
+    
+    <button 
+    {{#ifeq decider true}}
+      id="btn-start-timer" 
+      data-event="game:start_timer" 
+      class="submit {{#ifeq disabled true}}disabled" 
+      disabled="disabled"{{else}}"{{/ifeq}}
+    {{/ifeq}}>
+
+      <h1>
+          Start Timer
+      </h1>
+
+    </button>
+
+  </div>
+{{/ifeq}}

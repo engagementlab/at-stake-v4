@@ -1,0 +1,455 @@
+{{!< default}}
+{{!-- 
+/**
+ * @Stake v3
+ * Developed by Engagement Lab, 2016-2017
+ * ==============
+ * 
+ * Script include for animation logic
+ * ==========
+ */
+--}}
+
+var screensAnim,
+		loginAnim,
+		timelineCallback,
+		animationDone = $.Deferred(),
+		introIndex = 0,
+		newGameAnim = new TimelineLite({paused:true}),
+		tutorialAnim = new TimelineLite({paused:true}),
+		notificationAnim = new TimelineLite({paused:true});		
+
+$('.lobby .btn, .back-button, #btn-start-game').click(function(evt) {
+	if($(evt.currentTarget).data('from'))
+  	loginFromTo($(evt.currentTarget).data('from'), $(evt.currentTarget).data('to'), .7);
+});
+
+function initTimeline() {
+
+	loginAnim = new TimelineMax({paused:true});
+	
+		var backBtnFrom = { autoAlpha:0, xPercent:20, display:'none' },
+			backBtnTo = { autoAlpha:1, xPercent:0, display:'block', ease:Expo.easeOut };
+
+		var joinAnim = new TimelineLite(),
+			lobbyAnim = new TimelineLite();
+
+		newGameAnim.to($('#join, #share-code'), .01, { autoAlpha:0, display:'none' })
+							.fromTo($('#choices'), .5, { autoAlpha:1, display:'block' }, { autoAlpha:0, display:'none' })
+							.to($('#login-header'), 1, {autoAlpha:0, height:0, display:'none', ease:Expo.easeIn})
+							.fromTo($('#decider'), .5, { autoAlpha:0, display:'none' }, { autoAlpha:1, display:'block' })
+							.call(function() {
+								if(timelineCallback)
+									timelineCallback();
+							})
+							.from($('#decks'), .5, { autoAlpha:0, yPercent:10, ease:Expo.easeOut })
+							.fromTo($('#deck-choice .back-button'), .5, backBtnFrom, backBtnTo);
+
+		lobbyAnim.to($('#deck-choice'), .5, { autoAlpha:0, display:'none' })
+		         .fromTo($('.waiting'), .5, { autoAlpha:0, display:'none' }, { autoAlpha:1, display:'block' })
+		         .fromTo($('#share_code'), .5, { autoAlpha:0, yPercent: -20, display:'none' }, { autoAlpha:1, yPercent: 0, display:'block' });
+
+		joinAnim.to($('#choices'), .5, { autoAlpha:0, display:'none' })
+							.fromTo($('#join'), .5, { autoAlpha:0, display:'none' }, { autoAlpha:1, display:'block', onComplete:function() {
+								$('#join-bg').css('opacity', 1);
+							}})
+							.to($('#login-header'), 1, {autoAlpha:0, height:0, display:'none', ease:Expo.easeIn})
+							.fromTo($('#join .back-button'), .5, backBtnFrom, backBtnTo)
+
+		loginAnim.from($('#player-name'), .5, {yPercent:-20, autoAlpha:0, delay:.4, ease:Expo.easeOut}, .2)
+	           .from($('#btn_submit_name'), .5, {yPercent:20, autoAlpha:0, delay:.3, ease:Expo.easeOut}).append('name')
+
+						 .to($('#name'), .5, { autoAlpha:0, display:'none' })
+
+						 .fromTo($('#choices'), .5, { autoAlpha:0, display:'none' }, { autoAlpha:1, display:'block' })
+						 .fromTo($('#choices .back-button'), .5, backBtnFrom, backBtnTo)
+						 .staggerFromTo($('#choices .btn'), .8, {yPercent:20, autoAlpha:0}, {yPercent:0, autoAlpha:1, ease:Expo.easeOut}, .7)
+						 .append('choices')
+
+						 .add(joinAnim, '+=1').append('join')
+						 .add(lobbyAnim, '+=1').append('lobby');
+						 
+}
+
+function loginNewGame(callback) {
+	
+	timelineCallback = callback;
+
+	newGameAnim.play();
+	
+}
+
+function loginFromTo(from, to, timeScale, callback) {
+
+	if(!timeScale)
+		timeScale = 1;
+
+	if(from === 'new' && to === 'choices') {
+		newGameAnim.reverse(newGameAnim.duration());
+		return;
+	}
+	else if(from === 'lobby' && to === 'tutorial') {
+
+		tutorialAnim.to($('.waiting'), .5, { autoAlpha:0, display:'none' })
+						 .fromTo($('#login-header'), .5, { autoAlpha:0, height:0, display:'none' }, { autoAlpha:1, height:138, display:'block' })
+		         .fromTo($('#tutorial'), .5, { autoAlpha:0, display:'none' }, { autoAlpha:1, display:'block' });
+
+		tutorialAnim.play();
+		return;
+	}
+	else if((from === 'choices' && to === 'name') || (from === 'join' && to === 'choices'))
+		$('#join-bg').css('opacity', 0);
+
+	// Failsafe
+	if(!loginAnim)
+		initTimeline();
+
+	// Starting from zero or somewhere else
+	var start = (from==='start') ? 0 : loginAnim.getLabelTime(from);
+
+	// Get animation duration
+	var duration = Math.abs( loginAnim.getLabelTime(to) - loginAnim.getLabelTime(from) );
+	if(timeScale)
+		duration *= timeScale;
+
+	TweenLite.fromTo(loginAnim, duration, {time:start}, {time:loginAnim.getLabelTime(to), onComplete: function() {
+		
+		if(callback)
+			callback();
+
+	}});
+	
+}
+
+modalOpenClose = function(modalElement, open) {
+
+	var hidden = { yPercent:100, opacity:0, ease:Expo.easeOut, display:'none' },
+			shown = { yPercent:0, opacity:1, ease:Expo.easeIn, display:'block'};
+
+	TweenLite.fromTo(modalElement, .5, (open ? hidden:shown) , (open ? shown:hidden) );
+
+}
+
+function innerModalOpenClose(modalElement, open) {
+
+	var overlayStart, overlayEnd, start, end;
+	var timeline = new TimelineLite({onComplete: function() {
+		$('#overlay').trigger(open ? 'opened' : 'hidden');	
+		showTooltips();
+	}});
+ 	
+ 	if(open) {
+ 		overlayStart = { autoAlpha:0, display:'none' };
+ 		overlayEnd = { autoAlpha:1, display:'block' };
+		start = { yPercent:20, scale:.7, opacity:0, display:'none' };
+		end =  { yPercent:0, scale:1, opacity:1, ease: Elastic.easeOut.config(1, 0.5), display:'block' };
+
+		timeline
+		.fromTo($('#overlay'), .3, overlayStart, overlayEnd)
+		.fromTo($('#overlay .inner-modal'), .8, start, end);
+	}
+	else {	
+ 		overlayStart = { autoAlpha:1, display:'block' };
+ 		overlayEnd = { autoAlpha:0, display:'none' };
+		start = { yPercent:0, scale:1, opacity:1, display:'block' };
+		end =  { yPercent:20, scale:.7, opacity:0, ease: Expo.easeIn, display:'none' };
+
+		timeline
+		.fromTo($('#overlay .inner-modal'), .4, start, end)
+		.fromTo($('#overlay'), .3, overlayStart, overlayEnd);
+	}
+
+	if(isMobile)
+		return;
+
+	var blurElement = {a:(open ? 3:0)};//start the blur at 0 pixels
+
+	TweenMax.to(blurElement, .3, {a:(open ? 3:0), onUpdate:applyBlur});
+
+	//here you pass the filter to the DOM element
+	function applyBlur()
+	{
+	  TweenMax.set(['#gameContent', '#bottom-bar'], {webkitFilter:"blur(" + blurElement.a + "px)",filter:"blur(" + blurElement.a + "px)"});  
+	};
+
+}
+
+function quitOpenClose(open, message) {
+
+	var menuStart, menuEnd, quitStart, quitEnd;
+	var timeline = new TimelineLite();
+
+	menuStart = { scale:1, opacity:1, display:'block' };
+	menuEnd = { scale:0, opacity:0, display:'none' };
+	quitStart = { scale:0, opacity:0, display:'none' };
+	quitEnd = { scale:1, opacity:1, display:'block' };
+ 	
+ 	if(open) {
+		timeline
+		.fromTo($('#game-menu'), .3, menuStart, menuEnd)
+		.fromTo($('#game-quit'), .3, quitStart, quitEnd);
+	}
+	else {	
+		timeline
+		.fromTo($('#game-quit'), .3, quitEnd, quitStart)
+		.fromTo($('#game-menu'), .3, menuEnd, menuStart);
+	}
+
+}
+
+var screenOpen = function(screenElement) {
+
+	screenElement.show(function() {
+		showTooltips();
+	});
+
+	var hidden = { scale:0, opacity:0, display:'none' },
+			shown = { scale:1, opacity:1, ease: Elastic.easeOut.config(1, 0.75), display:'block', transformOrigin:'70% bottom' };
+
+	var speechTimeline = new TimelineLite({onComplete: function() {
+		animationDone.resolve();	
+	}});
+	speechTimeline.fromTo(screenElement.children('blockquote'), 1.1,  hidden, shown);
+	speechTimeline.fromTo(screenElement.find('section.instruction'), .7,  {yPercent:-100, opacity:0}, {yPercent:0, opacity:1, ease:Back.easeOut});
+
+	if(!_.isEmpty(screenElement.data())) {
+	
+		if(screenElement.data('animation') === 'scoreboard')
+			scoreboardOpen();
+
+		else if(screenElement.data('animation') === 'debrief') {
+			$('#bottom-bar').hide();
+			new TimelineLite()
+			.fromTo($('#login-header'), .7, { yPercent:-100, autoAlpha:0 }, { yPercent:0, autoAlpha:1, ease:Expo.easeOut } );
+		}
+	}
+
+
+}
+
+var scoreboardOpen = function() {
+
+	new TimelineLite({onComplete: function() {
+		setTimeout(function() {
+	
+			var nodes = $('#ranking .player-logo');
+			var total = nodes.length;
+			var boxes = [];
+
+			for (var i = 0; i < total; i++) {
+			  
+			  var node = nodes[i];
+			  
+			  // Initialize transforms on node
+			  TweenLite.set(node, { x: 0 });
+			   
+			  boxes[i] = {
+			    transform: node._gsTransform,
+			    x: node.offsetLeft,
+			    y: node.offsetTop,
+			    node: node
+			  };
+			
+			}
+			  
+		  for (var i = 0; i < total; i++) {
+		    
+		    var box = boxes[i];
+		        
+		    var lastX = box.x;
+		    var lastY = box.y;
+
+			  $(box.node).css('order', $(box.node).data('rank'));
+		    
+		    box.x = box.node.offsetLeft;
+		    box.y = box.node.offsetTop;
+		    
+		    // Continue if box hasn't moved
+		    if (lastX === box.x && lastY === box.y) continue;
+		    
+		    // Reversed delta values taking into account current transforms
+		    var xReverse = box.transform.x + lastX - box.x;
+		    var yReverse = box.transform.y + lastY - box.y;  
+		    
+		    // Tween to 0 to remove the transforms
+		    var dest = { x:0, y:0, ease: Power1.easeInOut };
+		    TweenLite.fromTo(box.node, 0.5, { x: xReverse, y: yReverse }, dest);    
+		  }
+
+			new TimelineLite({onComplete: function() {
+				openInnerModal(undefined, true);
+			}})
+		  .fromTo($('.next-step'), .7, {yPercent:100, autoAlpha:0}, {yPercent:0, autoAlpha:1, ease:Expo.easeOut});
+		  
+		}, 2000);
+
+	}})
+	.to($('.coins.starting'), 1, { autoAlpha:0, y:'10%', display:'none', delay: 5 })
+	.fromTo($('.coins.delta'), 1, { autoAlpha:0, y:'10%', display:'none' }, { autoAlpha:1, y:'0%', display:'block' })
+
+	.fromTo($('.coins.delta'), 1, { autoAlpha:1, display:'block' }, { autoAlpha:0, y:'10%', display:'none', delay: 5 })
+	.fromTo($('.coins.current'), 1, { autoAlpha:0, y:'10%', display:'none' }, { autoAlpha:1, y:'0%', display:'block' })
+	
+	.fromTo($('.rank.starting'), 1, { display:'block' }, { display:'none', delay: 5 })
+	.fromTo($('.rank.current'), 1, { autoAlpha:0, x:'10%', display:'none' }, { autoAlpha:1, x:'0%', display:'block' });
+}
+
+var showGoalNotification = function(user) {
+
+	// notifications.push(user);
+	notificationAnim.to($('#secret-goal'), .5, {marginTop:'-7%', ease:Back.easeOut, onStart:function() {
+		$('#secret-goal span').text(user + ' accomplished their secret goal!');
+	}});
+	notificationAnim.to($('#secret-goal'), .5, {marginTop:0, delay:3, ease:Back.easeIn});
+
+	if(!notificationAnim.isActive())
+		notificationAnim.play();
+
+}
+
+var showNeedNotification = function(text) {
+
+	var content = $('<div><em>'+text+'</em> was met!</div>');
+	$('#ranking #results').append(content);
+
+	TweenLite.fromTo(content, .7, { autoAlpha:0, y:'10%', display:'none' }, { autoAlpha:1, display:'block', ease:Back.easeOut });
+	TweenLite.to(content, .7, { autoAlpha:0, y:'10%', display:'none', delay:2, ease:Back.easeIn });
+
+}
+
+/*
+	Modal animation handles
+*/
+$('.modal:not(#overlay)').on('show', function(evt) {
+	modalOpenClose($(evt.currentTarget), true);
+});
+$('.modal:not(#overlay)').on('hide', function(evt) {
+	modalOpenClose($(evt.currentTarget), false);
+});
+$('.notification').on('show', function(evt) {
+	new TimelineLite()
+	.fromTo($('.notification'), 1, { yPercent:100, autoAlpha:0 }, { yPercent:0, autoAlpha:1, display:'block', ease:Back.easeOut } )
+	.to($('.notification'), 1, { yPercent:100, autoAlpha:0, delay:3, display:'none', ease:Back.easeIn } );
+
+});
+
+$('#overlay').on('show', function(evt, noAnimate) {
+
+	if(noAnimate)
+		$('#overlay, #overlay .inner-modal').show();
+	else {
+		evt.preventDefault();
+		evt.stopPropagation();
+
+		innerModalOpenClose($(evt.currentTarget), true, noAnimate);
+	}
+	
+});
+$('#overlay').on('hide', function(evt) {
+	innerModalOpenClose($(evt.currentTarget), false);
+});
+
+/*
+	Screen animation handles
+*/
+$(document).on('show', '.screen', function(evt) {
+	animationDone = $.Deferred();
+
+	screenOpen($(evt.currentTarget));
+});
+
+function openIntro() {
+
+	var xP = _.range(-50, 50);
+	// var yP = _.range(-25, -20);
+
+	$('#intro').show();
+	if(isDecider)
+		$('#intro button').show();
+	else
+		$('#intro button').remove();
+
+	TweenLite.fromTo($($('#intro .content img')[introIndex]), 1, { opacity:0 }, { opacity:1, display:'block' } );
+	// TweenLite.fromTo($($('#intro .content img')[introIndex]), 10, { scale:1, xPercent:xP, yPercent:yP } , { scale:.5, xPercent:0, yPercent:0 } );
+
+	TweenLite.fromTo($($('#intro .panel .text')[introIndex]), 1, { yPercent:100 }, { yPercent:0, ease:Back.easeOut });
+
+}
+
+function nextIntroScreen() {
+
+	TweenLite.to($($('#intro .panel .text')[introIndex]), .5, { yPercent:100, display:'none', ease:Back.easeIn });
+
+	TweenLite.fromTo($($('#intro .panel img')[introIndex]), .5, { opacity:1 }, { opacity:0, display:'none', onComplete:function() {
+		
+		var xP = _.range(-50, 50);
+		var yP = _.range(-25, -20);
+	
+		introIndex++;
+		$($('#intro .panel')[introIndex]).show();
+		TweenLite.fromTo($($('#intro .content img')[introIndex]), 1, { opacity:0 }, { opacity:1, display:'block' } );
+		// TweenLite.fromTo($($('#intro .content img')[introIndex]), 10, { scale:1, xPercent:xP, yPercent:yP } , { scale:.5, xPercent:0, yPercent:0 } );
+
+		TweenLite.from($($('#intro .panel .text')[introIndex]), 1, { yPercent:100, ease:Back.easeOut });
+		
+	}});
+
+}
+
+function openInterstitial() {
+
+	var anim = { perc:0 };
+	var el = $('#interstitial');
+	TweenMax.to(anim, 2.3, {perc:100, 
+		onUpdate: function () {
+			el.css('background', 'linear-gradient(135deg, #002ab7 ' + anim.perc + '%, #fff ' + anim.perc + '%)'); 
+		},
+		ease:Expo.easeInOut
+	});
+	TweenLite.fromTo($(el).find('img'), 1, { autoAlpha:0 }, { autoAlpha:1, display:'block', delay:2.4 });
+	TweenLite.fromTo($(el).find('h2'), .7, { yPercent:50, autoAlpha:0 }, { yPercent:0, autoAlpha:1, display:'block', delay:2.4, ease:Back.easeOut });
+	TweenLite.fromTo($(el).find('h1'), .7, { yPercent:50, autoAlpha:0 }, { yPercent:0, autoAlpha:1, display:'block', delay:3, ease:Back.easeOut });
+
+	TweenLite.fromTo($(el).children(), 1, { autoAlpha:1 }, { autoAlpha:0, display:'none', delay:5 });
+	TweenMax.to(anim, 2.3, {perc:0, 
+		onUpdate: function () {
+			el.css('background', 'linear-gradient(-45deg, #002ab7 ' + anim.perc + '%, rgba(0,0,0,0) ' + anim.perc + '%)'); 
+		},
+		onComplete: function() {
+			$(el).remove();
+		},
+		delay:5,
+		ease:Expo.easeInOut
+	});
+
+}
+
+function nextRankingScreen(button) {
+
+	var from = $('#ranking .form:visible'),
+	to = $('#ranking .form:visible').next();
+
+	TweenLite.to(from, .5, { xPercent:-100, display:'none', onComplete:function() {
+		
+		TweenLite.fromTo(to, 1, { xPercent:100 }, { xPercent:0, display:'block', ease:Back.easeOut } );
+
+		if(to.attr('id') === 'pt3') {
+
+            button.text('Submit');
+			button.off();
+			button.click(function(evt) {
+				var needsMet = 0;
+				
+				$.each($('#pt2 input'), function( key, value ) {
+					if($(value).val() === 'on')
+						needsMet++;
+				});
+
+				var ratingVals = $('#pt3 input').map(function(){return $(this).val();}).get();
+				socket.emit('game:ranking', emitData({needs: needsMet, rating: ratingVals}));
+			});
+		
+		}
+		
+	}});
+}
