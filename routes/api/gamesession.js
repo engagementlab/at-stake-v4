@@ -30,6 +30,7 @@ exports.create = function(req, res) {
     var session;
     var data = (req.method == 'POST') ? req.body : req.query;
 
+    console.log(data)
     // Check if accessCode defined
     if(!data.accessCode)        
         return res.apiError('Game code not sent!');  
