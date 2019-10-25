@@ -1,0 +1,2 @@
+client/public/img/* filter=lfs diff=lfs merge=lfs -text
+client/public/img/** filter=lfs diff=lfs merge=lfs -text
