@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import io from 'socket.io-client';
 import './App.css';
 
-import Decks from './components/Decks';
+import Lobby from './components/Lobby/Lobby';
 
 class App extends Component {
   
@@ -37,7 +37,7 @@ class App extends Component {
                 Connected to socket
               </p>
               : <p>Loading...</p>}
-        <Decks />
+        <Lobby />
       </div>
     );
   }
