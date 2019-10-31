@@ -1,7 +1,6 @@
-
 import io from 'socket.io-client';
 
-export default class Socket {
+class Socket {
 
     static instance = null;
 
@@ -13,7 +12,7 @@ export default class Socket {
      * @returns {Socket}
      */
     static get() {
-    
+
         if (Socket.instance == null) {
             Socket.instance = new Socket();
         }
@@ -24,14 +23,19 @@ export default class Socket {
     connect() {
 
         // Try WS connect
-        this._current = io('http://localhost:3001', {path: '/at-stake-socket/', 'reconnection': true,'reconnectionDelay': 500,'maxReconnectionAttempts':Infinity});
+        this._current = io('http://localhost:3001', {
+            path: '/at-stake-socket/',
+            'reconnection': true,
+            'reconnectionDelay': 500,
+            'maxReconnectionAttempts': Infinity
+        });
 
-        this._current.on('connect', (client)=> {
-            
-            console.log('connected to socket client')      
-        
+        this._current.on('connect', (client) => {
+
+            console.log('connected to socket client')
+
             this._current.emit('hello');
-            
+
             this._socketId = this._current.id;
 
         });
@@ -41,13 +45,22 @@ export default class Socket {
 
     send(eventId, appendData) {
 
-		if(this._gameId === null && appendData.code)
-			this._gameId = appendData.code;
+        if (this._gameId === null && appendData.code)
+            this._gameId = appendData.code;
 
-        let data = { gameId: this._gameId.toUpperCase().trim() };
-        let payload = {...data, ...{msgData: appendData}};
-        
+        let data = {
+            gameId: this._gameId.toUpperCase().trim()
+        };
+        let payload = {
+            ...data,
+            ...{
+                msgData: appendData
+            }
+        };
+
         this._current.emit(eventId, payload);
-	
-	};
+
+    };
 }
+
+export default Socket;

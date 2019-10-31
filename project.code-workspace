@@ -1,10 +1,9 @@
 {
-	"folders": [
-		{
+	"folders": [{
 			"path": "."
 		},
 		{
-			"path": "/Users/Johnny/Documents/Projects/learning-games-core"
+			"path": "./client"
 		}
 	],
 	"settings": {}
