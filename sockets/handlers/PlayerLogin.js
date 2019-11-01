@@ -63,6 +63,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
       };
 
       console.log(payload);
+
       // Mark player as ready inside game session
       Session.Get(payload.gameId).PlayerReady(
         player,
@@ -98,7 +99,9 @@ const PlayerLogin = function (nsp, socket, emitter) {
           username: payload.username,
           uid: payload.uid,
         };
+
         console.log(payload);
+
         // Mark player as ready inside game session
         session.PlayerReady(
           player,

@@ -2,3 +2,4 @@ client/*
 public/*
 release/*
 sfx/*
+Gruntfile.js

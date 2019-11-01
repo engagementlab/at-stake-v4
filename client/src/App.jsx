@@ -31,7 +31,7 @@ class App extends Component {
   startJoinI() { }
 
   render() {
-    const { response } = this.state;
+    const { response, mode } = this.state;
     return (
       <div className="App">
 
@@ -43,7 +43,7 @@ class App extends Component {
 
         <p>{response}</p>
 
-        <Lobby mode={this.state.mode} />
+        <Lobby mode={mode} />
       </div>
     );
   }
