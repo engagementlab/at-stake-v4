@@ -6,5 +6,8 @@
 			"path": "./client"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"eslint.autoFixOnSave": true,
+		"eslint.provideLintTask": true
+	}
 }

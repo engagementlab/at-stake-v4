@@ -1,44 +1,45 @@
 /**
  * @Stake v3
- * 
+ *
  * Event Model
  * @module models
  * @class Event
  * @author Johnny Richardson
- * 
+ *
  * ==========
  */
-"use strict";
 
-var keystone = require('keystone');
-var Types = keystone.Field.Types;
+
+const keystone = require('keystone');
+
+const { Types } = keystone.Field;
 
 /**
  * Event Model
  * ==========
  */
-var Event = new keystone.List('Event', {
-    label: 'Event',
-    map: { name: 'text' }
+const Event = new keystone.List('Event', {
+  label: 'Event',
+  map: { name: 'text' },
 });
 /**
  * Model Fields
  * @main Event
  */
 Event.add({
-    
-    text: { type: String, label: "Event Text", required: true, initial: true },
-    dateCreated: { type: Date, noedit: true }
+
+  text: {
+    type: String, label: 'Event Text', required: true, initial: true,
+  },
+  dateCreated: { type: Date, noedit: true },
 
 });
 
 
-Event.schema.pre('save', function(next) {
-  
+Event.schema.pre('save', function (next) {
   this.dateCreated = new Date();
 
   next();
-
 });
 
 /**

@@ -1,28 +1,26 @@
-module.exports = function(grunt, options) {
+module.exports = function (grunt, options) {
+  const watchFilter = ['../public/styles/**/*.scss'];
 
-    var watchFilter = ['../public/styles/**/*.scss'];
-    
-	return {
-	
-		express: {
-			files: [
-				'app.js',
-				'../public/js/lib/**/*.{js,json}'
-			],
-			tasks: ['concurrent:dev']
-		},
-		sass: {
-			files: watchFilter,
-			tasks: ['sass']
-		},
-		livereload: {
-			files: [
-				'../public/styles/**/*.css',
-			],
-			options: {
-				livereload: true
-			}
-		}   
-    }
+  return {
 
+    express: {
+      files: [
+        'app.js',
+        '../public/js/lib/**/*.{js,json}',
+      ],
+      tasks: ['concurrent:dev'],
+    },
+    sass: {
+      files: watchFilter,
+      tasks: ['sass'],
+    },
+    livereload: {
+      files: [
+        '../public/styles/**/*.css',
+      ],
+      options: {
+        livereload: true,
+      },
+    },
+  };
 };

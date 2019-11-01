@@ -1,39 +1,34 @@
 // Site-wide stylesheets
-module.exports = function(grunt, options) {
-
+module.exports = function (grunt, options) {
   // Obtain env to generate filename
-  var env = grunt.option('env');
+  let env = grunt.option('env');
 
-  if(env === undefined) {
-    
+  if (env === undefined) {
     grunt.log.writeln('No env provided, checking NODE_ENV');
-    
-    if(process.env.NODE_ENV !== undefined)
-      env = process.env.NODE_ENV;
+
+    if (process.env.NODE_ENV !== undefined) env = process.env.NODE_ENV;
     else {
       grunt.log.subhead('No env provided, defaulting to production!');
-      env = 'production'
+      env = 'production';
     }
-
   }
 
-  grunt.log.writeln('Compiling ' + env + '.css');
+  grunt.log.writeln(`Compiling ${env}.css`);
 
   // Output file is relative to this site
-  var fileOut = __dirname + '/../public/release/' + env + '.css';
-  var config = { 
+  const fileOut = `${__dirname}/../public/release/${env}.css`;
+  const config = {
     options: { keepSpecialComments: 0 },
-    target: { files: {} }
+    target: { files: {} },
   };
 
   // Files to minify
   config.target.files[fileOut] = [
 
-    __dirname + '/../public/styles/core.css', // site SCSS
-    __dirname + '/../public/bower_components/glidejs/dist/css/glide.core.css', // glidejs
-  
+    `${__dirname}/../public/styles/core.css`, // site SCSS
+    `${__dirname}/../public/bower_components/glidejs/dist/css/glide.core.css`, // glidejs
+
   ];
 
   return config;
-  
-}
+};

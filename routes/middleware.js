@@ -8,11 +8,9 @@
  * @constructor
  * @author Johnny Richardson
  * @static
- **/
+ * */
 
-exports.locals = function(req, res, next) {
-
-    res.locals.env = process.env.NODE_ENV;
-    next();
-
+exports.locals = function (req, res, next) {
+  res.locals.env = process.env.NODE_ENV;
+  next();
 };

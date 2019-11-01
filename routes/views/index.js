@@ -12,50 +12,43 @@
  *
  * ==========
  */
-var keystone = require('keystone'),
-    GameConfig = keystone.list('GameConfig'),
-    Homepage = keystone.list('Homepage');
+const keystone = require('keystone');
 
-exports = module.exports = function(req, res) {
+const GameConfig = keystone.list('GameConfig');
+const Homepage = keystone.list('Homepage');
 
-    var view = new keystone.View(req, res);
-    var locals = res.locals;
+exports = module.exports = function (req, res) {
+  const view = new keystone.View(req, res);
+  const { locals } = res;
 
-    locals.section = 'homepage';
+  locals.section = 'homepage';
 
-		// Query to get current game config data
-    var queryConfig = GameConfig.model.findOne({}, {}, {
-      sort: {
-          'createdAt': -1
-      }
-    });
+  // Query to get current game config data
+  const queryConfig = GameConfig.model.findOne({}, {}, {
+    sort: {
+      createdAt: -1,
+    },
+  });
 
-    // var queryHomepage = Homepage.model.findOne({}, {}, {
-    //   sort: {
-    //       'createdAt': -1
-    //   }
-    // }).populate("principalInvestigator");
+  // var queryHomepage = Homepage.model.findOne({}, {}, {
+  //   sort: {
+  //       'createdAt': -1
+  //   }
+  // }).populate("principalInvestigator");
 
-    var queryHomepage = Homepage.model.findOne({}, {}, {
-      sort: {
-          'createdAt': -1
-      }
-    });
+  const queryHomepage = Homepage.model.findOne({}, {}, {
+    sort: {
+      createdAt: -1,
+    },
+  });
 
-    queryConfig.exec(function(err, resultConfig) {
-
+  queryConfig.exec((err, resultConfig) => {
 	  	// If game is enabled, get home page content
-	    queryHomepage.exec(function(err, resultHomepage) {
-	    
+	    queryHomepage.exec((err, resultHomepage) => {
 	    	locals.content = resultHomepage;
-			  
+
 			  // Render the view
 		    res.render('index');
-
 		  });
-		 
-
-    });
-
-
+  });
 };

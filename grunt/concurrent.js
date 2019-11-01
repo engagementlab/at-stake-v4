@@ -1,22 +1,19 @@
-module.exports = function(grunt, options) {
+module.exports = function (grunt, options) {
+  const devTasks = [
+    'nodemon:serve',
+    'watch',
+  ];
 
-	var devTasks = [
-		'nodemon:serve',
-		'watch'
-	];
+  const config = {
 
-	var config = {
+    dev: {
+      tasks: devTasks,
+      options: {
+        logConcurrentOutput: true,
+      },
+    },
 
-		dev: {
-			tasks: devTasks, 	
-			options: {
-				logConcurrentOutput: true
-			}
-		}
+  };
 
-	};
-
-	return config;
-	
-
+  return config;
 };

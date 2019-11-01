@@ -13,36 +13,37 @@
  * ==========
  */
 
-var keystone = require('keystone'),
-    TemplateLoader = require('../../lib/TemplateLoader'),
-    GameSession = keystone.list('GameSession');
+const keystone = require('keystone');
+const TemplateLoader = require('../../lib/TemplateLoader');
 
-// var debugData = 
+const GameSession = keystone.list('GameSession');
 
-exports.load = function(req, res) {
+// var debugData =
 
-    var locals = res.locals;
+exports.load = (req, res) => {
+  const {
+    locals,
+  } = res;
 
-    var data = (req.method == 'POST') ? req.body : req.query;
+  const data = (req.method === 'POST') ? req.body : req.query;
 
-    locals.section = 'debug';
+  locals.section = 'debug';
 
-    GameSession.model.findOne({ accessCode: 'TEST' }).exec(function (err, game) {
+  GameSession.model.findOne({
+    accessCode: 'TEST',
+  }).exec((err, game) => {
+    const Templates = new TemplateLoader(game.gameType);
+    let templateData;
 
-        var Templates = new TemplateLoader(game.gameType);
-        var templateData;
+    if (game._doc.debugData) {
+      templateData = game._doc.debugData[data.event_id];
+    }
 
-        if(game._doc.debugData)
-            templateData = game._doc.debugData[data.event_id];
-
-        Templates.Load(data.template_path, templateData, function(html) {
-
-            res.send({id: data.event_id, eventData: html});
-
-        }); 
-
+    Templates.Load(data.template_path, templateData, (html) => {
+      res.send({
+        id: data.event_id,
+        eventData: html,
+      });
     });
-    
-    
-
+  });
 };
