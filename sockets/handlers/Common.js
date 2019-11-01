@@ -11,11 +11,12 @@
  * ==========
  */
 
+const Session = require('learning-games-core').SessionManager;
 
+// eslint-disable-next-line func-names
 const Common = function (nsp, socket) {
   const currentSpace = nsp;
   const currentSocket = socket;
-  const Session = require('learning-games-core').SessionManager;
 
   // Expose handler methods for events
   this.handler = {
