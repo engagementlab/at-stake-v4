@@ -1,5 +1,11 @@
-module.exports = function (grunt, options) {
-  const ignoreFilter = ['../node_modules/.git/', '../node_modules/node_modules/', '../client/'];
+/* eslint-disable no-console */
+
+module.exports = (grunt, options) => {
+  const ignoreFilter = [
+    '../node_modules/.git/',
+    '../node_modules/node_modules/',
+    '../client/',
+  ];
   // var watchFilter = [];
   // var fs = require('fs');
 

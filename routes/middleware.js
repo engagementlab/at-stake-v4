@@ -1,7 +1,8 @@
 /* @Stake v3 */
 /**
  * Route middleware
- * This file contains the common middleware used by all routes. Extend or replace these functions as the application requires.
+ * This file contains the common middleware used by all routes.
+ * Extend or replace these functions as the application requires.
  *
  * @class middleware
  * @namespace routes
@@ -10,7 +11,7 @@
  * @static
  * */
 
-exports.locals = function (req, res, next) {
+exports.locals = (req, res, next) => {
   res.locals.env = process.env.NODE_ENV;
   next();
 };

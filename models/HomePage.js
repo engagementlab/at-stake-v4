@@ -15,28 +15,29 @@
 
 const keystone = require('keystone');
 
-const { Types } = keystone.Field;
+const {
+  Types,
+} = keystone.Field;
 
 /**
  * Homepage model
  * @constructor
  * See: http://keystonejs.com/docs/database/#lists-options
  */
-const Homepage = new keystone.List('Homepage',
-  {
-    label: 'Home Page',
-    singular: 'Home Page',
-    sortable: true,
-  });
+const Homepage = new keystone.List('Homepage', {
+  label: 'Home Page',
+  singular: 'Home Page',
+  sortable: true,
+});
 
 Homepage.add({
 
- 	name: {
- 		type: String,
- 		default: 'Home Page (Name in Keystone)',
- 		required: true,
- 		initial: true,
- 	},
+  name: {
+    type: String,
+    default: 'Home Page (Name in Keystone)',
+    required: true,
+    initial: true,
+  },
 
   title: {
     type: Types.Markdown,
@@ -169,34 +170,34 @@ Homepage.add({
 
 // // Flowchart Version
 // 'Game Overview Flowchart', {
-// 	overviewHeader: {
-// 		type: Types.Markdown,
-// 		label: "Header for Game Overview"
-// 	},
-// 	brainstormHeader: {
-// 		type: Types.Markdown,
-// 		label: "Brainstorm Header"
-// 	},
-// 	brainstormParagraph: {
-// 		type: Types.Markdown,
-// 		label: "Brainstorm Paragraph"
-// 	},
-// 	pitchHeader: {
-// 		type: Types.Markdown,
-// 		label: "Pitch Header"
-// 	},
-// 	pitchParagraph: {
-// 		type: Types.Markdown,
-// 		label: "Pitch Paragraph"
-// 	},
-// 	deliberateHeader: {
-// 		type: Types.Markdown,
-// 		label: "Deliberate Header"
-// 	},
-// 	deliberateParagraph: {
-// 		type: Types.Markdown,
-// 		label: "Deliberate Paragraph"
-// 	}
+//   overviewHeader: {
+//     type: Types.Markdown,
+//     label: "Header for Game Overview"
+//   },
+//   brainstormHeader: {
+//     type: Types.Markdown,
+//     label: "Brainstorm Header"
+//   },
+//   brainstormParagraph: {
+//     type: Types.Markdown,
+//     label: "Brainstorm Paragraph"
+//   },
+//   pitchHeader: {
+//     type: Types.Markdown,
+//     label: "Pitch Header"
+//   },
+//   pitchParagraph: {
+//     type: Types.Markdown,
+//     label: "Pitch Paragraph"
+//   },
+//   deliberateHeader: {
+//     type: Types.Markdown,
+//     label: "Deliberate Header"
+//   },
+//   deliberateParagraph: {
+//     type: Types.Markdown,
+//     label: "Deliberate Paragraph"
+//   }
 // }
 
 // Paragraph Version

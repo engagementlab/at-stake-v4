@@ -1,4 +1,4 @@
-module.exports = function (grunt, options) {
+module.exports = (grunt, options) => {
   const sass = require('node-sass');
   const destPath = `${__dirname}/../public/styles/core.css`;
   const srcPath = `${__dirname}/../public/styles/core.scss`;
@@ -17,5 +17,7 @@ module.exports = function (grunt, options) {
 
   dist.files[destPath] = srcPath;
 
-  return { dist };
+  return {
+    dist,
+  };
 };

@@ -12,7 +12,9 @@
 
 const keystone = require('keystone');
 
-const { Types } = keystone.Field;
+const {
+  Types,
+} = keystone.Field;
 
 /**
  * Event Model
@@ -20,7 +22,9 @@ const { Types } = keystone.Field;
  */
 const Event = new keystone.List('Event', {
   label: 'Event',
-  map: { name: 'text' },
+  map: {
+    name: 'text',
+  },
 });
 /**
  * Model Fields
@@ -29,9 +33,15 @@ const Event = new keystone.List('Event', {
 Event.add({
 
   text: {
-    type: String, label: 'Event Text', required: true, initial: true,
+    type: String,
+    label: 'Event Text',
+    required: true,
+    initial: true,
   },
-  dateCreated: { type: Date, noedit: true },
+  dateCreated: {
+    type: Date,
+    noedit: true,
+  },
 
 });
 

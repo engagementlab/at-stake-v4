@@ -1,5 +1,5 @@
 // Site-wide stylesheets
-module.exports = function (grunt, options) {
+module.exports = (grunt, options) => {
   // Obtain env to generate filename
   let env = grunt.option('env');
 
@@ -18,8 +18,12 @@ module.exports = function (grunt, options) {
   // Output file is relative to this site
   const fileOut = `${__dirname}/../public/release/${env}.css`;
   const config = {
-    options: { keepSpecialComments: 0 },
-    target: { files: {} },
+    options: {
+      keepSpecialComments: 0,
+    },
+    target: {
+      files: {},
+    },
   };
 
   // Files to minify

@@ -14,11 +14,14 @@
  */
 
 const keystone = require('keystone');
-const async = require('async');
+// const async = require('async');
 
 const GameSession = keystone.list('GameSession');
-const Game = require('../../lib/GameManager');
 const Session = require('learning-games-core').SessionManager;
+const randomstring = require('randomstring');
+
+const TemplateLoader = require('../../lib/TemplateLoader');
+const Game = require('../../lib/GameManager');
 
 const Deck = keystone.list('Deck');
 
@@ -60,8 +63,6 @@ exports.create = (req, res) => {
  * Generate info for Game creation menu
  */
 exports.generate = (req, res) => {
-  const TemplateLoader = require('../../lib/TemplateLoader');
-  const randomstring = require('randomstring');
   let gameCode;
 
   function generateCode() {
@@ -84,7 +85,7 @@ exports.generate = (req, res) => {
 
     // Get all decks
     const decksQuery = Deck.model.find({}).populate('roles');
-    decksQuery.exec((err, decks) => {
+    decksQuery.exec((_err, decks) => {
       const Templates = new TemplateLoader();
 
       // Shuffle deck roles and only get 6

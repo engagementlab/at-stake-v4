@@ -1,6 +1,6 @@
 const hbs = require('handlebars');
 
-module.exports = function () {
+module.exports = () => {
   const _helpers = {};
 
   /**
@@ -9,48 +9,44 @@ module.exports = function () {
    */
 
   // Get time in minutes for provided seconds
-  _helpers.getMinutes = function (strSeconds) {
-    const intSeconds = parseInt(strSeconds);
+  _helpers.getMinutes = (strSeconds) => {
+    const intSeconds = parseInt(strSeconds, 10);
     const secondsRemainder = (intSeconds % 60);
     const displaySeconds = (secondsRemainder < 10) ? (`0${secondsRemainder}`) : secondsRemainder;
 
     return `${Math.round(intSeconds / 60)}:${displaySeconds}`;
   };
 
-  _helpers.limit = function (ary, max, options) {
-    if (!ary || ary.length == 0) return options.inverse(this);
+  _helpers.limit = (ary, max, options) => {
+    if (!ary || ary.length === 0) return options.inverse(this);
 
     const result = [];
-    for (let i = 0; i < max && i < ary.length; ++i) result.push(options.fn(ary[i]));
+    for (let i = 0; i < max && i < ary.length; i += 1) result.push(options.fn(ary[i]));
 
     return result.join('');
   };
 
-  _helpers.ellipsis = function (limit, currentText) {
+  _helpers.ellipsis = (limit, currentText) => {
     if (currentText) return `${currentText.substr(0, limit)}...`;
   };
 
-  _helpers.checkEven = function (num) {
-    if (num % 2 == 0) return 'even';
-    return 'odd';
-  };
+  _helpers.checkEven = (num) => ((num % 2 === 0) ? 'even' : 'odd');
 
-  _helpers.namePossessive = function (strName) {
-    return (strName.charAt(strName.length - 1) === 's') ? `${strName}'` : `${strName}'s`;
-  };
+  _helpers.namePossessive = (strName) => ((strName.charAt(strName.length - 1) === 's') ? `${strName}'` : `${strName}'s`);
 
   // Concatenate all passed in strings (combine is alias)
-  _helpers.combine = _helpers.concat = function () {
+  // eslint-disable-next-line no-multi-assign
+  _helpers.combine = _helpers.concat = () => {
     let strCombined = '';
 
     // Skip the last argument.
-    for (let i = 0; i < arguments.length - 1; ++i) strCombined += arguments[i];
+    for (let i = 0; i < arguments.length - 1; i += 1) strCombined += arguments[i];
 
     return strCombined;
   };
 
   // Given component params, generate classes that make up its display mode
-  _helpers.showHide = function (attr) {
+  _helpers.showHide = (attr) => {
     let strClasses = '';
 
     // Is this component only visible to decider?
@@ -70,7 +66,7 @@ module.exports = function () {
   };
 
   // Given decider's speech component params, generate event that fires when 'next' is hit
-  _helpers.nextEvent = function (attr) {
+  _helpers.nextEvent = (attr) => {
     let strEvent = 'game:';
 
     // Is this speech bubble's button...
@@ -87,7 +83,7 @@ module.exports = function () {
   };
 
   // Given agenda item's placement in lineup of all items, decide data-next event
-  _helpers.nextAgendaEvent = function (playerCount, index, lastItem) {
+  _helpers.nextAgendaEvent = (playerCount, index, lastItem) => {
     let strEvent = '';
 
     if ((playerCount - 1 === index) && lastItem) strEvent = 'next_screen';
@@ -104,7 +100,7 @@ module.exports = function () {
   };
 
   // Get ordinal affix for number
-  _helpers.ordinalPosition = function (index) {
+  _helpers.ordinalPosition = (index) => {
     const affixes = ['th', 'st', 'nd', 'rd'];
     const remainder = (index + 1) % 100;
 
@@ -112,7 +108,7 @@ module.exports = function () {
   };
 
   // Get number sign (if number is negative, positive, or zero) as string
-  _helpers.numSignString = function (number) {
+  _helpers.numSignString = (number) => {
     let type = 'positive';
 
     if (number === 0) type = 'zero';
@@ -122,7 +118,7 @@ module.exports = function () {
   };
 
   // Get number sign (if number is negative, positive, or zero)
-  _helpers.numSign = function (number) {
+  _helpers.numSign = (number) => {
     let type = '';
 
     if (number > 1) type = '+';
@@ -139,9 +135,7 @@ module.exports = function () {
   //  *Usage example:*
   //  `{{sum @index 3}}
 
-  _helpers.sum = function (ind, amt) {
-    return parseInt(ind) + amt;
-  };
+  _helpers.sum = (ind, amt) => parseInt(ind, 10) + amt;
 
   return _helpers;
 };

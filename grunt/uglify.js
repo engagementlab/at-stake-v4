@@ -1,6 +1,5 @@
-
 // Site-wide JS
-module.exports = function (grunt, options) {
+module.exports = (grunt, options) => {
   // Obtain env to generate filename
   let env = grunt.option('env');
 
@@ -18,7 +17,11 @@ module.exports = function (grunt, options) {
 
   // Output file is relative to this site
   const fileOut = `${__dirname}/../public/release/${env}.js`;
-  const config = { uglify: { files: {} } };
+  const config = {
+    uglify: {
+      files: {}
+    }
+  };
 
   // Files to uglify
   config.uglify.files[fileOut] = [

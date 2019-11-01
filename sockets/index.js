@@ -1,3 +1,6 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable guard-for-in */
+
 module.exports = (app) => {
   const io = require('socket.io')(app, {
     path: '/at-stake-socket',
@@ -13,9 +16,14 @@ module.exports = (app) => {
       login: new PlayerLogin(io, socket),
     };
 
-    // Bind events to handlers
     for (const category in eventHandlers) {
+      if (typeof eventHandlers[category] === 'undefined' || eventHandlers[category] === null) {
+        console.warn(`eventHandlers[${category}] is undefined!`);
+        return;
+      }
+
       const { handler } = eventHandlers[category];
+
       for (const event in handler) {
         socket.on(event, handler[event]);
       }

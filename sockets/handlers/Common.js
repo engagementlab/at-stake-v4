@@ -20,140 +20,140 @@ const Common = function (nsp, socket) {
   // Expose handler methods for events
   this.handler = {
 
-    'game:intro': function (pkg) {
+    'game:intro': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.Intro(currentSpace);
     },
 
-    'game:ready': function (pkg) {
+    'game:ready': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.PlayerDone(pkg.msgData);
     },
 
-    'game:event': function (pkg) {
+    'game:event': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.ShowEvent(pkg.msgData.state, pkg.msgData.index);
     },
 
-    'game:tutorial': function (pkg) {
+    'game:tutorial': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.StartTutorial(currentSpace);
     },
 
-    'game:start': function (pkg) {
+    'game:start': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.StartGame(currentSpace, false);
     },
 
-    'game:next': function (pkg) {
+    'game:next': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.NextPhase();
     },
 
-    'game:skip_rules': function (pkg) {
+    'game:skip_rules': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.SkipScreen();
     },
 
-    'game:next_screen': function (pkg) {
+    'game:next_screen': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.NextScreen(pkg.msgData);
     },
 
-    'game:next_player': function (pkg) {
+    'game:next_player': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.NextPlayer();
     },
 
-    'game:load_screen': function (pkg) {
+    'game:load_screen': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.LoadScreenAtIndex(pkg.msgData.index);
     },
 
-    'game:next_round': function (pkg) {
+    'game:next_round': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.AdvanceRound(currentSpace);
     },
 
-    'game:start_timer': function (pkg) {
+    'game:start_timer': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.StartTimer(currentSpace);
     },
 
-    'game:exit': function (pkg) {
+    'game:exit': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.EndGame(currentSpace);
     },
 
-    'game:ranking': function (pkg) {
+    'game:ranking': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.GameRating(pkg.msgData);
     },
 
-    'game:stop_countdown': function (pkg) {
+    'game:stop_countdown': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.StopCountdown();
     },
 
-    'player:met_goal': function (pkg) {
+    'player:met_goal': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.PlayerMetGoal(pkg.msgData.uid);
     },
 
-    'player:met_need': function (pkg) {
+    'player:met_need': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.PlayerMetNeed(pkg.msgData.uid, pkg.msgData.index);
     },
 
-    'player:callvote': function (pkg) {
+    'player:callvote': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.PlayerCallVote(currentSocket);
     },
 
-    'player:vote': function (pkg) {
+    'player:vote': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
       session.PlayerVote(currentSpace, pkg.msgData);
     },
 
-    'player:vote_end': function (pkg) {
+    'player:vote_end': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
@@ -161,7 +161,7 @@ const Common = function (nsp, socket) {
     },
 
     /* Pauses all game cooldowns (debugging only) */
-    'debug:pause': function (pkg) {
+    'debug:pause': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
@@ -169,7 +169,7 @@ const Common = function (nsp, socket) {
     },
 
     /* End game now (debugging only) */
-    'debug:end': function (pkg) {
+    'debug:end': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
