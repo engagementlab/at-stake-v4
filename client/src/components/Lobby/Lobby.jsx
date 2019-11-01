@@ -1,5 +1,6 @@
 import React, { Component, useState } from 'react';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 
 import Socket from '../../socket';
 
@@ -61,28 +62,36 @@ class Lobby extends Component {
   }
 
   playerJoin() {
-    const playerUID = Math.floor(Math.pow(10, 10 - 1) + Math.random() * (Math.pow(10, 10) - Math.pow(10, 10 - 1) - 1));
+    const { username, joinCode } = this.state;
+
+    const playerUID = Math.floor(
+      (10 ** 10 - 1) + Math.random() * ((10 ** 10) - (10 ** 10 - 1) - 1)
+    );
+
     // Log player in
-    Socket.get().send('login:submit', { username: this.state.username, code: this.state.joinCode, uid: playerUID });
+    Socket.get().send('login:submit', { username, joinCode, uid: playerUID });
   }
 
   render() {
+    const { data, showDecks, status } = this.state;
+    const { mode } = this.props;
+
     return (
       <div>
-        {this.state.data
+        {data
           ? (
             <div>
               <p>
                 Room Code:
                 {' '}
-                {this.state.data.code}
+                {data.code}
               </p>
-              {this.state.showDecks && this.props.mode === 'host' ? <Decks decks={this.state.data.decks} callback={this.selectDeck} /> : null}
+              {showDecks && mode === 'host' ? <Decks decks={data.decks} callback={this.selectDeck} /> : null}
             </div>
           )
           : null}
 
-        {this.props.mode === 'join'
+        {mode === 'join'
           ? (
             <p>
               Player Join:
@@ -97,11 +106,19 @@ class Lobby extends Component {
           <b>Lobby Status</b>
           :
           {' '}
-          {this.state.status}
+          {status}
         </p>
       </div>
     );
   }
 }
+
+Lobby.defaultProps = {
+  mode: '',
+};
+
+Lobby.propTypes = {
+  mode: PropTypes.string,
+};
 
 export default Lobby;
