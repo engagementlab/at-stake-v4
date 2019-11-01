@@ -1,21 +1,25 @@
 /* @Stake v3 */
+
 /**
  * Route definitions
  *
  * @module routes
- **/
-var express = require('express');
-var router = express.Router();
-var keystone = require('keystone');
-var middleware = require('./middleware');
-var importRoutes = keystone.importer(__dirname);
+ * */
+
+const express = require('express');
+
+const router = express.Router();
+const keystone = require('keystone');
+const middleware = require('./middleware');
+
+const importRoutes = keystone.importer(__dirname);
 
 router.use(middleware.locals);
 // Import Route Controllers
 
-var routes = {
-    api: importRoutes('./api'),
-    views: importRoutes('./views')
+const routes = {
+  api: importRoutes('./api'),
+  views: importRoutes('./views'),
 };
 
 // Setup Route Bindings

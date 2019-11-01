@@ -1,4 +1,4 @@
-'use strict';
+
 /**
  * @Stake v3
  * Developed by Engagement Lab, 2016-2017
@@ -13,63 +13,53 @@
  *
  * ==========
  */
-var keystone = require('keystone'),
-  GameSession = keystone.list('GameSession'),
-  Intro = keystone.list('Intro');
+const keystone = require('keystone');
 
-var GameManager = require('../../../lib/GameManager'), 
-    Session = require('learning-games-core').SessionManager;
-    
-exports = module.exports = function(req, res) {
+const GameSession = keystone.list('GameSession');
+const Intro = keystone.list('Intro');
 
-    var view = new keystone.View(req, res);
-    var locals = res.locals;
-    let accessCode = req.params.accesscode.toUpperCase();
+const GameManager = require('../../../lib/GameManager');
+const Session = require('learning-games-core').SessionManager;
 
-    locals.section = 'game-preloaded';
+exports = module.exports = function (req, res) {
+  const view = new keystone.View(req, res);
+  const { locals } = res;
+  let accessCode = req.params.accesscode.toUpperCase();
 
-    // Save host to allow path specification for socket.io
-    locals.socketHost = (process.env.NODE_ENV === 'staging') ? 'qa.atstakegame.com' : req.headers.host;
+  locals.section = 'game-preloaded';
 
-    // Enable debugging on staging only
-    if(req.query.debug !== undefined && process.env.NODE_ENV !== 'production') {
-        locals.debug = true;
-        accessCode = 'TEST';
-    }
+  // Save host to allow path specification for socket.io
+  locals.socketHost = (process.env.NODE_ENV === 'staging') ? 'qa.atstakegame.com' : req.headers.host;
 
-    view.on('init', function(next) {
+  // Enable debugging on staging only
+  if (req.query.debug !== undefined && process.env.NODE_ENV !== 'production') {
+    locals.debug = true;
+    accessCode = 'TEST';
+  }
 
-      GameSession.model.findOne({accessCode: accessCode}, function (err, game) {
+  view.on('init', (next) => {
+    GameSession.model.findOne({ accessCode }, (err, game) => {
+      Intro.model.findOne({}, (err, intro) => {
+        locals.text = intro.text;
 
-        Intro.model.findOne({}, function (err, intro) {
+        // If session does not exist, create it; otherwise, flag current one as restarting
+        let sesh = Session.Get(game.accessCode);
+        if (!sesh) {
+          Session.Create(game.accessCode, new GameManager(game));
+          sesh = Session.Get(game.accessCode);
+        } else sesh.SetToRestarting();
 
-          locals.text = intro.text;
+        locals.game = game;
+        locals.gameConfig = sesh.GetConfig();
+        locals.accessCode = game.accessCode;
 
-          // If session does not exist, create it; otherwise, flag current one as restarting
-          let sesh = Session.Get(game.accessCode);
-          if(!sesh) {
-            Session.Create(game.accessCode, new GameManager(game));
-            sesh = Session.Get(game.accessCode);
-          }
-          else
-            sesh.SetToRestarting();
+        if (locals.debug) locals.gameScreens = sesh.GetAllScreens();
 
-          locals.game = game;
-          locals.gameConfig = sesh.GetConfig();
-          locals.accessCode = game.accessCode;
-
-          if(locals.debug)
-            locals.gameScreens = sesh.GetAllScreens();
-
-          next();
-
-        });
-
+        next();
       });
-
     });
+  });
 
-    // Render the view
-    view.render('game/player');
-
+  // Render the view
+  view.render('game/player');
 };

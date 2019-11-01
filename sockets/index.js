@@ -1,32 +1,29 @@
-module.exports = function(app) {
+module.exports = (app) => {
+  const io = require('socket.io')(app, {
+    path: '/at-stake-socket',
+  });
 
-  var io = require('socket.io')(app, {path: '/at-stake-socket'});
+  const CommonHandler = require('./handlers/Common');
+  const PlayerLogin = require('./handlers/PlayerLogin');
 
-  var CommonHandler = require('./handlers/Common'),
-      PlayerLogin = require('./handlers/PlayerLogin');
-
-  io.on('connection', function (socket) {
-
+  io.on('connection', (socket) => {
     // Create event handlers for this socket
-    var eventHandlers = {
-        common: new CommonHandler(io, socket),
-        login: new PlayerLogin(io, socket)
+    const eventHandlers = {
+      common: new CommonHandler(io, socket),
+      login: new PlayerLogin(io, socket),
     };
 
     // Bind events to handlers
-    for (var category in eventHandlers) {
-        var handler = eventHandlers[category].handler;
-        for (var event in handler) {
-            socket.on(event, handler[event]);
-        }
+    for (const category in eventHandlers) {
+      const { handler } = eventHandlers[category];
+      for (const event in handler) {
+        socket.on(event, handler[event]);
+      }
     }
     // socket.emit('pong');
 
     socket.send(socket.id);
-
   });
 
- logger.info('socket.io inititalized');
-
-
+  logger.info('socket.io inititalized');
 };

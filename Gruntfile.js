@@ -6,7 +6,7 @@
  * Grunt task config.
  * ==============
 */
-'use strict';
+
 
 /**
  * Load all of our grunt tasks.
@@ -19,67 +19,66 @@
  * @name grunt
  * @return Grunt config
  */
-module.exports = function(grunt) {
+module.exports = function (grunt) {
+  // Load grunt tasks automatically
+  require('load-grunt-tasks')(grunt);
 
-	// Load grunt tasks automatically
-	require('load-grunt-tasks')(grunt);
+  // Time how long tasks take. Can help when optimizing build times
+  require('time-grunt')(grunt);
 
-	// Time how long tasks take. Can help when optimizing build times
-	require('time-grunt')(grunt);
+  const jobDirs = ['./grunt/*.js'];
 
-	var jobDirs = ['./grunt/*.js'];
+  const gruntJobsConfig = {
 
-	var gruntJobsConfig = {
-		
-		config: { src: jobDirs },		
-		pkg: grunt.file.readJSON('package.json')
+    config: { src: jobDirs },
+    pkg: grunt.file.readJSON('package.json'),
 
-	};
+  };
 
-	// Load all of our tasks from ./grunt/*.js and site modules
-	var configs = require('load-grunt-configs')(grunt, gruntJobsConfig);
-	
-	// Project configurations
-	grunt.initConfig(configs);
+  // Load all of our tasks from ./grunt/*.js and site modules
+  const configs = require('load-grunt-configs')(grunt, gruntJobsConfig);
 
-	// Default option to connect server (development)
-	grunt.registerTask('default', 'Start the dev server', [
-		// 'jshint',
-		'concurrent:dev'
-	]);
+  // Project configurations
+  grunt.initConfig(configs);
 
-	// JS linting tasks
-	grunt.registerTask('lint', [
-		'jshint'
-	]);
-	
-	// Copies backed up data
-	grunt.registerTask('copydata', [
-		'sftp:backup'
-	]);
+  // Default option to connect server (development)
+  grunt.registerTask('default', 'Start the dev server', [
+    // 'jshint',
+    'concurrent:dev',
+  ]);
 
-	grunt.registerTask('alldone', function() {
+  // JS linting tasks
+  grunt.registerTask('lint', [
+    'jshint',
+  ]);
+
+  // Copies backed up data
+  grunt.registerTask('copydata', [
+    'sftp:backup',
+  ]);
+
+  grunt.registerTask('alldone', () => {
 	  grunt.log.writeln('>>>>>>>> Packages installed, code minified for production! <<<<<<<<');
-	});
+  });
 
-	// Task to compile script/styles
-	grunt.registerTask('compile', [
-		'sass:dist',
-		'uglify',
-		'concat',
-		'cssmin',
-		'execute:cloudinary',
-		'alldone'
-	]);
+  // Task to compile script/styles
+  grunt.registerTask('compile', [
+    'sass:dist',
+    'uglify',
+    'concat',
+    'cssmin',
+    'execute:cloudinary',
+    'alldone',
+  ]);
 
-	// Task to run tests
-	grunt.registerTask('tests', [
-		'test:all'
-	]);
+  // Task to run tests
+  grunt.registerTask('tests', [
+    'test:all',
+  ]);
 
-	/**
+  /**
 	* Task to deploy to production or staging
-	* 
+	*
 	* ### Examples:
 	*
 	*    // Deploys to production pm2 config
@@ -89,39 +88,30 @@ module.exports = function(grunt) {
 	* @class Grunt
 	* @name grunt/deploy
 	*/
-	grunt.registerTask('deploy', function() {
-	
-		var target = grunt.option('target');
-		var skipVersion = grunt.option('skipversion');
-		var tasks = [
-			'execute:readme',
-			'confirm',
-			'pm2deploy'
-		];
+  grunt.registerTask('deploy', () => {
+    const target = grunt.option('target');
+    const skipVersion = grunt.option('skipversion');
+    let tasks = [
+      'execute:readme',
+      'confirm',
+      'pm2deploy',
+    ];
 
-	  if(!target)
-	  	tasks.unshift('prompt:app_target');
+	  if (!target) tasks.unshift('prompt:app_target');
 
 	  // Set task deployment target
-	  tasks = tasks.map(function(task) {
-	  	return task + ':' + target;
-		});
+	  tasks = tasks.map((task) => `${task}:${target}`);
 
 	  // Version needs to be bumped first after confirming, unlesss skipped or staging deploy
-		if(!skipVersion) {
-			tasks.push('bump:'+target);
-		}
-		else {
-			grunt.log.writeln("Skipping 'bump' task.");
-		}
+    if (!skipVersion) {
+      tasks.push(`bump:${target}`);
+    } else {
+      grunt.log.writeln("Skipping 'bump' task.");
+    }
 
-		if(target === 'staging')
-			tasks.push('notify:deploy_staging');
-		else
-			tasks.push('notify:deploy_prod');
+    if (target === 'staging') tasks.push('notify:deploy_staging');
+    else tasks.push('notify:deploy_prod');
 
 	  grunt.task.run.apply(grunt.task, tasks);
-
-	});
-
+  });
 };

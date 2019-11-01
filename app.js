@@ -53,6 +53,7 @@ global.logger = winston.createLogger({
 
 const bootstrap = require('@engagementlab/el-bootstrapper');
 const express = require('express');
+
 const
   app = express();
 

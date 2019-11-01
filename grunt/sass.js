@@ -1,25 +1,21 @@
-module.exports = function(grunt, options) {
-
-  "use strict";
-
+module.exports = function (grunt, options) {
   const sass = require('node-sass');
-  var destPath = __dirname + '/../public/styles/core.css';
-  var srcPath = __dirname + '/../public/styles/core.scss';
+  const destPath = `${__dirname}/../public/styles/core.css`;
+  const srcPath = `${__dirname}/../public/styles/core.scss`;
 
-	var dist = {
+  const dist = {
     options: {
       style: 'expanded',
       trace: true,
       sourceMap: true,
-			implementation: sass
+      implementation: sass,
     },
     files: {
-      
-    }
-  }
+
+    },
+  };
 
   dist.files[destPath] = srcPath;
 
-  return {'dist': dist};
-
+  return { dist };
 };

@@ -12,51 +12,45 @@
  *
  * ==========
  */
-var keystone = require('keystone'),
-    GameSession = keystone.list('GameSession'),
-    Session = require('learning-games-core').SessionManager;
+const keystone = require('keystone');
 
-exports = module.exports = function(req, res) {
+const GameSession = keystone.list('GameSession');
+const Session = require('learning-games-core').SessionManager;
 
-    var data = (req.method == 'POST') ? req.body : req.query;
+exports = module.exports = function (req, res) {
+  const data = (req.method == 'POST') ? req.body : req.query;
 
-    var locals = res.locals;
-    var template;
-    var accessCode = data.code.toUpperCase();
+  const { locals } = res;
+  let template;
+  const accessCode = data.code.toUpperCase();
 
-    locals.game_not_found = false;
+  locals.game_not_found = false;
 
-    // locals.section is used to set the currently selected
-    // item in the header navigation.
-    locals.section = 'player';
-    locals.env = 'development'
+  // locals.section is used to set the currently selected
+  // item in the header navigation.
+  locals.section = 'player';
+  locals.env = 'development';
 
-    if(Session.Get(accessCode)) {
-
-        if(Session.Get(accessCode).IsFull()) {
-           res.send({error_code: 'session_full', msg: 'Sorry! This game is full!'});
-           return;
-        }
-        else if(data.name === undefined || data.name.length === 0) {
-           res.send({error_code: 'no_username', msg: 'You need to enter a username!'});
-           return;
-        }
-        
+  if (Session.Get(accessCode)) {
+    if (Session.Get(accessCode).IsFull()) {
+      res.send({ error_code: 'session_full', msg: 'Sorry! This game is full!' });
+      return;
     }
+    if (data.name === undefined || data.name.length === 0) {
+      res.send({ error_code: 'no_username', msg: 'You need to enter a username!' });
+      return;
+    }
+  }
 
-    GameSession.model.findOne({ accessCode: accessCode }, function (err, game) {
+  GameSession.model.findOne({ accessCode }, (err, game) => {
+    if (game === null || game === undefined || Session.Get(accessCode) === undefined) {
+      locals.game_not_found = true;
+      res.send({ error_code: 'wrong_code', msg: `Game for room code "${accessCode}" not found.` });
 
-        if(game === null || game === undefined || Session.Get(accessCode) === undefined) {
-            locals.game_not_found = true;
-            res.send({error_code: 'wrong_code', msg: 'Game for room code "' + accessCode + '" not found.'});
+      return;
+    }
+    locals.game = game;
 
-            return;
-        }
-        else
-            locals.game = game;
-            
-        res.send({code: game.accessCode});
-
-    });
-
+    res.send({ code: game.accessCode });
+  });
 };

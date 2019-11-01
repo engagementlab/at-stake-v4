@@ -1,6 +1,7 @@
 # @Stake
 
-[![Zenhub Badge](https://dxssrr2j0sq4w.cloudfront.net/3.2.0/img/external/zenhub-badge.png)](https://zenhub.com)
+
+[![eslint badge]([eslint-badge])](https://github.com/airbnb/javascript) [![Zenhub Badge]([zenhub-badge])](https://zenhub.com)
 
 @Stake is a game that fosters democracy, empathy, and creative problem solving for civic issues. Players take on a variety of roles and pitch ideas under a time pressure, competing to produce the best idea in the eyes of the table's "Decider."
 
@@ -25,3 +26,6 @@ This is a digital version of the [tabletop game](https://elab.emerson.edu/projec
   grunt --sites=at-stake
   ```
 The site should now be running at http://localhost:3000.
+
+[zenhub-badge]: https://dxssrr2j0sq4w.cloudfront.net/3.2.0/img/external/zenhub-badge.png
+[eslint-badge]: https://badgen.net/badge/eslint/airbnb/ff5a5f?icon=airbnb
