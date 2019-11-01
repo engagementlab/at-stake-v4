@@ -15,6 +15,8 @@
 const logger = require('winston');
 const Session = require('learning-games-core').SessionManager;
 
+// Arrow functions can't be used as constructors, so we must use function()
+// eslint-disable-next-line func-names
 const PlayerLogin = function (nsp, socket, emitter) {
   const currentSpace = nsp;
   const currentSocket = socket;
@@ -40,7 +42,11 @@ const PlayerLogin = function (nsp, socket, emitter) {
 
       // Decider registration
       if (payload.msgData.type === 'decider' && Session.Get(playerGameId)) {
-        const player = { socket_id: currentSocket.id, username: payload.msgData.username, uid: payload.msgData.uid };
+        const player = {
+          socket_id: currentSocket.id,
+          username: payload.msgData.username,
+          uid: payload.msgData.uid,
+        };
 
         Session.GroupView(payload.gameId, currentSocket.id);
         Session.Get(playerGameId).ModeratorJoin(currentSpace, player);
@@ -50,7 +56,11 @@ const PlayerLogin = function (nsp, socket, emitter) {
     },
 
     'login:submit': (payload) => {
-      const player = { socket_id: currentSocket.id, username: payload.msgData.username, uid: payload.msgData.uid };
+      const player = {
+        socket_id: currentSocket.id,
+        username: payload.msgData.username,
+        uid: payload.msgData.uid,
+      };
 
       console.log(payload);
       // Mark player as ready inside game session
@@ -83,7 +93,11 @@ const PlayerLogin = function (nsp, socket, emitter) {
 
       // See if this player is still marked as active inside game session
       if (session.PlayerIsActive(payload.uid)) {
-        const player = { socket_id: currentSocket.id, username: payload.username, uid: payload.uid };
+        const player = {
+          socket_id: currentSocket.id,
+          username: payload.username,
+          uid: payload.uid,
+        };
         console.log(payload);
         // Mark player as ready inside game session
         session.PlayerReady(

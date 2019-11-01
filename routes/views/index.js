@@ -17,9 +17,12 @@ const keystone = require('keystone');
 const GameConfig = keystone.list('GameConfig');
 const Homepage = keystone.list('Homepage');
 
-exports = module.exports = function (req, res) {
+// eslint-disable-next-line no-multi-assign
+exports = module.exports = (req, res) => {
   const view = new keystone.View(req, res);
-  const { locals } = res;
+  const {
+    locals,
+  } = res;
 
   locals.section = 'homepage';
 
@@ -43,12 +46,12 @@ exports = module.exports = function (req, res) {
   });
 
   queryConfig.exec((err, resultConfig) => {
-	  	// If game is enabled, get home page content
-	    queryHomepage.exec((err, resultHomepage) => {
-	    	locals.content = resultHomepage;
+    // If game is enabled, get home page content
+    queryHomepage.exec((_err, resultHomepage) => {
+      locals.content = resultHomepage;
 
-			  // Render the view
-		    res.render('index');
-		  });
+      // Render the view
+      res.render('index');
+    });
   });
 };

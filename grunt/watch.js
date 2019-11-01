@@ -1,4 +1,4 @@
-module.exports = function (grunt, options) {
+module.exports = (grunt, options) => {
   const watchFilter = ['../public/styles/**/*.scss'];
 
   return {

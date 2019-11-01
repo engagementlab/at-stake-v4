@@ -12,7 +12,9 @@
 
 const keystone = require('keystone');
 
-const { Types } = keystone.Field;
+const {
+  Types,
+} = keystone.Field;
 
 /**
  * Intro Model
@@ -29,14 +31,21 @@ const Intro = new keystone.List('Intro', {
 Intro.add({
 
   text: {
-    type: Types.TextArray, label: 'Intro Text', note: 'One string per screen.', required: true, initial: true,
+    type: Types.TextArray,
+    label: 'Intro Text',
+    note: 'One string per screen.',
+    required: true,
+    initial: true,
   },
-  dateCreated: { type: Date, noedit: true },
+  dateCreated: {
+    type: Date,
+    noedit: true
+  },
 
 });
 
 
-Intro.schema.pre('save', function (next) {
+Intro.schema.pre('save', (next) => {
   this.dateCreated = new Date();
 
   next();

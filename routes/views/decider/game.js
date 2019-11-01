@@ -1,4 +1,3 @@
-
 /**
  * @Stake v3
  * Developed by Engagement Lab, 2016-2017
@@ -17,13 +16,17 @@ const keystone = require('keystone');
 
 const GameSession = keystone.list('GameSession');
 const Intro = keystone.list('Intro');
-
-const GameManager = require('../../../lib/GameManager');
 const Session = require('learning-games-core').SessionManager;
 
-exports = module.exports = function (req, res) {
+const GameManager = require('../../../lib/GameManager');
+
+
+// eslint-disable-next-line no-multi-assign
+exports = module.exports = (req, res) => {
   const view = new keystone.View(req, res);
-  const { locals } = res;
+  const {
+    locals,
+  } = res;
   let accessCode = req.params.accesscode.toUpperCase();
 
   locals.section = 'game-preloaded';
@@ -38,8 +41,10 @@ exports = module.exports = function (req, res) {
   }
 
   view.on('init', (next) => {
-    GameSession.model.findOne({ accessCode }, (err, game) => {
-      Intro.model.findOne({}, (err, intro) => {
+    GameSession.model.findOne({
+      accessCode,
+    }, (err, game) => {
+      Intro.model.findOne({}, (_err, intro) => {
         locals.text = intro.text;
 
         // If session does not exist, create it; otherwise, flag current one as restarting

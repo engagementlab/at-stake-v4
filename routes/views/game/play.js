@@ -17,9 +17,12 @@ const keystone = require('keystone');
 
 const Intro = keystone.list('Intro');
 
-exports = module.exports = function (req, res) {
+// eslint-disable-next-line no-multi-assign
+exports = module.exports = (req, res) => {
   const view = new keystone.View(req, res);
-  const { locals } = res;
+  const {
+    locals,
+  } = res;
 
   // locals.section is used to set the currently loaded view
   locals.section = 'play';
@@ -33,8 +36,12 @@ exports = module.exports = function (req, res) {
     if (req.query.debug !== undefined) locals.debug = true;
 
     // Has access code/username in URL? (testing)
-    if (req.params.accesscode) { locals.accesscode = req.params.accesscode; }
-    if (req.params.username) { locals.username = req.params.username; }
+    if (req.params.accesscode) {
+      locals.accesscode = req.params.accesscode;
+    }
+    if (req.params.username) {
+      locals.username = req.params.username;
+    }
   } else if (req.params.mode === 'mobile') locals.mobile = true;
 
   console.log(locals);

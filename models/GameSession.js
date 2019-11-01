@@ -12,7 +12,9 @@
 
 const keystone = require('keystone');
 
-const { Types } = keystone.Field;
+const {
+  Types,
+} = keystone.Field;
 
 /**
  * GameSession Model
@@ -29,18 +31,27 @@ const GameSession = new keystone.List('GameSession', {
 GameSession.add({
 
   accessCode: {
-    type: String, required: true, initial: true, hidden: true,
+    type: String,
+    required: true,
+    initial: true,
+    hidden: true,
   },
   deckId: {
-    type: String, required: true, initial: true, hidden: true,
+    type: String,
+    required: true,
+    initial: true,
+    hidden: true,
   },
 
-  dateCreated: { type: Date, noedit: true },
+  dateCreated: {
+    type: Date,
+    noedit: true,
+  },
 
 });
 
 
-GameSession.schema.pre('save', function (next) {
+GameSession.schema.pre('save', (next) => {
   this.dateCreated = new Date();
 
   next();
