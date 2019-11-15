@@ -12,9 +12,14 @@ class Lobby extends Component {
     this.state = {
       data: null,
       status: null,
+      playerData: null,
       showDecks: true,
       joinCode: '',
+
+      hostUsername: '',
       username: '',
+      
+      mode: ''
     };
 
     this.baseUrl = process.env.NODE_ENV === 'production' ? 'https://aaa.bbb' : 'http://localhost:3001';
@@ -22,16 +27,44 @@ class Lobby extends Component {
   }
 
   componentDidMount() {
-    fetch(`${this.baseUrl}/api/generate`)
+
+    let socket = Socket.current(); 
+
+    socket.on('players:update', (data) => {
+      console.log(data) 
+        // this.setState({ response: 'Connected to socket', mode: host ? 'host' : 'join' });
+    });
+  
+  }
+
+  start(host) {
+    
+    let socket = Socket.get().connect();  
+
+    if(host) {
+
+      fetch(`${this.baseUrl}/api/generate`)
       .then((response) => response.json())
       .then((response) => {
+        
         this.setState({
           data: response,
+          mode: 'host',
+          showDecks: true
         });
+
+
       });
+    
+    }
+
+    socket.on('player:loggedin', () => { 
+        this.setState({ response: 'Player joined!' });
+    });
   }
 
   async selectDeck(deck) {
+
     // Controller to abort fetch, if needed and duration counter
     const controller = new AbortController();
     const { signal } = controller;
@@ -56,12 +89,26 @@ class Lobby extends Component {
     if (response.data.sessionCreated) {
       this.setState({
         status: 'Session created',
-        showDecks: false,
+        showDecks: false
       });
+
+      let roomData = {type: 'player'};
+        
+      // if(host) {
+      const playerUID = Math.floor(
+        (10 ** 10 - 1) + Math.random() * ((10 ** 10) - (10 ** 10 - 1) - 1)
+        );
+        roomData = { type: 'decider', username: this.state.hostUsername, uid: playerUID, joinCode: data.accessCode  };
+      // }
+      
+      // Session started, let's sign-up the decider for this room
+      Socket.get().send('room', roomData); 
+
     }
   }
 
   playerJoin() {
+  
     const { username, joinCode } = this.state;
 
     const playerUID = Math.floor(
@@ -70,14 +117,24 @@ class Lobby extends Component {
 
     // Log player in
     Socket.get().send('login:submit', { username, joinCode, uid: playerUID });
+  
   }
 
   render() {
-    const { data, showDecks, status } = this.state;
-    const { mode } = this.props;
+    const { data, mode, playerData, showDecks, status } = this.state;
 
     return (
       <div>
+          
+        <input type="text" placeholder="host" onChange={(event) => this.setState({ hostUsername: event.target.value })} />
+        
+        <br />
+        <button onClick={() => this.start(true)}>Host</button> 
+        <br />
+          /////////
+        <br />
+        <button onClick={() => this.start(false)}>Join</button>
+        
         {data
           ? (
             <div>
@@ -108,6 +165,14 @@ class Lobby extends Component {
           {' '}
           {status}
         </p>
+
+        {playerData ? null :    
+            (<p>
+              Players: 
+
+            </p>)  
+        }
+      
       </div>
     );
   }
