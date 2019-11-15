@@ -16,8 +16,8 @@ class Lobby extends Component {
       showDecks: true,
       joinCode: '',
 
-      hostUsername: '',
-      username: '',
+      // for dev only
+      username: 'user1',
       
       mode: ''
     };
@@ -29,11 +29,6 @@ class Lobby extends Component {
   componentDidMount() {
 
     let socket = Socket.current(); 
-
-    socket.on('players:update', (data) => {
-      console.log(data) 
-        // this.setState({ response: 'Connected to socket', mode: host ? 'host' : 'join' });
-    });
   
   }
 
@@ -50,9 +45,9 @@ class Lobby extends Component {
         this.setState({
           data: response,
           mode: 'host',
-          showDecks: true
+          showDecks: true,
+          joinCode: response.code
         });
-
 
       });
     
@@ -92,6 +87,8 @@ class Lobby extends Component {
         showDecks: false
       });
 
+      this.playerJoin();
+
       let roomData = {type: 'player'};
         
       // if(host) {
@@ -111,22 +108,29 @@ class Lobby extends Component {
   
     const { username, joinCode } = this.state;
 
-    const playerUID = Math.floor(
-      (10 ** 10 - 1) + Math.random() * ((10 ** 10) - (10 ** 10 - 1) - 1)
-    );
+    const playerUID = Math.floor(1000000000 + Math.random() * 900000);
 
     // Log player in
-    Socket.get().send('login:submit', { username, joinCode, uid: playerUID });
+    let socket = Socket.get();
+    socket.send('login:submit', { username, joinCode, uid: playerUID });
+
+    socket._current.on('players:update', (data) => {
+      
+      this.setState({playerData: data.players});
+      
+    });
   
   }
 
   render() {
+
     const { data, mode, playerData, showDecks, status } = this.state;
 
     return (
+
       <div>
           
-        <input type="text" placeholder="host" onChange={(event) => this.setState({ hostUsername: event.target.value })} />
+        <input type="text" value="host1" onChange={(event) => this.setState({ username: event.target.value })} />
         
         <br />
         <button onClick={() => this.start(true)}>Host</button> 
@@ -166,9 +170,12 @@ class Lobby extends Component {
           {status}
         </p>
 
-        {playerData ? null :    
+        {!playerData ? null :    
             (<p>
               Players: 
+              <ol>
+                {playerData.map(player => <li>{player.username}</li>)}
+              </ol>
 
             </p>)  
         }

@@ -27,6 +27,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
   this.handler = {
 
     room: (payload) => {
+      
       logger.info('try join rm')
       if (!payload.gameId) return;
 
@@ -62,8 +63,6 @@ const PlayerLogin = function (nsp, socket, emitter) {
         username: payload.msgData.username,
         uid: payload.msgData.uid,
       };
-
-      // console.log(payload);
 
       // Mark player as ready inside game session
       Session.Get(payload.gameId).PlayerReady(
