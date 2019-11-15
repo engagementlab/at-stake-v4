@@ -2,6 +2,7 @@
 import io from 'socket.io-client';
 
 class Socket {
+
   constructor() {
     this._current = null;
     this._socketId = null;
@@ -17,6 +18,12 @@ class Socket {
     }
 
     return this.instance;
+  }  
+  
+  static current() {
+  
+    return this.instance._current;
+
   }
 
   connect() {
@@ -40,7 +47,8 @@ class Socket {
   }
 
   send(eventId, appendData) {
-    if (this._gameId === null && appendData.code) { this._gameId = appendData.code; }
+
+    if (this._gameId === null && appendData.joinCode) { this._gameId = appendData.joinCode; }
 
     const data = {
       gameId: this._gameId.toUpperCase().trim(),
@@ -51,6 +59,8 @@ class Socket {
         msgData: appendData,
       },
     };
+
+    console.log('send', eventId)
 
     this._current.emit(eventId, payload);
   }
