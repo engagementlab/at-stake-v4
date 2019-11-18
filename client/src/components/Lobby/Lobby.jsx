@@ -18,43 +18,54 @@ class Lobby extends Component {
 
       // for dev only
       username: 'user1',
-      
+
       mode: ''
     };
 
     this.baseUrl = process.env.NODE_ENV === 'production' ? 'https://aaa.bbb' : 'http://localhost:3001';
     this.selectDeck = this.selectDeck.bind(this);
+    this.socket = null;
   }
 
   componentDidMount() {
 
-    let socket = Socket.current(); 
-  
+    let socket = Socket.current();
+
+  }
+
+  join() {
+
+    this.setState({
+      mode: 'join'
+    });
+
   }
 
   start(host) {
-    
-    let socket = Socket.get().connect();  
 
-    if(host) {
+    this.socket = Socket.get().connect();
+
+    if (host) {
 
       fetch(`${this.baseUrl}/api/generate`)
-      .then((response) => response.json())
-      .then((response) => {
-        
-        this.setState({
-          data: response,
-          mode: 'host',
-          showDecks: true,
-          joinCode: response.code
+        .then((response) => response.json())
+        .then((response) => {
+
+          this.setState({
+            data: response,
+            mode: 'host',
+            showDecks: true,
+            joinCode: response.code
+          });
+
         });
 
-      });
-    
     }
 
-    socket.on('player:loggedin', () => { 
-        this.setState({ response: 'Player joined!' });
+    this.socket.on('player:loggedin', () => {
+      this.setState({
+        response: 'Player joined!'
+      });
     });
   }
 
@@ -62,7 +73,9 @@ class Lobby extends Component {
 
     // Controller to abort fetch, if needed and duration counter
     const controller = new AbortController();
-    const { signal } = controller;
+    const {
+      signal
+    } = controller;
 
     const data = {};
     data.deciderName = 'Decider';
@@ -77,49 +90,62 @@ class Lobby extends Component {
 
     const response = await axios.post(
       `${this.baseUrl}/api/create`,
-      data,
-      { headers: { 'Content-Type': 'application/json' } },
+      data, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      },
     );
 
     if (response.data.sessionCreated) {
+      
       this.setState({
         status: 'Session created',
         showDecks: false
       });
 
+      // Join host player to room
       this.playerJoin();
 
-      let roomData = {type: 'player'};
-        
-      // if(host) {
-      const playerUID = Math.floor(
-        (10 ** 10 - 1) + Math.random() * ((10 ** 10) - (10 ** 10 - 1) - 1)
-        );
-        roomData = { type: 'decider', username: this.state.hostUsername, uid: playerUID, joinCode: data.accessCode  };
-      // }
-      
-      // Session started, let's sign-up the decider for this room
-      Socket.get().send('room', roomData); 
-
     }
+
   }
 
-  playerJoin() {
-  
-    const { username, joinCode } = this.state;
+  playerJoin(code) {
 
     const playerUID = Math.floor(1000000000 + Math.random() * 900000);
 
-    // Log player in
-    let socket = Socket.get();
-    socket.send('login:submit', { username, joinCode, uid: playerUID });
+    // Host = "decider"
+    let roomData = {
+      type: this.state.mode === 'host' ? 'decider' : 'player',
+      username: this.state.hostUsername,
+      uid: playerUID,
+      joinCode: code || this.state.accessCode
+    };
+    const {
+      username,
+      joinCode
+    } = this.state;
 
-    socket._current.on('players:update', (data) => {
-      
-      this.setState({playerData: data.players});
-      
+    // Log player in
+    this.socket = Socket.get();
+    this.socket.send('login:submit', {
+      username,
+      joinCode,
+      uid: playerUID
     });
-  
+
+    // Session started, let's sign-up the decider for this room
+    this.socket.send('room', roomData);
+
+    this.socket._current.on('players:update', (data) => {
+
+      this.setState({
+        playerData: data.players
+      });
+
+    });
+
   }
 
   render() {
@@ -129,15 +155,39 @@ class Lobby extends Component {
     return (
 
       <div>
-          
-        <input type="text" value="host1" onChange={(event) => this.setState({ username: event.target.value })} />
-        
-        <br />
-        <button onClick={() => this.start(true)}>Host</button> 
-        <br />
-          /////////
-        <br />
-        <button onClick={() => this.start(false)}>Join</button>
+        {mode === ''
+          ? (   
+            <div>
+              <input type="text" value="host1" onChange={(event) => this.setState({ username: event.target.value })} />
+              
+              <br />
+              <button onClick={() => this.start(true)}>Host</button> 
+              <br />
+                /////////
+              <br />
+              <button onClick={() => this.join()}>Join</button>
+            </div>
+          ) : null}
+
+        {mode === 'host' && (playerData && playerData.length >= 2)
+          ? ( 
+            <div id="start">
+              <button id="btn-start-game" onClick={() => this.socket.send('game:intro')}>
+                <h2>Start</h2>
+              </button>
+            </div>
+          ) : null}
+
+        {mode === 'join'
+          ? (
+            <p>
+              Player Join:
+              <input type="text" placeholder="room code" onChange={(event) => this.setState({ joinCode: event.target.value })} />
+              <input type="text" placeholder="name" onChange={(event) => this.setState({ username: event.target.value })} />
+              <button type="button" onClick={() => this.playerJoin()}>Start</button>
+            </p>
+          )
+          : null}
         
         {data
           ? (
@@ -152,17 +202,6 @@ class Lobby extends Component {
           )
           : null}
 
-        {mode === 'join'
-          ? (
-            <p>
-              Player Join:
-              <input type="text" placeholder="room code" onChange={(event) => this.setState({ joinCode: event.target.value })} />
-              <input type="text" placeholder="name" onChange={(event) => this.setState({ username: event.target.value })} />
-              <button type="button" onClick={() => this.playerJoin()}>Join</button>
-            </p>
-          )
-          : null}
-
         <p>
           <b>Lobby Status</b>
           :
@@ -171,13 +210,13 @@ class Lobby extends Component {
         </p>
 
         {!playerData ? null :    
-            (<p>
+            (<div>
               Players: 
               <ol>
-                {playerData.map(player => <li>{player.username}</li>)}
+                {playerData.map(player => <li key={player.username }>{player.username}</li>)}
               </ol>
 
-            </p>)  
+            </div>)  
         }
       
       </div>
