@@ -3,6 +3,7 @@ import './App.css';
 
 import Socket from './socket';
 import Lobby from './components/Lobby/Lobby';
+import Intro from './components/Intro/Intro';
 
 class App extends Component {
   
@@ -11,32 +12,36 @@ class App extends Component {
     this.state = {
       started: false,
       response: 'Trying socket connection...',
+      screens: ['lobby', 'intro', 'meet', 'deliberate', 'ranking'],
+      screenIndex: -1
     };
 
   }
 
   componentDidMount() {
 
-    let socket = Socket.get().connect();
+    let socket = Socket.get()._current;
 
     socket.on('ohhai', () => { 
-      this.setState({ response: 'Connected to socket', started: true });
+      this.setState({ response: 'Connected to socket', screenIndex: 0 });
+    });
+    socket.on('game:intro', () => { 
+      this.setState({ screenIndex: 1 });
     });
   
   }
 
-  startJoinI() {
-
-  }
-
   render() {
-    const { response, started } = this.state;
+    const { response, screenIndex, screens } = this.state;
+    const currentScreen = screens[screenIndex];
+
       return (
         <div className="App">
 
           <p>{response}</p>
 
-          { !started ? null : <Lobby /> }
+          { currentScreen === 'lobby' ? <Lobby /> : null }
+          { currentScreen === 'intro' ? < Intro /> : null }
 
       </div>
     );

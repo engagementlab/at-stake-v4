@@ -1,9 +1,9 @@
-import React, { Component, useState } from 'react';
-import axios from 'axios';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import axios from 'axios';
 
+import Settings from '../../settings';
 import Socket from '../../socket';
-
 import Decks from './Decks';
 
 class Lobby extends Component {
@@ -22,16 +22,11 @@ class Lobby extends Component {
       mode: ''
     };
 
-    this.baseUrl = process.env.NODE_ENV === 'production' ? 'https://aaa.bbb' : 'http://localhost:3001';
     this.selectDeck = this.selectDeck.bind(this);
     this.socket = null;
   }
 
-  componentDidMount() {
-
-    let socket = Socket.current();
-
-  }
+  componentDidMount() { }
 
   join() {
 
@@ -47,7 +42,7 @@ class Lobby extends Component {
 
     if (host) {
 
-      fetch(`${this.baseUrl}/api/generate`)
+      fetch(`${process.env.REACT_APP_API_URL}/api/generate`)
         .then((response) => response.json())
         .then((response) => {
 
@@ -72,10 +67,10 @@ class Lobby extends Component {
   async selectDeck(deck) {
 
     // Controller to abort fetch, if needed and duration counter
-    const controller = new AbortController();
+    /* const controller = new AbortController();
     const {
       signal
-    } = controller;
+    } = controller; */
 
     const data = {};
     data.deciderName = 'Decider';
