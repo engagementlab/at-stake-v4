@@ -64,6 +64,8 @@ const PlayerLogin = function (nsp, socket, emitter) {
         uid: payload.msgData.uid,
       };
 
+      if(!Session.Get(payload.gameId)) return;
+
       // Mark player as ready inside game session
       Session.Get(payload.gameId).PlayerReady(
         player,
