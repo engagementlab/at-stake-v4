@@ -84,12 +84,13 @@ class Lobby extends Component {
     data.accessCode = this.state.data.code;
 
     const response = await axios.post(
-      `${this.baseUrl}/api/create`,
-      data, {
+      `${process.env.REACT_APP_API_URL}/api/create`,
+      data,
+      {
         headers: {
           'Content-Type': 'application/json'
         }
-      },
+      }
     );
 
     if (response.data.sessionCreated) {
@@ -108,6 +109,16 @@ class Lobby extends Component {
 
   playerJoin(code) {
 
+    this.socket = Socket.get();
+    // Watch for new players in lobby
+    this.socket._current.on('players:update', (data) => {
+
+      this.setState({
+        playerData: data.players
+      });
+
+    });
+
     const playerUID = Math.floor(1000000000 + Math.random() * 900000);
 
     // Host = "decider"
@@ -123,7 +134,6 @@ class Lobby extends Component {
     } = this.state;
 
     // Log player in
-    this.socket = Socket.get();
     this.socket.send('login:submit', {
       username,
       joinCode,
@@ -132,14 +142,6 @@ class Lobby extends Component {
 
     // Session started, let's sign-up the decider for this room
     this.socket.send('room', roomData);
-
-    this.socket._current.on('players:update', (data) => {
-
-      this.setState({
-        playerData: data.players
-      });
-
-    });
 
   }
 
@@ -167,7 +169,7 @@ class Lobby extends Component {
         {mode === 'host' && (playerData && playerData.length >= 2)
           ? ( 
             <div id="start">
-              <button id="btn-start-game" onClick={() => this.socket.send('game:intro')}>
+              <button id="btn-start-game" onClick={() => { this.socket.send('game:intro'); this.props.done(); }}>
                 <h2>Start</h2>
               </button>
             </div>

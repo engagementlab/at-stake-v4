@@ -17,7 +17,6 @@ class Intro extends PureComponent {
   }
 
   componentDidMount = () => {
-    console.log('Intro mounted');
 
     this.socket = Socket.get();
 
@@ -45,55 +44,70 @@ class Intro extends PureComponent {
   }
 
   render () {
-    const { text } = this.state;
+    const { text, screenIndex } = this.state;
 
     return (
 
       <div>
+        { screenIndex === 0 ?
+          <div className="intro panel">
+        
+            <button className="submit" onClick={() => this.socket.send('game:next_screen')}>
+              <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
+            </button>
+
+            <div className="content">
+              <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/street" alt="Intro screen 1 image" />
+            
+              <div className="text">{text[0]}</div>
+            </div>
+
+          </div>
+      : null }
+
+      { screenIndex === 1 ?
+
         <div className="intro panel">
-    
-        <button className="submit" onClick={() => this.socket.send('game:next_screen')}>
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
-        </button>
+          <button className="submit" data-event="game:next_screen">
+            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
+          </button>
+          <div className="content">
+            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/evil" alt="Intro screen 2 image" />
+          
+            <div className="text">{text[1]}</div>
+          </div>
+        </div>
 
-        <div className="content">
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/street" alt="Intro screen 1 image" />
+      : null}
+
+      { screenIndex === 2 ?
+
+        <div className="intro panel">
+          <button className="submit" data-event="game:next_screen">
+            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
+          </button>
+          <div className="content">
+            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/city" alt="Intro screen 3 image" />
+            <div className="text">{text[2]}</div>
+          </div>
+        </div>
+
+      : null }
+
+      { screenIndex === 3 ?
+
+        <div className="intro panel">
+          <button className="submit" data-event="game:start">
+            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Start game" />
+          </button>
+          <div className="content">
+            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/bunker" alt="Intro screen 4 image" />
+            <div className="text">{text[3]}</div>
+          </div>
+        </div>
         
-          <div className="text">{text[0]}</div>
-        </div>
-
-      </div>
-
-      <div className="intro panel">
-        <button className="submit" data-event="game:next_screen">
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
-        </button>
-        <div className="content">
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/evil" alt="Intro screen 2 image" />
-        
-          <div className="text">{text[1]}</div>
-        </div>
-      </div>
-
-      <div className="intro panel">
-        <button className="submit" data-event="game:next_screen">
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
-        </button>
-        <div className="content">
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/city" alt="Intro screen 3 image" />
-          <div className="text">{text[2]}</div>
-        </div>
-      </div>
-
-      <div className="intro panel">
-        <button className="submit" data-event="game:start">
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Start game" />
-        </button>
-        <div className="content">
-          <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/bunker" alt="Intro screen 4 image" />
-          <div className="text">{text[3]}</div>
-        </div>
-      </div>
+      : null }
+      
     </div>
     );
   }

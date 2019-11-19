@@ -16,6 +16,8 @@ class App extends Component {
       screenIndex: -1
     };
 
+    this.advanceScreen = this.advanceScreen.bind(this);
+
   }
 
   componentDidMount() {
@@ -31,6 +33,12 @@ class App extends Component {
   
   }
 
+  advanceScreen() {
+    
+    this.setState({ screenIndex: this.state.screenIndex+1 });
+
+  }
+
   render() {
     const { response, screenIndex, screens } = this.state;
     const currentScreen = screens[screenIndex];
@@ -40,7 +48,7 @@ class App extends Component {
 
           <p>{response}</p>
 
-          { currentScreen === 'lobby' ? <Lobby /> : null }
+          { currentScreen === 'lobby' ? <Lobby done={this.advanceScreen} /> : null }
           { currentScreen === 'intro' ? < Intro /> : null }
 
       </div>
