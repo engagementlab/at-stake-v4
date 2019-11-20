@@ -3,4 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import Config from './config/config';
+
+ReactDOM.render(<App cloudName={Config.cloud_name} />, document.getElementById('root'));

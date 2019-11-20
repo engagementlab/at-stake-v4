@@ -1,15 +1,19 @@
 import React, { Component } from "react";
 import './App.css';
+import { CloudinaryContext, Image, Transformation } from 'cloudinary-react';
 
 import Socket from './socket';
 import Lobby from './components/Lobby/Lobby';
 import Intro from './components/Intro/Intro';
+import Meet from './components/Phases/Meet/Meet';
+import Interstitial from "./components/Shared/Interstitial/Interstitial";
 
 class App extends Component {
   
   constructor() {
     super();
     this.state = {
+      isHost: false,
       started: false,
       response: 'Trying socket connection...',
       screens: ['lobby', 'intro', 'meet', 'deliberate', 'ranking'],
@@ -17,6 +21,7 @@ class App extends Component {
     };
 
     this.advanceScreen = this.advanceScreen.bind(this);
+    this.playerIsHost = this.playerIsHost.bind(this);
 
   }
 
@@ -26,11 +31,20 @@ class App extends Component {
 
     socket.on('ohhai', () => { 
       this.setState({ response: 'Connected to socket', screenIndex: 0 });
-    });
+    });  
     socket.on('game:intro', () => { 
       this.setState({ screenIndex: 1 });
     });
+    socket.on('game:next_phase', (screenData) => {
+      this.setState({ screenIndex: this.state.screenIndex+1 });      
+    });
   
+  }
+
+  playerIsHost() {
+
+    this.setState({ isHost: true });
+    
   }
 
   advanceScreen() {
@@ -40,18 +54,25 @@ class App extends Component {
   }
 
   render() {
-    const { response, screenIndex, screens } = this.state;
+    const { isHost, response, screenIndex, screens } = this.state;
     const currentScreen = screens[screenIndex];
 
       return (
-        <div className="App">
+        <CloudinaryContext cloudName={this.props.cloudName}>
 
-          <p>{response}</p>
+          <div className="App">
 
-          { currentScreen === 'lobby' ? <Lobby done={this.advanceScreen} /> : null }
-          { currentScreen === 'intro' ? < Intro /> : null }
+            {/* <Interstitial title="Introduction" /> */}
+            <p>{response}</p>
 
-      </div>
+            { currentScreen === 'lobby' ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
+            { currentScreen === 'intro' ? < Intro host={isHost} /> : null }
+            
+            { currentScreen === 'meet' ? < Meet host={isHost} /> : null }
+
+          </div>
+
+        </CloudinaryContext>
     );
   }
 
