@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 
-import Settings from '../../settings';
 import Socket from '../../socket';
 import Decks from './Decks';
 
@@ -41,6 +40,8 @@ class Lobby extends Component {
     this.socket = Socket.get().connect();
 
     if (host) {
+
+      this.props.host();
 
       fetch(`${process.env.REACT_APP_API_URL}/api/generate`)
         .then((response) => response.json())

@@ -45,70 +45,37 @@ class Intro extends PureComponent {
 
   render () {
     const { text, screenIndex } = this.state;
+    const imageNames = ['street', 'evil', 'city', 'bunker'];
+    const isHost = this.props.host;
 
     return (
-
-      <div>
-        { screenIndex === 0 ?
-          <div className="intro panel">
-        
-            <button className="submit" onClick={() => this.socket.send('game:next_screen')}>
-              <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
-            </button>
-
-            <div className="content">
-              <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/street" alt="Intro screen 1 image" />
-            
-              <div className="text">{text[0]}</div>
-            </div>
-
-          </div>
-      : null }
-
-      { screenIndex === 1 ?
-
-        <div className="intro panel">
-          <button className="submit" data-event="game:next_screen">
-            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
-          </button>
-          <div className="content">
-            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/evil" alt="Intro screen 2 image" />
-          
-            <div className="text">{text[1]}</div>
-          </div>
-        </div>
-
-      : null}
-
-      { screenIndex === 2 ?
-
-        <div className="intro panel">
-          <button className="submit" data-event="game:next_screen">
-            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
-          </button>
-          <div className="content">
-            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/city" alt="Intro screen 3 image" />
-            <div className="text">{text[2]}</div>
-          </div>
-        </div>
-
-      : null }
-
-      { screenIndex === 3 ?
-
-        <div className="intro panel">
-          <button className="submit" data-event="game:start">
-            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Start game" />
-          </button>
-          <div className="content">
-            <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/bunker" alt="Intro screen 4 image" />
-            <div className="text">{text[3]}</div>
-          </div>
-        </div>
-        
-      : null }
       
-    </div>
+      [0, 1, 2, 3].map((index) => {
+        return (
+          <div>
+            {(screenIndex === index) ?
+              <div className="intro panel">
+
+                <div className="content">
+                  <img src={"https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/" + imageNames[index]} alt="Intro screen 1 image" />
+                
+                  <div className="text">{text[index]}</div>
+                </div>
+            
+                {
+                  isHost ?
+                    <button className="submit" onClick={() => this.socket.send(screenIndex === 3 ? 'game:start' : 'game:next_screen')}>
+                      <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
+                    </button>
+                  : null
+                }
+
+              </div>
+            : null}
+          </div>
+        )
+      })
+
     );
   }
 }

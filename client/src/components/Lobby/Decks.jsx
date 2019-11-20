@@ -10,7 +10,6 @@ class Decks extends Component {
 
     return (
 
-      // {i === 0 ?( <div>Room Code: </div>) : (null)}
       decks && decks.map((deck, i) => {
         return (
           <button key={deck._id} type="button" onClick={() => callback(deck)}>
