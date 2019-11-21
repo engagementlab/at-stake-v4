@@ -16,8 +16,9 @@ class App extends Component {
       isHost: false,
       started: false,
       response: 'Trying socket connection...',
-      screens: ['lobby', 'intro', 'meet', 'deliberate', 'ranking'],
-      screenIndex: -1
+      screens: ['lobby', 'meet', 'deliberate', 'ranking'],
+      screenIndex: -1,
+      screenData: null
     };
 
     this.advanceScreen = this.advanceScreen.bind(this);
@@ -36,7 +37,7 @@ class App extends Component {
       this.setState({ screenIndex: 1 });
     });
     socket.on('game:next_phase', (screenData) => {
-      this.setState({ screenIndex: this.state.screenIndex+1 });      
+      this.setState({ screenIndex: this.state.screenIndex+1, screenData: screenData });   
     });
   
   }
@@ -54,10 +55,12 @@ class App extends Component {
   }
 
   render() {
-    const { isHost, response, screenIndex, screens } = this.state;
+
+    const { isHost, response, screenIndex, screenData, screens } = this.state;
     const currentScreen = screens[screenIndex];
 
-      return (
+    return (
+
         <CloudinaryContext cloudName={this.props.cloudName}>
 
           <div className="App">
@@ -68,11 +71,12 @@ class App extends Component {
             { currentScreen === 'lobby' ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
             { currentScreen === 'intro' ? < Intro host={isHost} /> : null }
             
-            { currentScreen === 'meet' ? < Meet host={isHost} /> : null }
+            { currentScreen === 'meet' ? < Meet host={isHost} data={screenData} /> : null }
 
           </div>
 
         </CloudinaryContext>
+
     );
   }
 

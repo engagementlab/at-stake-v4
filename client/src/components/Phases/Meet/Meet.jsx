@@ -1,20 +1,38 @@
 import React, { PureComponent } from 'react';
 import './Meet.scss';
 
+import Socket from '../../../socket';
+
 import Interstitial from '../../Shared/Interstitial/Interstitial';
 import Rolecard from '../../Shared/Rolecard/Rolecard';
+
 
 class Meet extends PureComponent { 
   constructor(props) {
     super(props);
-
+    
     this.state = {
       hasError: false,
     };
+    
+    this.socket = null;
   }
 
-  componentWillMount = () => {
-    console.log('Meet will mount');
+  componentDidMount = () => {
+    
+    this.socket = Socket.get();
+    
+    // Listeners
+    // this.socket._current.on('game:next_screen', (data) => {
+      
+      //   this.setState({ screenIndex: this.state.screenIndex+1 });
+      
+      // });
+      
+    }
+    
+  componentDidUpdate = () => {
+    console.log('DATA', this.props.data)   
   }
 
   componentWillUnmount = () => {
@@ -22,30 +40,31 @@ class Meet extends PureComponent {
   }
 
   render () {
+
+    const data = this.props.data;
+
     return (
-<div>
+      <div>
   
-        // MEET PHASE UI 
-      <div id="meet">
+        {/* MEET PHASE UI  */}
+        <div id="meet">
       
-        // ROLE
+        {/* ROLE */}
       
-        // Skip if timer running
-        {/* {{#ifeq timerRunning false}}
-          <div class="screen initial">
-            
-            {{> shared/rolecard intro=true role=player.role}}
-       */}
+        {/* Skip if timer running */}
+        {data && !data.timerRunning ?
+          <div className="screen initial">
+            <Rolecard intro={true} role={data.role} />
+          </div>
+          : null
+        }
 
         <Interstitial title="Introduction" />
-       {/* <Rolecard */}
-       
-        {/* {{/ifeq}} */}
 
       </div>
       
         // PROBLEM
-        <div class="screen bg form">
+        <div className="screen bg form">
       
           {/* {{> component/instructions 
               decider=true
@@ -64,7 +83,7 @@ class Meet extends PureComponent {
               bold=true
           }} */}
           
-          <button id="btn-ready" class="btn submit player" type="submit" name="submit" data-event="game:ready" data-package="timer">
+          <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { this.socket.send('game:ready'); }}>
             Ready
           </button>
       
@@ -80,13 +99,13 @@ class Meet extends PureComponent {
               disabled=true
           }} */}
       
-          <div class="not-ready decider">Wait until every player is ready to continue</div>
-          <div id="times-up" style="display:none">Time’s up! Consider wrapping this discussion up</div>
-          <button id="skip" class="submit deciders" data-event="game:next" style="display:none;">
+          <div className="not-ready decider">Wait until every player is ready to continue</div>
+          <div id="times-up" className="hide">Time’s up! Consider wrapping this discussion up</div>
+          <button id="skip" className={`hide submit`} data-event="game:next">
             Skip to Phase 2
             {/* {{{cloudinaryUrl 'v1540488090/at-stake/icons/check-btn' format='svg'}}} */}
           </button>
-          <button id="go-to" class="submit deciders" data-event="game:next" style="display:none;">
+          <button id="go-to" className={`hide submit`} data-event="game:next">
             Go to Phase 2
             {/* {{{cloudinaryUrl 'v1540488090/at-stake/icons/check-btn' format='svg'}}} */}
           </button>
@@ -94,7 +113,7 @@ class Meet extends PureComponent {
         </div>
       
         // QUESTION (NON-FACILITATOR)
-        <div class="screen bg">
+        <div className="screen bg">
 {/*       
           {{> component/instructions 
               decider=true
@@ -119,13 +138,13 @@ class Meet extends PureComponent {
               bold=true
           }}
        */}
-          <div class="player-roles col-sm-6">
+          <div className="player-roles col-sm-6">
       
             <h3>Team's Roles</h3>
       
-            <div class="grid">
+            <div className="grid">
               {/* {{#each playerMap}}
-                <div class="player{{#if isFacilitator}} facilitator{{/if}}">
+                <div className="player{{#if isFacilitator}} facilitator{{/if}}">
                   {{username}}
                   {{#if isFacilitator}}
                     <div>Facilitator</div>
@@ -138,7 +157,7 @@ class Meet extends PureComponent {
       
           </div>
       
-          <div id="time-up" class="player">
+          <div id="time-up" className="player">
       
             {/* {{{cloudinaryUrl 'v1540488090/at-stake/bg/clock' width='319'}}} */}
             <h1>Time's up!</h1>

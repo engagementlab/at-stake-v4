@@ -120,29 +120,33 @@ class Lobby extends Component {
 
     });
 
-    const playerUID = Math.floor(1000000000 + Math.random() * 900000);
-
+    let playerUID = Math.floor(1000000000 + Math.random() * 900000);
+    
+		// Cache uid for player
+		if(!sessionStorage.getItem('uUID'))
+			sessionStorage.setItem('uUID', playerUID);
+		else 
+      playerUID = sessionStorage.getItem('uUID');
+      
     // Host = "decider"
     let roomData = {
       type: this.state.mode === 'host' ? 'decider' : 'player',
-      username: this.state.hostUsername,
+      username: this.state.username,
       uid: playerUID,
-      joinCode: code || this.state.accessCode
+      joinCode: code || this.state.joinCode
     };
-    const {
-      username,
-      joinCode
-    } = this.state;
+    
+    this.socket.join(roomData)
 
-    // Log player in
-    this.socket.send('login:submit', {
-      username,
-      joinCode,
-      uid: playerUID
-    });
-
-    // Session started, let's sign-up the decider for this room
-    this.socket.send('room', roomData);
+    // Save game code for resuming
+    sessionStorage.setItem('gameCode', roomData.joinCode);
+    // Flag client if is host/moderator
+    sessionStorage.setItem('isModerator', (this.state.mode === 'host'));
+    // Save username
+    sessionStorage.setItem('username', roomData.username);
+    
+    // // Session started, let's sign-up the decider for this room
+    // this.socket.send('room', roomData);
 
   }
 
@@ -170,7 +174,7 @@ class Lobby extends Component {
         {mode === 'host' && (playerData && playerData.length >= 2)
           ? ( 
             <div id="start">
-              <button id="btn-start-game" onClick={() => { this.socket.send('game:intro'); this.props.done(); }}>
+              <button id="btn-start-game" onClick={() => { this.socket.send('game:start'); this.props.done(); }}>
                 <h2>Start</h2>
               </button>
             </div>
