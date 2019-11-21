@@ -53,7 +53,7 @@ const Common = function (nsp, socket) {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
-      session.StartGame(currentSpace, false);
+      session.StartGame();
     },
 
     'game:next': (pkg) => {

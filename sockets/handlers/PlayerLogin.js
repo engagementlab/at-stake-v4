@@ -102,8 +102,6 @@ const PlayerLogin = function (nsp, socket, emitter) {
           uid: payload.uid,
         };
 
-        console.log(payload);
-
         // Mark player as ready inside game session
         session.PlayerReady(
           player,
