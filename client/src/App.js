@@ -1,12 +1,21 @@
 import React, { Component } from "react";
-import './App.css';
-import { CloudinaryContext, Image, Transformation } from 'cloudinary-react';
+import { CloudinaryContext } from 'cloudinary-react';
+import { SocketProvider } from './SocketContext';
+import io from 'socket.io-client';
 
-import Socket from './socket';
+import './App.css';
+
+// import Socket from './socket';
 import Lobby from './components/Lobby/Lobby';
 import Intro from './components/Intro/Intro';
 import Meet from './components/Phases/Meet/Meet';
-import Interstitial from "./components/Shared/Interstitial/Interstitial";
+
+const socket = io('http://localhost:3001', {
+                  path: '/at-stake-socket/',
+                  reconnection: true,
+                  reconnectionDelay: 500,
+                  maxReconnectionAttempts: Infinity,
+                });
 
 class App extends Component {
   
@@ -16,7 +25,7 @@ class App extends Component {
       isHost: false,
       started: false,
       response: 'Trying socket connection...',
-      screens: ['lobby', 'meet', 'deliberate', 'ranking'],
+      screens: ['meet', 'deliberate', 'ranking'],
       screenIndex: -1,
       screenData: null
     };
@@ -28,16 +37,33 @@ class App extends Component {
 
   componentDidMount() {
 
-    let socket = Socket.get()._current;
+    // this.connectSocket();   
 
-    socket.on('ohhai', () => { 
-      this.setState({ response: 'Connected to socket', screenIndex: 0 });
+    // let socket = Socket.get()._current;
+
+    socket.on('connect', () => { 
+      this.setState({ response: 'Connected to socket' });
+    });  
+    socket.on('disconnect', () => { 
+      this.setState({ response: 'Disconnected from socket' });
     });  
     socket.on('game:intro', () => { 
       this.setState({ screenIndex: 1 });
     });
+
     socket.on('game:next_phase', (screenData) => {
       this.setState({ screenIndex: this.state.screenIndex+1, screenData: screenData });   
+    });
+    socket.on('game:refresh_screen', (screenData) => {  
+      this.setState({ screenIndex: screenData.phase, screenData: screenData });   
+    });
+
+    socket.on('player:reconnected', (eventData) => {
+      this.setState({ response: 'Player re-joined.' });
+    });
+    socket.on('player:lost', (eventData) => {
+      debugger
+      this.setState({ response: eventData.names.join(',') + ' disconnected.' });
     });
   
   }
@@ -56,11 +82,14 @@ class App extends Component {
 
   render() {
 
-    const { isHost, response, screenIndex, screenData, screens } = this.state;
+    const { isHost, response, screenIndex, screenData, screens, started } = this.state;
     const currentScreen = screens[screenIndex];
 
     return (
 
+
+      <SocketProvider socket={socket}>     
+      
         <CloudinaryContext cloudName={this.props.cloudName}>
 
           <div className="App">
@@ -68,7 +97,7 @@ class App extends Component {
             {/* <Interstitial title="Introduction" /> */}
             <p>{response}</p>
 
-            { currentScreen === 'lobby' ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
+            { screenIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} socket={this.props.socket} /> : null }
             { currentScreen === 'intro' ? < Intro host={isHost} /> : null }
             
             { currentScreen === 'meet' ? < Meet host={isHost} data={screenData} /> : null }
@@ -76,6 +105,8 @@ class App extends Component {
           </div>
 
         </CloudinaryContext>
+
+      </SocketProvider>
 
     );
   }

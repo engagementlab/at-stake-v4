@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 
-import Socket from '../../socket';
+import { SocketProvider } from '../../SocketContext';
 import Decks from './Decks';
 
 class Lobby extends Component {
@@ -22,10 +22,22 @@ class Lobby extends Component {
     };
 
     this.selectDeck = this.selectDeck.bind(this);
-    this.socket = null;
+
+    // Token for cancelling fetch on unmount
+    const CancelToken = axios.CancelToken;
+    this.cancelSrc = CancelToken.source();
+    this.abortCtrl = new AbortController();
   }
 
   componentDidMount() { }
+
+  componentWillUnmount() {
+
+    // Cancel requests
+    this.cancelSrc.cancel('Lobby unmounting');
+    this.abortCtrl.abort();
+
+  }
 
   join() {
 
@@ -37,13 +49,12 @@ class Lobby extends Component {
 
   start(host) {
 
-    this.socket = Socket.get().connect();
-
     if (host) {
 
       this.props.host();
 
-      fetch(`${process.env.REACT_APP_API_URL}/api/generate`)
+      // Generate session
+      fetch(`${process.env.REACT_APP_API_URL}/api/generate`, { signal: this.abortCtrl.signal })
         .then((response) => response.json())
         .then((response) => {
 
@@ -58,7 +69,7 @@ class Lobby extends Component {
 
     }
 
-    this.socket.on('player:loggedin', () => {
+    this.props.socket.on('player:loggedin', () => {
       this.setState({
         response: 'Player joined!'
       });
@@ -66,12 +77,6 @@ class Lobby extends Component {
   }
 
   async selectDeck(deck) {
-
-    // Controller to abort fetch, if needed and duration counter
-    /* const controller = new AbortController();
-    const {
-      signal
-    } = controller; */
 
     const data = {};
     data.deciderName = 'Decider';
@@ -90,8 +95,9 @@ class Lobby extends Component {
       {
         headers: {
           'Content-Type': 'application/json'
-        }
-      }
+        },
+        cancelToken: this.cancelSrc.token
+      },
     );
 
     if (response.data.sessionCreated) {
@@ -110,9 +116,8 @@ class Lobby extends Component {
 
   playerJoin(code) {
 
-    this.socket = Socket.get();
     // Watch for new players in lobby
-    this.socket._current.on('players:update', (data) => {
+    this.props.socket.on('players:update', (data) => {
 
       this.setState({
         playerData: data.players
@@ -234,4 +239,10 @@ Lobby.propTypes = {
   mode: PropTypes.string,
 };
 
-export default Lobby;
+const LobbyWithSocket = props => (
+  <SocketProvider>
+    {socket => <Lobby {...props} socket={socket} />}
+  </SocketProvider>
+)
+
+export default LobbyWithSocket;

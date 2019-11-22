@@ -12,7 +12,6 @@
  */
 
 
-const logger = require('winston');
 const Session = require('learning-games-core').SessionManager;
 
 // Arrow functions can't be used as constructors, so we must use function()
@@ -21,19 +20,18 @@ const PlayerLogin = function (nsp, socket, emitter) {
   const currentSpace = nsp;
   const currentSocket = socket;
 
-  let playerGameId;
+  this.playerGameId = null;
 
   // Expose handler methods for events
   this.handler = {
 
     room: (payload) => {
       
-      logger.info('try join rm')
       if (!payload.gameId) return;
 
-      playerGameId = payload.gameId;
+      this.playerGameId = payload.gameId;
 
-      if (!Session.Get(playerGameId)) {
+      if (!Session.Get(this.playerGameId)) {
         currentSocket.emit('game:notfound');
         return;
       }
@@ -43,7 +41,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
       });
 
       // Decider registration
-      if (payload.msgData.type === 'decider' && Session.Get(playerGameId)) {
+      if (payload.msgData.type === 'decider' && Session.Get(this.playerGameId)) {
         const player = {
           socket_id: currentSocket.id,
           username: payload.msgData.username,
@@ -51,7 +49,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
         };
 
         Session.GroupView(payload.gameId, currentSocket.id);
-        Session.Get(playerGameId).ModeratorJoin(currentSpace, player);
+        Session.Get(this.playerGameId).ModeratorJoin(currentSpace, player);
       }
 
       logger.info(`${currentSocket.id} connected to room.`);
@@ -95,45 +93,42 @@ const PlayerLogin = function (nsp, socket, emitter) {
       }
 
       // See if this player is still marked as active inside game session
-      if (session.PlayerIsActive(payload.uid)) {
+      if (session.PlayerIsActive(payload.msgData.uid)) {
         const player = {
           socket_id: currentSocket.id,
-          username: payload.username,
-          uid: payload.uid,
+          username: payload.msgData.username,
+          uid: payload.msgData.uid,
         };
 
         // Mark player as ready inside game session
         session.PlayerReady(
           player,
           currentSocket,
-          payload.decider,
+          payload.msgData.decider,
         );
       } else {
-        logger.info('login:active', `Player "${payload.uid}" not active.`);
+        logger.info('login:active', `Player "${payload.msgData.uid}" not active.`);
       }
     },
 
-    disconnect: (payload) => {
-      const session = Session.Get(playerGameId);
+    disconnect: () => {
+
+      const session = Session.Get(this.playerGameId);
 
       if (!session) return;
 
       const isGroup = (currentSocket.id === session.groupModerator);
 
-      if (isGroup) logger.info(`${playerGameId} group view disconnecting. Bu-bye.`);
+      if (isGroup) logger.info(`${this.playerGameId} group view disconnecting. Bu-bye.`);
       else {
         const player = session.GetPlayerById(currentSocket.id);
 
         if (player) logger.info(`Player '${player.username}' disconnecting. Nooooo!`);
       }
 
-      if (playerGameId && session) session.PlayerLost(currentSocket.id, currentSocket);
-    },
+      if (this.playerGameId && session) session.PlayerLost(currentSocket.id, currentSocket);
 
-    hello: (payload) => {
-      console.log('ping ');
-      currentSocket.emit('ohhai');
-    },
+    }
 
   };
 
