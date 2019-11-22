@@ -31,6 +31,8 @@ class Socket {
     }
 
     connect() {
+        
+        localStorage.debug = '*';
 
         // Try WS connect
         this._current = io('http://localhost:3001', {
@@ -80,15 +82,17 @@ class Socket {
                 uid: sessionStorage.getItem('uUID')
             };
             this.send('login:active', data);
-            // this.join(data);
 
         }
     }
 
     send(eventId, appendData) {
 
-        if (this._gameId === null && appendData.joinCode) {
-            this._gameId = appendData.joinCode;
+        // Append game ID
+        if(appendData) {
+            if ((this._gameId === null && appendData.joinCode) || (this._gameId !== appendData.joinCode)) {
+                this._gameId = appendData.joinCode;
+            }
         }
 
         const data = {
@@ -101,7 +105,7 @@ class Socket {
             },
         };
 
-        console.log('send', eventId)
+        console.log('send', eventId, appendData)
 
         this._current.emit(eventId, payload);
     }

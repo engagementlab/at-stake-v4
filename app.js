@@ -17,10 +17,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 const winston = require('winston');
 const path = require('path');
-const merge = require('merge');
 const bodyParser = require('body-parser');
-const handlebars = require('express-handlebars');
-const elHbs = require('el-hbs')();
 const mongoose = require('mongoose');
 
 const logFormat = winston.format.combine(
@@ -41,14 +38,14 @@ const logFormat = winston.format.combine(
 );
 
 // Globals
-global._ = require('underscore');
+_ = require('underscore');
 
-global.logger = winston.createLogger({
+logger = winston.createLogger({
   level: 'info',
   format: logFormat,
   transports: [
     new winston.transports.Console(),
-  ],
+  ]
 });
 
 const bootstrap = require('@engagementlab/el-bootstrapper');
@@ -56,15 +53,6 @@ const express = require('express');
 
 const
   app = express();
-
-global.hbsInstance = handlebars.create({
-  layoutsDir: 'templates/layouts/',
-  partialsDir: 'templates/partials/',
-  defaultLayout: 'base',
-  helpers: merge(require('./templates/helpers')(), elHbs),
-  extname: '.hbs',
-});
-
 
 // for parsing application/json
 app.use(bodyParser.json());
@@ -74,9 +62,6 @@ app.use(bodyParser.urlencoded({
   extended: true,
 }));
 
-app.engine('hbs', global.hbsInstance.engine);
-
-app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, '/templates/views'));
 
 app.use(express.static('public'));
