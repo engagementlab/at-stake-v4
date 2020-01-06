@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { CloudinaryContext } from 'cloudinary-react';
-import { SocketProvider } from './SocketContext';
+import SocketContext from './SocketContext';
 import io from 'socket.io-client';
 
 import './App.css';
 
-// import Socket from './socket';
+import GameData from './GameData';
 import Lobby from './components/Lobby/Lobby';
 import Intro from './components/Intro/Intro';
 import Meet from './components/Phases/Meet/Meet';
@@ -36,12 +36,14 @@ class App extends Component {
   }
 
   componentDidMount() {
-
-    // this.connectSocket();   
-
-    // let socket = Socket.get()._current;
-
+    
+    
     socket.on('connect', () => { 
+      socket.emit('hello');
+      
+      // Cache socket id in data singleton
+      GameData.get()._socketId = socket.id;
+
       this.setState({ response: 'Connected to socket' });
     });  
     socket.on('disconnect', () => { 
@@ -87,17 +89,19 @@ class App extends Component {
 
     return (
 
-
-      <SocketProvider socket={socket}>     
+      <SocketContext.Provider value={socket}>     
       
         <CloudinaryContext cloudName={this.props.cloudName}>
 
           <div className="App">
+            <h1>
+              {currentScreen}
+            </h1>
 
             {/* <Interstitial title="Introduction" /> */}
-            <p>{response}</p>
+            <p><em>Socket state:</em> {response}</p>
 
-            { screenIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} socket={this.props.socket} /> : null }
+            { screenIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
             { currentScreen === 'intro' ? < Intro host={isHost} /> : null }
             
             { currentScreen === 'meet' ? < Meet host={isHost} data={screenData} /> : null }
@@ -106,7 +110,7 @@ class App extends Component {
 
         </CloudinaryContext>
 
-      </SocketProvider>
+      </SocketContext.Provider>
 
     );
   }

@@ -1,16 +1,17 @@
 import React from 'react';
 
-// SocketContext = {Provider, Consumer}
 const SocketContext = React.createContext(null); 
 
-export class SocketProvider extends React.Component {
+// export class SocketProvider extends React.Component {
 
-    render() {
+//     render() {
 
-        return (
-            <SocketContext.Provider value={this.props.socket}>
-                {this.props.children}
-            </SocketContext.Provider>
-        );
-    }
-}
+//         return (
+//             <SocketContext.Provider value={this.props.socket}>
+//                 {this.props.children}
+//             </SocketContext.Provider>
+//         );
+//     }
+// }
+
+export default SocketContext;

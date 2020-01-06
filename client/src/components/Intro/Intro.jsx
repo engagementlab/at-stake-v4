@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 
-import Socket from '../../socket';
+import Socket from '../../GameData';
 
 class Intro extends PureComponent { 
   constructor(props) {
