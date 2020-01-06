@@ -44,8 +44,6 @@ exports = module.exports = (req, res) => {
     }
   } else if (req.params.mode === 'mobile') locals.mobile = true;
 
-  console.log(locals);
-
   Intro.model.findOne({}, (err, intro) => {
     locals.text = intro.text;
 

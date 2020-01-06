@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import './Meet.scss';
 
-import Socket from '../../../socket';
+import Socket from '../../../GameData';
 
 import Interstitial from '../../Shared/Interstitial/Interstitial';
 import Rolecard from '../../Shared/Rolecard/Rolecard';
@@ -83,7 +83,7 @@ class Meet extends PureComponent {
               bold=true
           }} */}
           
-          <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { this.socket.send('game:ready'); }}>
+          <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { this.props.socket.emit('game:ready'); }}>
             Ready
           </button>
       

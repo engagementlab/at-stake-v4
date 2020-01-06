@@ -2,12 +2,18 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 
-import { SocketProvider } from '../../SocketContext';
+import GameData from '../../GameData';
+import SocketContext from '../../SocketContext';
 import Decks from './Decks';
 
+let socket = null;
+
 class Lobby extends Component {
+  
   constructor(props) {
+    
     super(props);
+    
     this.state = {
       data: null,
       status: null,
@@ -27,9 +33,15 @@ class Lobby extends Component {
     const CancelToken = axios.CancelToken;
     this.cancelSrc = CancelToken.source();
     this.abortCtrl = new AbortController();
+
   }
 
-  componentDidMount() { }
+  componentDidMount() {
+
+    // Socket prop from context API
+    socket = this.props.socket;
+
+  }
 
   componentWillUnmount() {
 
@@ -64,12 +76,15 @@ class Lobby extends Component {
             showDecks: true,
             joinCode: response.code
           });
+            
+          // Cache game id in data singleton
+          GameData.get()._gameId = response.code;
 
         });
 
     }
 
-    this.props.socket.on('player:loggedin', () => {
+    socket.on('player:loggedin', () => {
       this.setState({
         response: 'Player joined!'
       });
@@ -117,7 +132,7 @@ class Lobby extends Component {
   playerJoin(code) {
 
     // Watch for new players in lobby
-    this.props.socket.on('players:update', (data) => {
+    socket.on('players:update', (data) => {
 
       this.setState({
         playerData: data.players
@@ -140,8 +155,14 @@ class Lobby extends Component {
       uid: playerUID,
       joinCode: code || this.state.joinCode
     };
+
+    let payload = GameData.get().assemble(roomData);
     
-    this.socket.join(roomData)
+    // Log player in
+    socket.emit('login:submit', payload);
+
+    // Session started, let's sign-up the decider for this room
+    socket.emit('room', payload);
 
     // Save game code for resuming
     sessionStorage.setItem('gameCode', roomData.joinCode);
@@ -149,9 +170,6 @@ class Lobby extends Component {
     sessionStorage.setItem('isModerator', (this.state.mode === 'host'));
     // Save username
     sessionStorage.setItem('username', roomData.username);
-    
-    // // Session started, let's sign-up the decider for this room
-    // this.socket.send('room', roomData);
 
   }
 
@@ -179,7 +197,7 @@ class Lobby extends Component {
         {mode === 'host' && (playerData && playerData.length >= 2)
           ? ( 
             <div id="start">
-              <button id="btn-start-game" onClick={() => { this.socket.send('game:start'); this.props.done(); }}>
+              <button id="btn-start-game" onClick={() => { socket.send('game:start'); this.props.done(); }}>
                 <h2>Start</h2>
               </button>
             </div>
@@ -240,9 +258,9 @@ Lobby.propTypes = {
 };
 
 const LobbyWithSocket = props => (
-  <SocketProvider>
+  <SocketContext.Consumer>
     {socket => <Lobby {...props} socket={socket} />}
-  </SocketProvider>
+  </SocketContext.Consumer>
 )
 
 export default LobbyWithSocket;
