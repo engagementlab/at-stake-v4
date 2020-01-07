@@ -4,16 +4,22 @@ import PropTypes from 'prop-types';
 
 const Instructions = (props) => (
   <div className="InstructionsWrapper">
-    Test content
+    <h3>{props.heading}</h3>
+    <p>{props.body}</p>
   </div>
 );
 
 Instructions.propTypes = {
-  // bla: PropTypes.string,
+  facilitator: PropTypes.bool,
+  heading: PropTypes.string,
+  body: PropTypes.string,
+  subBody: PropTypes.string
 };
 
 Instructions.defaultProps = {
-  // bla: 'test',
+  heading: 'Instructions',
+  body: 'Body Text',
+  subBody: 'Sub-body Text'
 };
 
 export default Instructions;

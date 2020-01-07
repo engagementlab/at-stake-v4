@@ -16,7 +16,7 @@ class Lobby extends Component {
     
     this.state = {
       data: null,
-      status: null,
+      status: 'Waiting',
       playerData: null,
       showDecks: true,
       // On dev, room code has default in form
