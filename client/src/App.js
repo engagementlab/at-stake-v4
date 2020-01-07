@@ -64,7 +64,6 @@ class App extends Component {
       this.setState({ response: 'Player re-joined.' });
     });
     socket.on('player:lost', (eventData) => {
-      debugger
       this.setState({ response: eventData.names.join(',') + ' disconnected.' });
     });
   

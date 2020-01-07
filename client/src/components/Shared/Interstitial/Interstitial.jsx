@@ -11,20 +11,31 @@ import './Interstitial.scss';
 import CdnImage from '../../Util/CdnImage/CdnImage';
 
 class Interstitial extends PureComponent { 
+
   constructor(props) {
+    
     super(props);
 
     this.state = {
       hasError: false,
       visible: true
     };
+
+    this.hideTimeout = null;
+
   }
 
   componentDidMount() {
 
-    setTimeout(() => {
+    this.hideTimeout = setTimeout(() => {
       this.setState({visible: false});      
     }, 2000);
+
+  }
+
+  componentWillUnmount() {
+
+    clearTimeout(this.hideTimeout);
 
   }
 

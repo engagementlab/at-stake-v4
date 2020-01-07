@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import './Meet.scss';
 
-import Socket from '../../../GameData';
+import GameData from '../../../GameData';
+import SocketContext from '../../../SocketContext';
 
 import Interstitial from '../../Shared/Interstitial/Interstitial';
 import Rolecard from '../../Shared/Rolecard/Rolecard';
@@ -20,14 +21,14 @@ class Meet extends PureComponent {
 
   componentDidMount = () => {
     
-    this.socket = Socket.get();
+    this.socket = this.props.socket;
     
     // Listeners
-    // this.socket._current.on('game:next_screen', (data) => {
+    this.socket.on('game:next_screen', (data) => {
       
-      //   this.setState({ screenIndex: this.state.screenIndex+1 });
+        this.setState({ screenIndex: this.state.screenIndex+1 });
       
-      // });
+      });
       
     }
     
@@ -83,7 +84,7 @@ class Meet extends PureComponent {
               bold=true
           }} */}
           
-          <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { this.props.socket.emit('game:ready'); }}>
+          <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { this.socket.emit('game:ready', GameData.get().assemble()); }}>
             Ready
           </button>
       
@@ -170,4 +171,10 @@ class Meet extends PureComponent {
   }
 }
 
-export default Meet;
+const MeetWithSocket = props => (
+  <SocketContext.Consumer>
+    {socket => <Meet {...props} socket={socket} />}
+  </SocketContext.Consumer>
+)
+
+export default MeetWithSocket;
