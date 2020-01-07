@@ -44,10 +44,10 @@ class App extends Component {
       // Cache socket id in data singleton
       GameData.get()._socketId = socket.id;
 
-      this.setState({ response: 'Connected to socket' });
+      this.setState({ response: 'Connected' });
     });  
     socket.on('disconnect', () => { 
-      this.setState({ response: 'Disconnected from socket' });
+      this.setState({ response: 'Disconnected' });
     });  
     socket.on('game:intro', () => { 
       this.setState({ screenIndex: 1 });
@@ -92,19 +92,20 @@ class App extends Component {
       
         <CloudinaryContext cloudName={this.props.cloudName}>
 
-          <div className="App">
+          <div id="app">
             <h1>
               {currentScreen}
             </h1>
 
             {/* <Interstitial title="Introduction" /> */}
-            <p><em>Socket state:</em> {response}</p>
 
             { screenIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
             { currentScreen === 'intro' ? < Intro host={isHost} /> : null }
             
             { currentScreen === 'meet' ? < Meet host={isHost} data={screenData} /> : null }
 
+
+            <div id="state"><em>Socket:</em> {response}</div>
           </div>
 
         </CloudinaryContext>
