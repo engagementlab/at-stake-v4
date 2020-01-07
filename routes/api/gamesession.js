@@ -64,6 +64,11 @@ exports.generate = (req, res) => {
   let gameCode;
 
   function generateCode() {
+
+    // If dev env, default to 'TEST' code to ease testing
+    if(process.env.NODE_ENV === 'development')
+      return 'TEST';
+
     return randomstring.generate({
       length: 4,
       charset: 'alphabetic',

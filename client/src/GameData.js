@@ -16,6 +16,7 @@ class GameData {
 
         return this.instance;
     }
+
     setData(data) {
 
         // Log player in
@@ -48,13 +49,14 @@ class GameData {
 
     assemble(appendData) {
 
-        // Append game ID
+        // Append game ID if provided
         if(appendData) {
             if ((this._gameId === null && appendData.joinCode) || (this._gameId !== appendData.joinCode)) {
                 this._gameId = appendData.joinCode;
             }
         }
 
+        // Always append game ID to payload
         const data = {
             gameId: this._gameId.toUpperCase().trim(),
         };

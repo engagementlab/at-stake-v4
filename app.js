@@ -16,7 +16,6 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 const winston = require('winston');
-const path = require('path');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
@@ -62,19 +61,11 @@ app.use(bodyParser.urlencoded({
   extended: true,
 }));
 
-app.set('views', path.join(__dirname, '/templates/views'));
-
-app.use(express.static('public'));
-
 bootstrap.start(
   './config.json',
   app,
   `${__dirname}/`, {
-    name: '@Stake CMS',
-
-    // Setup SASS and Handlebars
-    sass: ['public'],
-    static: ['public'],
+    name: '@Stake CMS'
   },
   () => {
     mongoose.connect('mongodb://localhost/at-stake', {

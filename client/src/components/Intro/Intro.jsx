@@ -18,10 +18,10 @@ class Intro extends PureComponent {
 
   componentDidMount = () => {
 
-    this.socket = Socket.get();
+    this.socket = this.props.socket;
 
     // Listeners
-    this.socket._current.on('game:next_screen', (data) => {
+    this.socket.on('game:next_screen', (data) => {
       
       this.setState({ screenIndex: this.state.screenIndex+1 });
 
@@ -64,7 +64,7 @@ class Intro extends PureComponent {
             
                 {
                   isHost ?
-                    <button className="submit" onClick={() => this.socket.send(screenIndex === 3 ? 'game:start' : 'game:next_screen')}>
+                    <button className="submit" onClick={() => this.socket.emit(screenIndex === 3 ? 'game:start' : 'game:next_screen')}>
                       <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
                     </button>
                   : null

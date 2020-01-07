@@ -4,16 +4,13 @@ import PropTypes from 'prop-types';
 
 const Rolecard = (props) => (
   <div className="RolecardWrapper">
-    Test content
+    {props.role.title}
   </div>
 );
 
 Rolecard.propTypes = {
-  // bla: PropTypes.string,
-};
-
-Rolecard.defaultProps = {
-  // bla: 'test',
+  intro: PropTypes.bool,
+  role: PropTypes.object,
 };
 
 export default Rolecard;

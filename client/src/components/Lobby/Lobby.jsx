@@ -19,7 +19,8 @@ class Lobby extends Component {
       status: null,
       playerData: null,
       showDecks: true,
-      joinCode: '',
+      // On dev, room code has default in form
+      joinCode: process.env.NODE_ENV === 'development' ? 'TEST' : '',
 
       // for dev only
       username: 'user1',
@@ -54,7 +55,8 @@ class Lobby extends Component {
   join() {
 
     this.setState({
-      mode: 'join'
+      mode: 'join',
+      username: 'player1'
     });
 
   }
@@ -173,9 +175,19 @@ class Lobby extends Component {
 
   }
 
+  startGame() {
+    
+    socket.emit('game:start', GameData.get().assemble());
+    // this.props.done();
+
+  }
+
   render() {
 
     const { data, mode, playerData, showDecks, status } = this.state;
+    // Pre-populated join form for dev
+    const roomCode = process.env.NODE_ENV === 'development' ? 'TEST' : '';
+    const playerName = process.env.NODE_ENV === 'development' ? 'player1' : '';
 
     return (
 
@@ -197,7 +209,7 @@ class Lobby extends Component {
         {mode === 'host' && (playerData && playerData.length >= 2)
           ? ( 
             <div id="start">
-              <button id="btn-start-game" onClick={() => { socket.send('game:start'); this.props.done(); }}>
+              <button id="btn-start-game" onClick={() => { this.startGame() }}>
                 <h2>Start</h2>
               </button>
             </div>
@@ -207,8 +219,8 @@ class Lobby extends Component {
           ? (
             <p>
               Player Join:
-              <input type="text" placeholder="room code" onChange={(event) => this.setState({ joinCode: event.target.value })} />
-              <input type="text" placeholder="name" onChange={(event) => this.setState({ username: event.target.value })} />
+              <input type="text" placeholder="room code" onChange={(event) => this.setState({ joinCode: event.target.value })} value={roomCode} />
+              <input type="text" placeholder="name" onChange={(event) => this.setState({ username: event.target.value })} value={playerName} />
               <button type="button" onClick={() => this.playerJoin()}>Start</button>
             </p>
           )
