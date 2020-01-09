@@ -9,6 +9,7 @@ import GameData from './GameData';
 import Lobby from './components/Lobby/Lobby';
 import Intro from './components/Intro/Intro';
 import Meet from './components/Phases/Meet/Meet';
+import Rolecard from "./components/Shared/Rolecard/Rolecard";
 
 const socket = io('http://localhost:3001', {
                   path: '/at-stake-socket/',
@@ -24,6 +25,7 @@ class App extends Component {
     this.state = {
       isHost: false,
       started: false,
+      rolecardShow: false,
       response: 'Trying socket connection...',
       screens: ['meet', 'deliberate', 'ranking'],
       screenIndex: -1,
@@ -32,11 +34,11 @@ class App extends Component {
 
     this.advanceScreen = this.advanceScreen.bind(this);
     this.playerIsHost = this.playerIsHost.bind(this);
+    this.closeRolecard = this.closeRolecard.bind(this);
 
   }
 
   componentDidMount() {
-    
     
     socket.on('connect', () => { 
       socket.emit('hello');
@@ -81,9 +83,15 @@ class App extends Component {
 
   }
 
+  closeRolecard() {
+
+    this.setState({ rolecardShow: false });
+
+  }
+
   render() {
 
-    const { isHost, response, screenIndex, screenData, screens, started } = this.state;
+    const { isHost, response, rolecardShow, screenIndex, screenData, screens, started } = this.state;
     const currentScreen = screens[screenIndex];
 
     return (
@@ -104,6 +112,8 @@ class App extends Component {
             
             { currentScreen === 'meet' ? < Meet host={isHost} data={screenData} /> : null }
 
+            {/* ROLECARD */}
+            { rolecardShow ? <Rolecard role={screenData.role} close={this.closeRolecare} /> : null }
 
             <div id="state"><em>Socket:</em> {response}</div>
           </div>
