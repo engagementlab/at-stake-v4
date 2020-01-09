@@ -8,6 +8,7 @@ import Interstitial from '../../Shared/Interstitial/Interstitial';
 import Rolecard from '../../Shared/Rolecard/Rolecard';
 import Instructions from '../../Shared/Instructions/Instructions';
 import Speech from '../../Shared/Speech/Speech';
+import Timer from '../../Shared/Timer/Timer';
 
 
 class Meet extends PureComponent { 
@@ -15,37 +16,53 @@ class Meet extends PureComponent {
     super(props);
     
     this.state = {
+      allPlayersReady: false,
       hasError: false,
+      isFacilitator: false,
       notReady: true,
-      allPlayersReady: false
+      rolecardShow: true
     };
     
     this.socket = null;
+    this.proceedFromRolecard = this.proceedFromRolecard.bind(this);
   }
 
   componentDidMount = () => {
-    
+
+    // Set if facilitator
+    this.setState({ isFacilitator: this.props.data.role.isFacilitator });
+
     this.socket = this.props.socket;
     
-    // Listeners
-    this.socket.on('game:ready', (data) => {
+    /* Socket Listeners */
+
+    // Tell facilitator all players ready for intros
+    this.socket.on('game:ready', () => {
       
-        this.setState({ notReady: false });
+      this.setState({ allPlayersReady: true });
       
     });
       
   }
     
   componentDidUpdate = () => {
-    console.log('DATA', this.props.data)   
+    console.log('DATA', this.props.data)
   }
 
   componentWillUnmount = () => {
     console.log('Meet will unmount');
   }
 
+  proceedFromRolecard() {
+
+    this.setState({ rolecardShow: false });
+
+  }
+
+
   render () {
 
+    const { notReady, allPlayersReady, isFacilitator, rolecardShow } = this.state;
     const data = this.props.data;
 
     return (
@@ -57,9 +74,9 @@ class Meet extends PureComponent {
         {/* ROLE */}
       
         {/* Skip if timer running */}
-        {data && !data.timerRunning ?
+        {data && !data.timerRunning && rolecardShow ?
           <div className="screen initial">
-            <Rolecard intro={true} role={data.role} />
+            <Rolecard visible={rolecardShow} intro={true} role={data.role} close={this.proceedFromRolecard} />
           </div>
           : null
         }
@@ -69,27 +86,39 @@ class Meet extends PureComponent {
       </div>
       
         {/* PROBLEM */}
-        <div className="screen bg form">
+        {!rolecardShow ?
+        (
+          <div className="screen bg form">
 
           <Instructions 
             heading="Introductions"
             body="Introduce your character and how this scenario impacts you. Try to mention your objective you need to meet."
             />
+          
+          <h1>{isFacilitator}</h1>
+          {!isFacilitator && notReady ? (
 
-          <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { this.socket.emit('game:ready', GameData.get().assemble()); }}>
-            Ready
-          </button>
-      
+            <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { 
+              this.socket.emit('game:ready', GameData.get().assemble()); 
+              this.setState({ notReady: false });
+            }}>
+              Ready
+            </button>
+
+          ) : null}
+
+          <Timer socket={this.socket} facilitator={isFacilitator} disabled={!allPlayersReady} />
+
           <Speech
-            facilitator={this.props.data.decider}
+            facilitator={isFacilitator}
             body="Problem Scenario"
             subBody={this.props.data.shared.question}
             bold={true}
           />
 
-          <div className="not-ready decider">Wait until every player is ready to continue</div>
+          {isFacilitator && !allPlayersReady ? <div className="not-ready decider">Wait until every player is ready to continue</div> : null}
 
-          {/* <div id="times-up" className="hide">Time’s up! Consider wrapping this discussion up</div> */}
+          {isFacilitator ? <div id="times-up" className="hide">Time’s up! Consider wrapping this discussion up</div> : null}
           <button id="skip" className={`hide submit`} data-event="game:next">
             Skip to Phase 2
             {/* {{{cloudinaryUrl 'v1540488090/at-stake/icons/check-btn' format='svg'}}} */}
@@ -100,7 +129,9 @@ class Meet extends PureComponent {
           </button>
            
         </div>
-      
+        ) 
+        : null}
+
         // QUESTION (NON-FACILITATOR)
         <div className="screen bg">
 {/*       
@@ -127,6 +158,7 @@ class Meet extends PureComponent {
               bold=true
           }}
        */}
+       {!notReady ? (
           <div className="player-roles col-sm-6">
       
             <h3>Team's Roles</h3>
@@ -145,6 +177,7 @@ class Meet extends PureComponent {
             </div>
       
           </div>
+       ) : null}
       
           <div id="time-up" className="player">
       
