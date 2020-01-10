@@ -9,6 +9,7 @@ import GameData from './GameData';
 import Lobby from './components/Lobby/Lobby';
 import Intro from './components/Intro/Intro';
 import Meet from './components/Phases/Meet/Meet';
+import Deliberate from './components/Phases/Deliberate/Deliberate';
 import Rolecard from "./components/Shared/Rolecard/Rolecard";
 
 const socket = io('http://localhost:3001', {
@@ -24,13 +25,16 @@ class App extends Component {
     super();
     this.state = {
       isHost: false,
-      started: false,
       rolecardShow: false,
+      
       response: 'Trying socket connection...',
+      
       screens: ['meet', 'deliberate', 'ranking'],
       screenIndex: -1,
       screenData: null
     };
+
+    this.roleData = null;
 
     this.advanceScreen = this.advanceScreen.bind(this);
     this.playerIsHost = this.playerIsHost.bind(this);
@@ -57,6 +61,9 @@ class App extends Component {
 
     socket.on('game:next_phase', (screenData) => {
       this.setState({ screenIndex: this.state.screenIndex+1, screenData: screenData });   
+      
+      // Cache player's role data as it is emitted only in first phase
+      this.roleData = screenData.role;
     });
     socket.on('game:refresh_screen', (screenData) => {  
       this.setState({ screenIndex: screenData.phase, screenData: screenData });   
@@ -91,7 +98,7 @@ class App extends Component {
 
   render() {
 
-    const { isHost, response, rolecardShow, screenIndex, screenData, screens, started } = this.state;
+    const { isHost, response, rolecardShow, screenIndex, screenData, screens } = this.state;
     const currentScreen = screens[screenIndex];
 
     return (
@@ -108,12 +115,14 @@ class App extends Component {
             {/* <Interstitial title="Introduction" /> */}
 
             { screenIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
-            { currentScreen === 'intro' ? < Intro host={isHost} /> : null }
+            { currentScreen === 'intro' ? <Intro host={isHost} /> : null }
             
-            { currentScreen === 'meet' ? < Meet host={isHost} data={screenData} /> : null }
+            { currentScreen === 'meet' ? <Meet host={isHost} data={screenData} /> : null }
+            
+            { currentScreen === 'deliberate' ? <Deliberate host={isHost} data={screenData} role={this.roleData} /> : null }
 
             {/* ROLECARD */}
-            { rolecardShow ? <Rolecard role={screenData.role} close={this.closeRolecare} /> : null }
+            { rolecardShow ? <Rolecard role={this.roleData} close={this.closeRolecard} /> : null }
 
             <div id="state"><em>Socket:</em> {response}</div>
           </div>
