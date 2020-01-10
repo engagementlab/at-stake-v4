@@ -3,14 +3,19 @@ import PropTypes from 'prop-types';
 //import { Test } from './Instructions.styles';
 
 const Instructions = (props) => (
-  <div className="InstructionsWrapper">
+
+  props.show ? (
+    <div className="InstructionsWrapper">
     <h3>{props.heading}</h3>
     <p>{props.body}</p>
-  </div>
-);
+    </div>
+  )
+  : null
+
+  );
 
 Instructions.propTypes = {
-  facilitator: PropTypes.bool,
+  show: PropTypes.bool,
   heading: PropTypes.string,
   body: PropTypes.string,
   subBody: PropTypes.string

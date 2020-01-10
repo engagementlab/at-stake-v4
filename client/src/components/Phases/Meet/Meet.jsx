@@ -4,27 +4,30 @@ import './Meet.scss';
 import GameData from '../../../GameData';
 import SocketContext from '../../../SocketContext';
 
+import CdnImage from '../../Util/CdnImage/CdnImage';
 import Interstitial from '../../Shared/Interstitial/Interstitial';
 import Rolecard from '../../Shared/Rolecard/Rolecard';
 import Instructions from '../../Shared/Instructions/Instructions';
 import Speech from '../../Shared/Speech/Speech';
 import Timer from '../../Shared/Timer/Timer';
 
-
-class Meet extends PureComponent { 
+class Meet extends PureComponent {
   constructor(props) {
     super(props);
-    
+
     this.state = {
       allPlayersReady: false,
-      hasError: false,
       isFacilitator: false,
       notReady: true,
-      rolecardShow: true
+      rolecardShow: true,
+      timerStarted: false,
+      timerEnded: false
     };
-    
+
     this.socket = null;
     this.proceedFromRolecard = this.proceedFromRolecard.bind(this);
+    this.timerStart = this.timerStart.bind(this);
+    this.timerEnd = this.timerEnd.bind(this);
   }
 
   componentDidMount = () => {
@@ -33,18 +36,18 @@ class Meet extends PureComponent {
     this.setState({ isFacilitator: this.props.data.role.isFacilitator });
 
     this.socket = this.props.socket;
-    
+
     /* Socket Listeners */
 
     // Tell facilitator all players ready for intros
     this.socket.on('game:ready', () => {
-      
+
       this.setState({ allPlayersReady: true });
-      
+
     });
-      
+
   }
-    
+
   componentDidUpdate = () => {
     console.log('DATA', this.props.data)
   }
@@ -59,134 +62,159 @@ class Meet extends PureComponent {
 
   }
 
+  timerStart() {
 
-  render () {
+    this.setState({ timerStarted: true });
 
-    const { notReady, allPlayersReady, isFacilitator, rolecardShow } = this.state;
+  }
+
+  timerEnd() {
+
+    this.setState({ timerEnded: true });
+
+  }
+
+
+  render() {
+
+    const { allPlayersReady, isFacilitator, notReady, rolecardShow, timerStarted, timerEnded } = this.state;
     const data = this.props.data;
 
     return (
       <div>
-  
-        {/* MEET PHASE UI  */}
+
+        {/* MEET PHASE UI */}
         <div id="meet">
-      
-        {/* ROLE */}
-      
-        {/* Skip if timer running */}
-        {data && !data.timerRunning && rolecardShow ?
-          <div className="screen initial">
-            <Rolecard visible={rolecardShow} intro={true} role={data.role} close={this.proceedFromRolecard} />
-          </div>
-          : null
-        }
+          {/* ROLECARD */}
 
-        <Interstitial title="Introduction" />
-
-      </div>
-      
-        {/* PROBLEM */}
-        {!rolecardShow ?
-        (
-          <div className="screen bg form">
-
-          <Instructions 
-            heading="Introductions"
-            body="Introduce your character and how this scenario impacts you. Try to mention your objective you need to meet."
-            />
-          
-          <h1>{isFacilitator}</h1>
-          {!isFacilitator && notReady ? (
-
-            <button id="btn-ready" className={`btn submit player`} type="submit" name="submit" onClick={() => { 
-              this.socket.emit('game:ready', GameData.get().assemble()); 
-              this.setState({ notReady: false });
-            }}>
-              Ready
-            </button>
-
+          {/* Skip if timer running */}
+          {data && !data.timerRunning && rolecardShow ? (
+            <div className="screen initial">
+              <Rolecard
+                visible={rolecardShow}
+                intro={true}
+                role={data.role}
+                close={this.proceedFromRolecard}
+              />
+            </div>
           ) : null}
 
-          <Timer socket={this.socket} facilitator={isFacilitator} disabled={!allPlayersReady} />
-
-          <Speech
-            facilitator={isFacilitator}
-            body="Problem Scenario"
-            subBody={this.props.data.shared.question}
-            bold={true}
-          />
-
-          {isFacilitator && !allPlayersReady ? <div className="not-ready decider">Wait until every player is ready to continue</div> : null}
-
-          {isFacilitator ? <div id="times-up" className="hide">Time’s up! Consider wrapping this discussion up</div> : null}
-          <button id="skip" className={`hide submit`} data-event="game:next">
-            Skip to Phase 2
-            {/* {{{cloudinaryUrl 'v1540488090/at-stake/icons/check-btn' format='svg'}}} */}
-          </button>
-          <button id="go-to" className={`hide submit`} data-event="game:next">
-            Go to Phase 2
-            {/* {{{cloudinaryUrl 'v1540488090/at-stake/icons/check-btn' format='svg'}}} */}
-          </button>
-           
+          <Interstitial title="Introduction" />
         </div>
-        ) 
-        : null}
 
-        // QUESTION (NON-FACILITATOR)
-        <div className="screen bg">
-{/*       
-          {{> component/instructions 
-              decider=true
+        {/* ROLECARD VIEWED */}
+        {!rolecardShow ? (
+          <div className="screen bg form">
+            <Instructions
+              show={!isFacilitator}
+              heading="Introductions"
+              body="Introduce your character and how this scenario impacts you. Try to mention your objective you need to meet."
+            />
+            <Instructions
+              show={isFacilitator}
               heading="Introductions"
               body="Give each player an equal opportunity to introduce their character and how they are impacted by this scenario."
-          }}
-      
-          {{> component/instructions 
-              heading="Introductions"
-          }}
-      
-          {{> component/speech
+            />
+
+            <h1>{isFacilitator}</h1>
+            {!isFacilitator && notReady ? (
+              <button
+                id="btn-ready"
+                className={`btn submit player`}
+                type="submit"
+                name="submit"
+                onClick={() => {
+                  this.socket.emit("game:ready", GameData.get().assemble());
+                  this.setState({ notReady: false });
+                }}
+              >
+                Ready
+              </button>
+            ) : null}
+
+            <Timer
+              show={isFacilitator}
+              disabled={!allPlayersReady}
+              started={this.timerStart}
+              done={this.timerEnd}
+            />
+
+            <Speech
+              facilitator={isFacilitator}
               body="Problem Scenario"
-              secondary=question
-              bold=true
-          }}
-      
-          {{> component/speech
-              decider=true
-              body="Problem Scenario"
-              secondary=question
-              bold=true
-          }}
-       */}
-       {!notReady ? (
-          <div className="player-roles col-sm-6">
-      
-            <h3>Team's Roles</h3>
-      
-            <div className="grid">
-              {/* {{#each playerMap}}
-                <div className="player{{#if isFacilitator}} facilitator{{/if}}">
-                  {{username}}
-                  {{#if isFacilitator}}
-                    <div>Facilitator</div>
-                  {{else}}
-                    <div>{{title}}</div>
-                  {{/if}}
-                </div>
-              {{/each}} */}
+              subBody={data.shared.question}
+              bold={true}
+            />
+
+            {isFacilitator && !allPlayersReady ? (
+              <div className="not-ready decider">
+                Wait until every player is ready to continue  
+              </div>
+            ) : null}
+
+            {isFacilitator && timerEnded ? (
+              <div id="times-up" className="hide">
+                Time’s up! Consider wrapping this discussion up
+              </div>
+            ) : null}
+            
+            {/* Skip/go to next phase */}
+            {timerStarted ?
+              <button id="skip-next" onClick={() => { this.socket.emit("game:next", GameData.get().assemble()); }}>
+               {timerEnded ? 'Continue' : 'Skip'} to Phase 2
+                <CdnImage
+                  publicId="v1540488090/at-stake/icons/check-btn"
+                  format="svg"
+                  />
+              </button>
+            : null
+            }
+
+          </div>
+        ) : null}
+
+        {/* QUESTION (NON-FACILITATOR) */}
+        <div className="screen bg">
+
+          {/* Player ready */}
+          {!notReady ? (
+            <div className="player-roles col-sm-6">
+              <h3>Team's Roles</h3>
+
+              <div className="grid">
+
+                {/* Show all player role names */}
+                {Object.keys(data.shared.roles).map((key) => {
+
+                  let role = data.shared.roles[key];
+                  
+                  return (
+                    <div key={key}>
+                      <b>{role.username}</b>
+                      <br />
+                      {role.isFacilitator ? 'Facilitator' : role.title}
+                    </div>
+                  )
+
+                })}
+
+              </div>
             </div>
-      
-          </div>
-       ) : null}
-      
-          <div id="time-up" className="player">
-      
-            {/* {{{cloudinaryUrl 'v1540488090/at-stake/bg/clock' width='319'}}} */}
-            <h1>Time's up!</h1>
-          </div>
-      
+          ) : null}
+
+          {/* Timer over */}
+          {timerEnded ? (
+            <div id="time-up">
+              <CdnImage
+                publicId="v1540488090/at-stake/bg/clock"
+                width={319}
+                format="png"
+              />
+              <h1>Time's up!</h1>
+            </div>
+          ) : null}
+
         </div>
-      
       </div>
     );
   }
