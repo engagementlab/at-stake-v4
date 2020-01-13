@@ -122,7 +122,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
       if (isGroup) {
          logger.info(`${this.playerGameId} group view disconnecting. Bu-bye.`);
          if(process.env.NODE_ENV === 'development')
-            session.End(currentSocket);
+            session.End(currentSocket, true);
       }
       else {
         const player = session.GetPlayerById(currentSocket.id);

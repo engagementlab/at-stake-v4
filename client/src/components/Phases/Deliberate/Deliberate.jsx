@@ -15,9 +15,12 @@ class Deliberate extends PureComponent {
     super(props);
 
     this.state = {
-      isFacilitator: false,
-      timerStarted: false,
-      timerEnded: false
+        allPlayersReady: false,
+        isFacilitator: false,
+        notReady: true,
+        screenIndex: 0,
+        timerStarted: false,
+        timerEnded: false
     };
 
     this.socket = null;
@@ -34,12 +37,15 @@ class Deliberate extends PureComponent {
 
     /* Socket Listeners */
 
-    // Tell facilitator all players ready for intros
-    // this.socket.on('game:ready', () => {
+    // Tell facilitator all players ready for deliberation and advance screen
+    this.socket.on('game:ready', () => {
+        
+        this.setState({
+            allPlayersReady: true,
+            screenIndex: this.state.screenIndex + 1
+        });
 
-    //   this.setState({ allPlayersReady: true });
-
-    // });
+    });
 
   }
 
@@ -49,6 +55,14 @@ class Deliberate extends PureComponent {
 
   componentWillUnmount = () => {
     console.log('Deliberate will unmount');
+  }
+
+  // Send that player is ready
+  playerReady() {
+
+    this.socket.emit("game:ready", GameData.get().assemble());
+    this.setState({ notReady: false });
+
   }
 
   timerStart() {
@@ -66,12 +80,106 @@ class Deliberate extends PureComponent {
 
   render() {
 
-    const { isFacilitator, timerStarted, timerEnded } = this.state;
+    const { isFacilitator, notReady, screenIndex, timerStarted, timerEnded } = this.state;
     const data = this.props.data;
 
     return (
       <div>
-          Delib
+            <Interstitial title="Deliberation" />
+            
+            {screenIndex === 0 && 
+                <div className="screen">
+                    <Instructions
+                    show={!isFacilitator}
+                    heading="Deliberation"
+                    body="Think of solutions to the problem scenario below. Consider your teammates' needs when deliberating. Keep in mind equity, fidelity, and cost effectiveness."
+                    />
+                    <Instructions
+                    show={isFacilitator}
+                    heading="Deliberation"
+                    body="need instruction text"
+                    />
+
+                    <Speech
+                    facilitator={isFacilitator}
+                    body="Problem Scenario"
+                    subBody={data.question}
+                    bold={true}
+                    />
+                    
+                    {!isFacilitator && (
+                        notReady ?
+                        <button
+                        id="btn-ready"
+                        className={`btn submit player`}
+                        type="submit"
+                        name="submit"
+                        onClick={() => { this.playerReady(); }}
+                        >
+                        Ready
+                        </button> 
+                        :
+                        <button>Waiting</button>
+                    )}
+                </div>
+            }
+            {screenIndex === 1 &&
+                <div className="screen">
+                    
+                    <Instructions
+                    show={!isFacilitator}
+                    heading="Deliberation"
+                    body="Begin discussing with your team possible solutions to the problem scenario. "
+                    />
+
+                    <h2>Team's Needs</h2>
+                    <div className="grid">
+                        
+                        {Object.keys(data.players).map((id) => {
+                            let player = data.players[id];
+                            let classStr = 'player' + (player.isFacilitator ? ' facilitator' : '');
+
+                            return (
+                                <div className={classStr} key={id}>
+                                    <div>
+                                        <b>{player.username}</b>
+                                        <br />
+                                        {!player.isFacilitator ?
+                                            <div>
+                                                <span>
+                                                    {player.needs[0]} 
+                                                </span>
+                                                <br />
+                                                <span>
+                                                    {player.needs[1]} 
+                                                </span>
+                                            </div> 
+                                            :
+                                            <span>
+                                                Facilitator
+                                            </span>
+                                        
+                                        }                               
+                                    </div>
+                                </div>
+                            );
+                        })};
+
+                        {/* <div id="events" class="player form">
+                        <div id="content">
+                            {{#each events}}
+                                <div class="event">
+                                    <h3>Breaking News</h3>
+                                    <div>{{text}}</div>
+                                    <span>tap to dismiss</span>
+                                </div>
+                            {{/each}}
+                        </div> */}
+
+                    </div>
+
+                </div>
+            }
       </div>
     );
   }

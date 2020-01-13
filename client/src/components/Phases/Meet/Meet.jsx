@@ -53,7 +53,9 @@ class Meet extends PureComponent {
   }
 
   componentWillUnmount = () => {
-    console.log('Meet will unmount');
+    
+    this.socket.off('game:ready');
+
   }
 
   proceedFromRolecard() {
@@ -104,7 +106,7 @@ class Meet extends PureComponent {
 
         {/* ROLECARD VIEWED */}
         {!rolecardShow ? (
-          <div className="screen bg form">
+          <div className="screen">
             <Instructions
               show={!isFacilitator}
               heading="Introductions"
@@ -116,7 +118,6 @@ class Meet extends PureComponent {
               body="Give each player an equal opportunity to introduce their character and how they are impacted by this scenario."
             />
 
-            <h1>{isFacilitator}</h1>
             {!isFacilitator && notReady ? (
               <button
                 id="btn-ready"

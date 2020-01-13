@@ -30,7 +30,7 @@ class App extends Component {
       response: 'Trying socket connection...',
       
       screens: ['meet', 'deliberate', 'ranking'],
-      screenIndex: -1,
+      phaseIndex: -1,
       screenData: null
     };
 
@@ -56,17 +56,18 @@ class App extends Component {
       this.setState({ response: 'Disconnected' });
     });  
     socket.on('game:intro', () => { 
-      this.setState({ screenIndex: 1 });
+      this.setState({ phaseIndex: 1 });
     });
 
     socket.on('game:next_phase', (screenData) => {
-      this.setState({ screenIndex: this.state.screenIndex+1, screenData: screenData });   
+      this.setState({ phaseIndex: this.state.phaseIndex+1, screenData: screenData });   
       
       // Cache player's role data as it is emitted only in first phase
       this.roleData = screenData.role;
+
     });
     socket.on('game:refresh_screen', (screenData) => {  
-      this.setState({ screenIndex: screenData.phase, screenData: screenData });   
+      this.setState({ phaseIndex: screenData.phase, screenData: screenData });   
     });
 
     socket.on('player:reconnected', (eventData) => {
@@ -86,7 +87,7 @@ class App extends Component {
 
   advanceScreen() {
     
-    this.setState({ screenIndex: this.state.screenIndex+1 });
+    this.setState({ phaseIndex: this.state.phaseIndex+1 });
 
   }
 
@@ -98,8 +99,8 @@ class App extends Component {
 
   render() {
 
-    const { isHost, response, rolecardShow, screenIndex, screenData, screens } = this.state;
-    const currentScreen = screens[screenIndex];
+    const { isHost, response, rolecardShow, phaseIndex, screenData, screens } = this.state;
+    const currentScreen = screens[phaseIndex];
 
     return (
 
@@ -114,7 +115,7 @@ class App extends Component {
 
             {/* <Interstitial title="Introduction" /> */}
 
-            { screenIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
+            { phaseIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
             { currentScreen === 'intro' ? <Intro host={isHost} /> : null }
             
             { currentScreen === 'meet' ? <Meet host={isHost} data={screenData} /> : null }
