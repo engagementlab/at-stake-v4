@@ -22,7 +22,9 @@ class Timer extends PureComponent {
       countdownDuration: number,
       countdownLabel: ''
 
-    }
+    };
+
+    this.clockInterval = null;
   }
 
   componentDidMount = () => {
@@ -38,12 +40,18 @@ class Timer extends PureComponent {
       
   }
 
+  componentWillUnmount = () => {
+
+    clearTimeout(this.clockInterval);
+
+  }
+
   startTimer(timerDuration, timerCurrent) {
 
     var currentTime = timerCurrent ? timerCurrent*1000 : 0,
     maxDuration = timerDuration*1000;
 
-    let clockInterval = setInterval(() => {
+    this.clockInterval = setInterval(() => {
     
       currentTime += 1000;
       var perc = (currentTime/maxDuration)*100;
@@ -53,7 +61,7 @@ class Timer extends PureComponent {
 
       if(perc === 100) {
 
-          clearInterval(clockInterval);
+          clearInterval(this.clockInterval);
           // timer.addClass('done');
           // timer.removeClass('running');
           // timer.css('background', '');
