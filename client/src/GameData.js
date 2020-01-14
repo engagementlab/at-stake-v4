@@ -49,11 +49,11 @@ class GameData {
 
     assemble(appendData) {
 
-        // Append game ID if provided
+        // Append game ID if provided or does not match cached
         if(appendData) {
-            if ((this._gameId === null && appendData.joinCode) || (this._gameId !== appendData.joinCode)) {
+            let newCode = appendData.joinCode && (this._gameId !== appendData.joinCode)
+            if ((this._gameId && appendData.joinCode) || newCode)
                 this._gameId = appendData.joinCode;
-            }
         }
 
         // Always append game ID to payload
