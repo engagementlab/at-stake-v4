@@ -21,9 +21,11 @@ class Deliberate extends PureComponent {
             notReady: true,
             screenIndex: 0,
             showEvent: false,
+            showVote: false,
             timerStarted: false,
             timerEnded: false,
-            visibleEventIndex: -1
+            visibleEventIndex: -1,
+            voteCallerName: null
         };
 
         this.socket = null;
@@ -70,6 +72,17 @@ class Deliberate extends PureComponent {
             });
 
         });
+
+        // Show voting
+        this.socket.on('player:call_vote', (data) => {
+
+            this.setState({
+                showVote: true,
+                voteCallerName: data.username
+            });
+
+        });
+
 
     }
 
@@ -155,188 +168,293 @@ class Deliberate extends PureComponent {
 
     render() {
 
-    const { allPlayersReady, isFacilitator, notReady, screenIndex, showEvent, timerStarted, timerEnded, visibleEventIndex } = this.state;
-    const data = this.props.data;
+        const {
+            allPlayersReady,
+            isFacilitator,
+            notReady,
+            screenIndex,
+            showEvent,
+            showVote,
+            timerStarted,
+            timerEnded,
+            visibleEventIndex,
+            voteCallerName
+        } = this.state;
+        const data = this.props.data;
 
-    return (
-        <div>
-            <Interstitial title="Deliberation" />
-            
-            {screenIndex === 0 && 
-                <div className="screen">
+        return (
+            <div>
+                <Interstitial title="Deliberation" />
+
+                {screenIndex === 0 && (
+                    <div className="screen">
                     <Instructions
-                    show={!isFacilitator}
-                    heading="Deliberation"
-                    body="Think of solutions to the problem scenario below. Consider your teammates' needs when deliberating. Keep in mind equity, fidelity, and cost effectiveness."
+                        show={!isFacilitator}
+                        heading="Deliberation"
+                        body="Think of solutions to the problem scenario below. Consider your teammates' needs when deliberating. Keep in mind equity, fidelity, and cost effectiveness."
                     />
 
                     <Instructions
-                    show={isFacilitator}
-                    heading="Deliberation"
-                    body="Start timer when all players ready."
+                        show={isFacilitator}
+                        heading="Deliberation"
+                        body="Start timer when all players ready."
                     />
 
                     <Speech
-                    facilitator={isFacilitator}
-                    body="Problem Scenario"
-                    subBody={data.question}
+                        facilitator={isFacilitator}
+                        body="Problem Scenario"
+                        subBody={data.question}
                     />
 
-                    {!isFacilitator && (
-                        notReady ?
+                    {!isFacilitator &&
+                        (notReady ? (
                         <button
-                        id="btn-ready"
-                        className={`btn submit player`}
-                        type="submit"
-                        name="submit"
-                        onClick={() => { this.playerReady(); }}
+                            id="btn-ready"
+                            className={`btn submit player`}
+                            type="submit"
+                            name="submit"
+                            onClick={() => {
+                            this.playerReady();
+                            }}
                         >
-                        Ready
-                        </button> 
-                        :
+                            Ready
+                        </button>
+                        ) : (
                         <button>Waiting</button>
-                    )}
-                </div>
-            }
+                        ))}
+                    </div>
+                )}
 
-            {/* Player ready/is deliberating */}
-            {screenIndex === 1 &&
-                <div className="screen">
-                    
+                {/* Player ready/is deliberating */}
+                {screenIndex === 1 && (
+
+                    <div className="screen">
                     <Instructions
-                    show={!isFacilitator}
-                    heading="Deliberation"
-                    body="Begin discussing with your team possible solutions to the problem scenario. "
+                        show={!isFacilitator}
+                        heading="Deliberation"
+                        body="Begin discussing with your team possible solutions to the problem scenario. "
                     />
 
                     <Timer
-                    show={isFacilitator}
-                    disabled={!allPlayersReady}
-                    started={this.timerStart}
-                    done={this.timerEnd}
+                        show={isFacilitator}
+                        disabled={!allPlayersReady}
+                        started={this.timerStart}
+                        done={this.timerEnd}
                     />
 
                     {/* Show team/events to non-facilitator */}
                     {!isFacilitator && (
                         <div>
-                            <div id="events">
-                                {data.events.map((evt, i) => {
+                        <div id="events">
+                            {data.events.map((evt, i) => {
+                            // Show event only if it's the one broadcast
+                            return (
+                                visibleEventIndex === i &&
+                                showEvent && (
+                                <div
+                                    key={i}
+                                    className="event"
+                                    onClick={() => this.dismissEvent()}
+                                >
+                                    <div className="content">
+                                    <h3>Breaking News</h3>
+                                    <div>{evt.text}</div>
+                                    <span>(tap to dismiss)</span>
+                                    </div>
+                                </div>
+                                )
+                            );
+                            })}
+                        </div>
 
-                                    // Show event only if it's the one broadcast
-                                    return (visibleEventIndex === i && showEvent) && (
-                                        
-                                        <div key={i} className="event" onClick={() => this.dismissEvent()}>
-                                            <div className="content">
-                                                <h3>Breaking News</h3>
-                                                <div>{evt.text}</div>
-                                                <span>(tap to dismiss)</span>
-                                            </div>
-                                        </div>
+                        <h2>Team's Needs</h2>
+                        <div className="grid">
+                            {Object.keys(data.players).map(id => {
+                            let player = data.players[id];
+                            let classStr =
+                                "player" + (player.isFacilitator ? " facilitator" : "");
 
-                                    )
+                            return (
+                                <div className={classStr} key={id}>
+                                <div>
+                                    <b>{player.username}</b>
+                                    <br />
+                                    {!player.isFacilitator ? (
+                                    <div>
+                                        <span>{player.needs[0]}</span>
+                                        <br />
+                                        <span>{player.needs[1]}</span>
+                                    </div>
+                                    ) : (
+                                    <span>Facilitator</span>
+                                    )}
+                                </div>
+                                </div>
+                            );
+                            })}
+                            ;
+                        </div>
 
-                                })}
-                            </div>
-
-                            <h2>Team's Needs</h2>
-                            <div className="grid">
-                                
-                                {Object.keys(data.players).map((id) => {
-                                    let player = data.players[id];
-                                    let classStr = 'player' + (player.isFacilitator ? ' facilitator' : '');
-                                    
-                                    return (
-                                        <div className={classStr} key={id}>
-                                            <div>
-                                                <b>{player.username}</b>
-                                                <br />
-                                                {!player.isFacilitator ?
-                                                    <div>
-                                                        <span>
-                                                            {player.needs[0]} 
-                                                        </span>
-                                                        <br />
-                                                        <span>
-                                                            {player.needs[1]} 
-                                                        </span>
-                                                    </div> 
-                                                    :
-                                                    <span>
-                                                        Facilitator
-                                                    </span>
-                                                
-                                                }                               
-                                            </div>
-                                        </div>
-                                    );
-                                })};
-
-                            </div>
-
-                            <button onClick={() => 
-                                this.socket.emit('player:call_vote', GameData.get().assemble())
-                            }>Call vote</button>
+                        <button
+                            onClick={() =>
+                            this.socket.emit("player:call_vote", GameData.get().assemble())
+                            }
+                        >
+                            Call vote
+                        </button>
                         </div>
                     )}
 
                     {/* Show 'random' events to facilitator */}
-                    {isFacilitator &&
+                    {isFacilitator && (
                         <div id="events">
-                            {data.events.map((evt, i) => {
-
-                                // Show event only if it's the current one in state
-                                return (visibleEventIndex === i && showEvent) && (
-                                    
-                                    <div key={i} className="event">
-                                        <div className="content">
-                                            
-                                            <div>
-                                                <h3>New Event</h3>
-                                                <h1>{evt.text}</h1>
-                                            </div>
-                            
-                                            <div className="buttons">
-                                                {/* Tooltip on first event */}
-                                                {i === 0 && <span className="tooltip-content">You can choose to accept or ignore events that will complicate players' solutions.</span>}
-                                                
-                                                <button id="btn-confirm" type="submit" name="submit" onClick={() => {
-                                                    this.eventAction('accept', i);  
-                                                }}>	
-                                                    &#x2714;
-                                                </button>
-                                                
-                                                <button id="btn-reject" type="submit" name="submit" onClick={() => {
-                                                    this.eventAction('reject', i);  
-                                                }}>
-                                                    &#65794;
-                                                </button>
-                                            </div>
-                                            
-                                        </div>
+                        {data.events.map((evt, i) => {
+                            // Show event only if it's the current one in state
+                            return (
+                            visibleEventIndex === i &&
+                            showEvent && (
+                                <div key={i} className="event">
+                                <div className="content">
+                                    <div>
+                                    <h3>New Event</h3>
+                                    <h1>{evt.text}</h1>
                                     </div>
 
-                                )
+                                    <div className="buttons">
+                                    {/* Tooltip on first event */}
+                                    {i === 0 && (
+                                        <span className="tooltip-content">
+                                        You can choose to accept or ignore events that will
+                                        complicate players' solutions.
+                                        </span>
+                                    )}
 
-                            })}
+                                    <button
+                                        id="btn-confirm"
+                                        type="submit"
+                                        name="submit"
+                                        onClick={() => {
+                                        this.eventAction("accept", i);
+                                        }}
+                                    >
+                                        &#x2714;
+                                    </button>
+
+                                    <button
+                                        id="btn-reject"
+                                        type="submit"
+                                        name="submit"
+                                        onClick={() => {
+                                        this.eventAction("reject", i);
+                                        }}
+                                    >
+                                        &#65794;
+                                    </button>
+                                    </div>
+                                </div>
+                                </div>
+                            )
+                            );
+                        })}
                         </div>
-                    }
+                    )}
 
                     {/* Timer over */}
-                    {timerEnded ? (
+                    {timerEnded && (
                         <div id="time-up">
-                            <CdnImage
-                                publicId="v1540488090/at-stake/bg/clock"
-                                width={319}
-                                format="png"
-                            />
-                            <h1>Time's up!</h1>
-                            <p>This would be a good time to call to vote.</p>
+                        <CdnImage
+                            publicId="v1540488090/at-stake/bg/clock"
+                            width={319}
+                            format="png"
+                        />
+                        <h1>Time's up!</h1>
+                        <p>This would be a good time to call to vote.</p>
                         </div>
-                    ) : null}
+                    )}
+                )}                
+
+                {/* Voting screen */}
+                {showVote && (
+                        <div id="vote">
+                            <Instructions
+                            show={isFacilitator}
+                            heading="Call To Vote"
+                            body="Listen to the proposal. If it passes, you will have to rate it."
+                            />
+
+                            <Instructions
+                            show={!isFacilitator}
+                            heading="Call To Vote"
+                            body="Listen to the proposal. Decide if the proposal fits your needs."
+                            />
+
+                            <Speech
+                            facilitator={isFacilitator}
+                            body="Problem Scenario"
+                            subBody={data.question}
+                            bold={true}
+                            />
+
+                            <CdnImage
+                            publicId="v1541693946/at-stake/icons/ballotbox-black"
+                            width={200}
+                            format="png"
+                            />
+
+                            <h1>{ voteCallerName } called a vote!</h1>
+
+                            <div class="player form">
+                            <div id="content" class="content">
+                                {/* {{{cloudinaryUrl 'v1541693946/at-stake/icons/ballotbox' width=200 format='png'}}} */}
+
+                                <h1>{ voteCallerName } called a vote!</h1>
+                                <h2>Are you satisfied with this proposal?</h2>
+
+                                <button
+                                id="btn-yes"
+                                class="btn submit player"
+                                type="submit"
+                                name="submit"
+                                data-event="player:vote"
+                                data-package="yes"
+                                >
+                                Yes
+                                </button>
+
+                                <button
+                                id="btn-no"
+                                class="btn submit player"
+                                type="submit"
+                                name="submit"
+                                data-event="player:vote"
+                                data-package="no"
+                                >
+                                No
+                                </button>
+                            </div>
+                            </div>
+
+                            <div id="results" class="content player">
+                            <h1>Not everyone agreed with the proposal.</h1>
+                            <div id="votecaller">Revise your proposal and submit again.</div>
+                            <div id="voter">Waiting for { voteCallerName } to dismiss this vote.</div>
+
+                            <button
+                                id="btn-try-again"
+                                class="btn player"
+                                type="submit"
+                                name="submit"
+                            >
+                                Try Again
+                            </button>
+                            </div>
+                        </div>
+                    )
+                }
                 </div>
-            }
-        </div>
-    );
+                )}
+            </div>
+        )
     }
 
 }
