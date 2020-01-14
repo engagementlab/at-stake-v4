@@ -42,7 +42,9 @@ class Timer extends PureComponent {
 
   componentWillUnmount = () => {
 
+    // Cleanup
     clearTimeout(this.clockInterval);
+    this.props.socket.off('game:countdown');
 
   }
 
