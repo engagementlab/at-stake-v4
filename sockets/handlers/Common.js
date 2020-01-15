@@ -140,7 +140,7 @@ const Common = function (nsp, socket) {
       session.PlayerMetNeed(pkg.msgData.uid, pkg.msgData.index);
     },
 
-    'player:callvote': (pkg) => {
+    'player:call_vote': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
@@ -151,7 +151,7 @@ const Common = function (nsp, socket) {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
-      session.PlayerVote(currentSpace, pkg.msgData);
+      session.PlayerVote( pkg.msgData);
     },
 
     'player:vote_end': (pkg) => {

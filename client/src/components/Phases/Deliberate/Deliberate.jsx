@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import './Deliberate.scss';
 
 import GameData from '../../../GameData';
 import SocketContext from '../../../SocketContext';
@@ -21,11 +22,17 @@ class Deliberate extends PureComponent {
             notReady: true,
             screenIndex: 0,
             showEvent: false,
-            showVote: false,
             timerStarted: false,
             timerEnded: false,
             visibleEventIndex: -1,
-            voteCallerName: null
+            
+            voting: {
+                callerId: null,
+                callerName: null,
+                resultsShow: false,
+                show: false,
+                won: false
+            }
         };
 
         this.socket = null;
@@ -77,12 +84,48 @@ class Deliberate extends PureComponent {
         this.socket.on('player:call_vote', (data) => {
 
             this.setState({
-                showVote: true,
-                voteCallerName: data.username
+                voting: {
+                    show: true,
+                    callerName: data.username
+                }
             });
 
         });
 
+        // Show voting result
+        this.socket.on('players:voted', (data) => {
+
+            console.log(this.isFacilitator, data.yes)
+            
+            // If vote won, facilitator just moves to next phase
+            if(this.state.isFacilitator && data.yes) {
+
+                this.socket.emit('game:next', GameData.get().assemble());
+                return;
+            }
+
+            this.setState({
+                voting: {
+                    show: true,
+                    callerName: null,
+                    callerId: data.votecallerid,
+                    resultsShow: true,
+                    won: data.yes                
+                }
+            });
+
+        });
+        
+        // Close voting
+        this.socket.on('players:vote_ended', (data) => {
+
+            this.setState({
+                voting: {
+                    show: false
+                }
+            });
+
+        });
 
     }
 
@@ -174,13 +217,13 @@ class Deliberate extends PureComponent {
             notReady,
             screenIndex,
             showEvent,
-            showVote,
             timerStarted,
             timerEnded,
             visibleEventIndex,
-            voteCallerName
-        } = this.state;
-        const data = this.props.data;
+            voting
+        } = this.state,
+        data = this.props.data,
+        isVoteCaller = sessionStorage.getItem('uUID') === voting.callerId;
 
         return (
             <div>
@@ -371,10 +414,12 @@ class Deliberate extends PureComponent {
                         <p>This would be a good time to call to vote.</p>
                         </div>
                     )}
-                )}                
+                    </div>
+
+                )}
 
                 {/* Voting screen */}
-                {showVote && (
+                {voting.show && (
                         <div id="vote">
                             <Instructions
                             show={isFacilitator}
@@ -395,64 +440,75 @@ class Deliberate extends PureComponent {
                             bold={true}
                             />
 
-                            <CdnImage
-                            publicId="v1541693946/at-stake/icons/ballotbox-black"
-                            width={200}
-                            format="png"
-                            />
+                            {isFacilitator && 
+                                <div>
+                                    <CdnImage
+                                    publicId="v1541693946/at-stake/icons/ballotbox-black"
+                                    width={200}
+                                    format="png"
+                                    />
+                                    <h1>{ voting.callerName } called a vote!</h1>
+                                </div>
+                            }
 
-                            <h1>{ voteCallerName } called a vote!</h1>
+                            {!isFacilitator && 
+                                <div id="content" className="content">
+                                        <CdnImage
+                                        publicId="v1541693946/at-stake/icons/ballotbox"
+                                        width={200}
+                                        format="png"
+                                        />
 
-                            <div class="player form">
-                            <div id="content" class="content">
-                                {/* {{{cloudinaryUrl 'v1541693946/at-stake/icons/ballotbox' width=200 format='png'}}} */}
+                                    <h1>{ voting.callerName } called a vote!</h1>
+                                    <h2>Are you satisfied with this proposal?</h2>
 
-                                <h1>{ voteCallerName } called a vote!</h1>
-                                <h2>Are you satisfied with this proposal?</h2>
+                                    <button
+                                    id="btn-yes"
+                                    className="btn submit player"
+                                    type="submit"
+                                    onClick={() => { this.socket.emit('player:vote', GameData.get().assemble({yes: true})); }}
+                                    >
+                                    Yes
+                                    </button>
 
-                                <button
-                                id="btn-yes"
-                                class="btn submit player"
-                                type="submit"
-                                name="submit"
-                                data-event="player:vote"
-                                data-package="yes"
-                                >
-                                Yes
-                                </button>
+                                    <button
+                                    id="btn-no"
+                                    className="btn submit player"
+                                    type="submit"
+                                    onClick={() => { this.socket.emit('player:vote', GameData.get().assemble({yes: false})); }}
+                                    >
+                                    No
+                                    </button>
+                                </div>
+                            }
 
-                                <button
-                                id="btn-no"
-                                class="btn submit player"
-                                type="submit"
-                                name="submit"
-                                data-event="player:vote"
-                                data-package="no"
-                                >
-                                No
-                                </button>
-                            </div>
-                            </div>
+                            {voting.resultsShow && !voting.won && 
+                                <div id="results" className="content player">
+                                                                
+                                    <h1>Not everyone agreed with the proposal.</h1>
 
-                            <div id="results" class="content player">
-                            <h1>Not everyone agreed with the proposal.</h1>
-                            <div id="votecaller">Revise your proposal and submit again.</div>
-                            <div id="voter">Waiting for { voteCallerName } to dismiss this vote.</div>
-
-                            <button
-                                id="btn-try-again"
-                                class="btn player"
-                                type="submit"
-                                name="submit"
-                            >
-                                Try Again
-                            </button>
-                            </div>
+                                    {isVoteCaller ?
+                                        (
+                                            <div>
+                                                <p>Revise your proposal and submit again.</p>
+                                                <button
+                                                    id="btn-try-again"
+                                                    type="submit"
+                                                    name="submit"
+                                                    onClick={() => { this.socket.emit('player:vote_end', GameData.get().assemble()); }}
+                                                >
+                                                    Try Again
+                                                </button>
+                                            </div>   
+                                        )
+                                        :
+                                        <div id="voter">Waiting for { voting.callerName } to dismiss this vote.</div>
+                                    }
+                                </div>
+                            }
                         </div>
                     )
                 }
-                </div>
-                )}
             </div>
         )
     }
