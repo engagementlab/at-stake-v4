@@ -6,10 +6,13 @@ import io from 'socket.io-client';
 import './App.css';
 
 import GameData from './GameData';
+
 import Lobby from './components/Lobby/Lobby';
 import Intro from './components/Intro/Intro';
 import Meet from './components/Phases/Meet/Meet';
 import Deliberate from './components/Phases/Deliberate/Deliberate';
+import Ranking from "./components/Phases/Ranking/Ranking";
+
 import Rolecard from "./components/Shared/Rolecard/Rolecard";
 
 const socket = io('http://localhost:3001', {
@@ -118,9 +121,10 @@ class App extends Component {
             { phaseIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
             { currentScreen === 'intro' ? <Intro host={isHost} /> : null }
             
-            { currentScreen === 'meet' ? <Meet host={isHost} data={screenData} /> : null }
-            
-            { currentScreen === 'deliberate' ? <Deliberate host={isHost} data={screenData} role={this.roleData} /> : null }
+            {/* Phases */}
+            { currentScreen === 'meet' && <Meet host={isHost} data={screenData} /> }
+            { currentScreen === 'deliberate' && <Deliberate host={isHost} data={screenData} role={this.roleData} /> }
+            { currentScreen === 'ranking' && <Ranking host={isHost} data={screenData} /> }
 
             {/* ROLECARD */}
             { rolecardShow ? <Rolecard role={this.roleData} close={this.closeRolecard} /> : null }
