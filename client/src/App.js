@@ -122,9 +122,9 @@ class App extends Component {
             { currentScreen === 'intro' ? <Intro host={isHost} /> : null }
             
             {/* Phases */}
-            { currentScreen === 'meet' && <Meet host={isHost} data={screenData} /> }
-            { currentScreen === 'deliberate' && <Deliberate host={isHost} data={screenData} role={this.roleData} /> }
-            { currentScreen === 'ranking' && <Ranking host={isHost} data={screenData} /> }
+            {/* { currentScreen === 'meet' && <Meet host={isHost} data={screenData} /> } */}
+            {/* { currentScreen === 'deliberate' && <Deliberate host={isHost} data={screenData} role={this.roleData} /> } */}
+            { currentScreen === 'meet' && <Ranking host={isHost} data={screenData} /> }
 
             {/* ROLECARD */}
             { rolecardShow ? <Rolecard role={this.roleData} close={this.closeRolecard} /> : null }

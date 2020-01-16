@@ -9,8 +9,11 @@ class Ranking extends PureComponent {
 
     this.state = {
       hasError: false,
+      ratingEquity: 1,
+      ratingInclusivity: 1,
+      ratingCreativity: 1,
     };
-  }
+}
 
   componentDidMount = () => {
     
@@ -31,9 +34,15 @@ class Ranking extends PureComponent {
     console.log('Ranking will unmount');
   }
 
+  sliderChange(evt) {
+
+    console.log(evt)
+
+  }
+
   render () {
 
-    const { isFacilitator } = this.state,
+    const { isFacilitator, ratingEquity, ratingCreativity, ratingInclusivity } = this.state,
           data = this.props.data;
     
     // RANKING UI
@@ -41,13 +50,13 @@ class Ranking extends PureComponent {
       <div id="ranking">
       
         {/* WAIT FOR RANK */}
-        <div class="screen player">
+        <div className="screen player">
       
           <Instructions
             heading="Call To Vote"
           />
       
-          <div id="content" class="content">
+          <div id="content" className="content">
       
                   <h1>Everyone agreed with the proposal!</h1>
                   Wait as the facilitator reviews.
@@ -61,7 +70,7 @@ class Ranking extends PureComponent {
         </div>
       
         {/* RANKING */}
-        <div class="screen decider">
+        <div className="screen decider">
       
           <Instructions
               show={isFacilitator}
@@ -73,25 +82,25 @@ class Ranking extends PureComponent {
             <h2>Did the team meet any secret goals?</h2>
 
             {/* Show all player secret goals */}
-            {Object.keys(data.players).map((id, i) => {
+            {data.players && Object.keys(data.players).map((id, i) => {
 
                 let player = data.players[id];
 
                 return (
-                    <div class="check toggle">              
+                    <div className="check toggle">              
                     <p>{player.username}</p>
-                    <div class="goal">{player.secretGoal}</div>
+                    <div className="goal">{player.secretGoal}</div>
 
-                    <label class="switch">
+                    <label className="switch">
                         {i === 0 &&
-                          <span class="tooltip-content">When a player meets their secret goal, you can check it off. They'll score extra points at the end of the game.</span>
+                          <span className="tooltip-content">When a player meets their secret goal, you can check it off. They'll score extra points at the end of the game.</span>
                         }
                         {player.goalMet ?
                           <input type="checkbox" checked="checked" disabled="disabled" />
                           :
-                          <input type="checkbox" class="btn submit" data-event="player:met_goal" data-package='{"uid":"{uid}"}' />
+                          <input type="checkbox" className="btn submit" data-event="player:met_goal" data-package='{"uid":"{uid}"}' />
                         }
-                        <span class="slider round">
+                        <span className="slider round">
                         </span>
                     </label>
                 </div>
@@ -99,20 +108,20 @@ class Ranking extends PureComponent {
             })}
           </div>
   
-              <div id="pt2" class="form">
+              <div id="pt2" className="form">
                   <h2>Did the team meet their needs?</h2>
       
-                  {Object.keys(data.players).map((id, i) => {
+                  {data.players && Object.keys(data.players).map((id, i) => {
                     let player = data.players[id];
                     return (
-                      <div class="toggle">
+                      <div className="toggle">
                           <p>{player.username}</p>
-                          <div class="needs"> 
-                              <div class="need">
+                          <div className="needs"> 
+                              <div className="need">
 
-                                  <label class="switch">
-                                      <input type="checkbox" class="btn submit" data-event="player:met_need" data-package='{"uid":"{uid}", "index":"0"}' />
-                                      <span class="slider round"></span>
+                                  <label className="switch">
+                                      <input type="checkbox" className="btn submit" data-event="player:met_need" data-package='{"uid":"{uid}", "index":"0"}' />
+                                      <span className="slider round"></span>
                                   </label>
                                   
                                   <span>
@@ -120,11 +129,11 @@ class Ranking extends PureComponent {
                                   </span>
 
                               </div>
-                              <div class="need">
+                              <div className="need">
 
-                                  <label class="switch">
-                                      <input type="checkbox" class="btn submit" data-event="player:met_need" data-package='{"uid":"{uid}", "index":"0"}' />
-                                      <span class="slider round"></span>
+                                  <label className="switch">
+                                      <input type="checkbox" className="btn submit" data-event="player:met_need" data-package='{"uid":"{uid}", "index":"0"}' />
+                                      <span className="slider round"></span>
                                   </label>
                                   
                                   <span>
@@ -141,28 +150,29 @@ class Ranking extends PureComponent {
             </div>
       
                        
-              <div id="pt3" class="form">
+              <div id="pt3">
       
                   <h2>Equity</h2>
-                  <input type="range" id="equity" min="1" value="1" max="5" step="1" />
-                  <div class="labels">
+                  <input type="range" id="equity" min="1" max="5" step="1" value={ratingEquity} onChange={(e) => this.sliderChange(e, 0) } />
+                  <div className="labels">
                       <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                   </div>
       
                   <h2>Inclusivity</h2>
-                  <input type="range" id="inclusivity" min="1" value="1" max="5" step="1" />
-                  <div class="labels">
+                  <input type="range" id="inclusivity" min="1" max="5" step="1" value={ratingInclusivity} onChange={(e) => this.sliderChange(e, 1)  } />
+                  <div className="labels">
                       <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                   </div>
       
                   <h2>Creativity</h2>
-                  <input type="range" id="creativity" min="1" value="1" max="5" step="1" />
-                  <div class="labels">
+                  <input type="range" id="creativity" min="1" max="5" step="1" value={ratingCreativity} onChange={(e) => this.sliderChange(e, 2) } />
+                  <div className="labels">
                       <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                   </div>
+                  
               </div>
           
-          <button id="btn-ready" class="btn" type="submit" name="submit">
+          <button id="btn-ready" className="btn" type="submit" name="submit">
             Continue
           </button>
       
