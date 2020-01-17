@@ -19,8 +19,8 @@ module.exports = (grunt, options) => {
   const fileOut = `${__dirname}/../public/release/${env}.js`;
   const config = {
     uglify: {
-      files: {}
-    }
+      files: {},
+    },
   };
 
   // Files to uglify

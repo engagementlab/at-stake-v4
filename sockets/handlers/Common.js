@@ -151,7 +151,7 @@ const Common = function (nsp, socket) {
       const session = Session.Get(pkg.gameId);
 
       if (!session) return;
-      session.PlayerVote( pkg.msgData);
+      session.PlayerVote(pkg.msgData);
     },
 
     'player:vote_end': (pkg) => {
