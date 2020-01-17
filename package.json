@@ -3,7 +3,9 @@
   "version": "4.0.0",
   "homepage": "https://atstakegame.org/",
   "scripts": {
-    "start": "node app.js",
+    "client": "cd client && npm start",
+    "server": "node app.js",
+    "start": "npm-run-all --parallel client server",
     "test": "eslint --no-eslintrc -c .eslintrc.js --max-warnings 0 ."
   },
   "repository": {
@@ -54,6 +56,7 @@
     "grunt-sass": "3.0.2",
     "load-grunt-configs": "1.0.0",
     "load-grunt-tasks": "5.1.0",
+    "npm-run-all": "^4.1.5",
     "time-grunt": "2.0.0"
   }
 }
