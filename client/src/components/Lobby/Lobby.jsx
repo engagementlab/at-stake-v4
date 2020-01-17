@@ -200,7 +200,7 @@ class Lobby extends Component {
               <br />
               <button onClick={() => this.start(true)}>Host</button> 
               <br />
-                /////////
+                _________
               <br />
               <button onClick={() => this.join()}>Join</button>
             </div>
