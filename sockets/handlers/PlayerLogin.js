@@ -26,7 +26,6 @@ const PlayerLogin = function (nsp, socket, emitter) {
   this.handler = {
 
     room: (payload) => {
-      
       if (!payload.gameId) return;
 
       this.playerGameId = payload.gameId;
@@ -62,7 +61,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
         uid: payload.msgData.uid,
       };
 
-      if(!Session.Get(payload.gameId)) return;
+      if (!Session.Get(payload.gameId)) return;
 
       // Mark player as ready inside game session
       Session.Get(payload.gameId).PlayerReady(
@@ -112,7 +111,6 @@ const PlayerLogin = function (nsp, socket, emitter) {
     },
 
     disconnect: () => {
-
       const session = Session.Get(this.playerGameId);
 
       if (!session) return;
@@ -120,19 +118,16 @@ const PlayerLogin = function (nsp, socket, emitter) {
       const isGroup = (currentSocket.id === session.groupModerator);
 
       if (isGroup) {
-         logger.info(`${this.playerGameId} group view disconnecting. Bu-bye.`);
-         if(process.env.NODE_ENV === 'development')
-            session.End(currentSocket, true);
-      }
-      else {
+        logger.info(`${this.playerGameId} group view disconnecting. Bu-bye.`);
+        if (process.env.NODE_ENV === 'development') session.End(currentSocket, true);
+      } else {
         const player = session.GetPlayerById(currentSocket.id);
 
         if (player) logger.info(`Player '${player.username}' disconnecting. Nooooo!`);
       }
 
       if (this.playerGameId && session) session.PlayerLost(currentSocket.id, currentSocket);
-
-    }
+    },
 
   };
 
