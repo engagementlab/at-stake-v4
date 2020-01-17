@@ -9,11 +9,11 @@ import Decks from './Decks';
 let socket = null;
 
 class Lobby extends Component {
-  
+
   constructor(props) {
-    
+
     super(props);
-    
+
     this.state = {
       data: null,
       status: 'Waiting',
@@ -78,7 +78,7 @@ class Lobby extends Component {
             showDecks: true,
             joinCode: response.code
           });
-            
+
           // Cache game id in data singleton
           GameData.get()._gameId = response.code;
 
@@ -118,7 +118,7 @@ class Lobby extends Component {
     );
 
     if (response.data.sessionCreated) {
-      
+
       this.setState({
         status: 'Session created',
         showDecks: false
@@ -143,13 +143,13 @@ class Lobby extends Component {
     });
 
     let playerUID = Math.floor(1000000000 + Math.random() * 900000);
-    
+
 		// Cache uid for player
 		if(!sessionStorage.getItem('uUID'))
 			sessionStorage.setItem('uUID', playerUID);
-		else 
+		else
       playerUID = sessionStorage.getItem('uUID');
-      
+
     // Host = "decider"
     let roomData = {
       type: this.state.mode === 'host' ? 'decider' : 'player',
@@ -159,7 +159,7 @@ class Lobby extends Component {
     };
 
     let payload = GameData.get().assemble(roomData);
-    
+
     // Log player in
     socket.emit('login:submit', payload);
 
@@ -176,7 +176,7 @@ class Lobby extends Component {
   }
 
   startGame() {
-    
+
     socket.emit('game:start', GameData.get().assemble());
     // this.props.done();
 
@@ -193,12 +193,12 @@ class Lobby extends Component {
 
       <div>
         {mode === ''
-          ? (   
+          ? (
             <div>
               <input type="text" value="host1" onChange={(event) => this.setState({ username: event.target.value })} />
-              
+
               <br />
-              <button onClick={() => this.start(true)}>Host</button> 
+              <button onClick={() => this.start(true)}>Host</button>
               <br />
                 /////////
               <br />
@@ -207,7 +207,7 @@ class Lobby extends Component {
           ) : null}
 
         {mode === 'host' && (playerData && playerData.length >= 2)
-          ? ( 
+          ? (
             <div id="start">
               <button id="btn-start-game" onClick={() => { this.startGame() }}>
                 <h2>Start</h2>
@@ -225,7 +225,7 @@ class Lobby extends Component {
             </p>
           )
           : null}
-        
+
         {data
           ? (
             <div>
@@ -246,16 +246,16 @@ class Lobby extends Component {
           {status}
         </p>
 
-        {!playerData ? null :    
+        {!playerData ? null :
             (<div>
-              Players: 
+              Players:
               <ol>
                 {playerData.map(player => <li key={player.username }>{player.username}</li>)}
               </ol>
 
-            </div>)  
+            </div>)
         }
-      
+
       </div>
     );
   }
