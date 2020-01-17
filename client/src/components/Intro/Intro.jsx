@@ -57,7 +57,7 @@ class Intro extends PureComponent {
               <div className="intro panel">
 
                 <div className="content">
-                  <img src={"https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/" + imageNames[index]} alt="Intro screen 1 image" />
+                  <img src={"https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/" + imageNames[index]} alt="Intro screen 1" />
                 
                   <div className="text">{text[index]}</div>
                 </div>
