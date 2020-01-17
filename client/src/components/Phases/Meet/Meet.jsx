@@ -21,7 +21,7 @@ class Meet extends PureComponent {
       notReady: true,
       rolecardShow: true,
       timerStarted: false,
-      timerEnded: false
+      timerEnded: false,
     };
 
     this.socket = null;
@@ -30,8 +30,7 @@ class Meet extends PureComponent {
     this.timerEnd = this.timerEnd.bind(this);
   }
 
-  componentDidMount = () => {
-
+  componentDidMount() {
     // Set if facilitator
     this.setState({ isFacilitator: this.props.data.role.isFacilitator });
 
@@ -41,50 +40,39 @@ class Meet extends PureComponent {
 
     // Tell facilitator all players ready for intros
     this.socket.on('game:ready', () => {
-
       this.setState({ allPlayersReady: true });
-
     });
-
   }
 
-  componentDidUpdate = () => {
-    console.log('DATA', this.props.data)
+  componentDidUpdate() {
+    console.log('DATA', this.props.data);
   }
 
-  componentWillUnmount = () => {
-    
+  componentWillUnmount() {
     this.socket.off('game:ready');
-
   }
 
   proceedFromRolecard() {
-
     this.setState({ rolecardShow: false });
-
   }
 
   timerStart() {
-
     this.setState({ timerStarted: true });
-
   }
 
   timerEnd() {
-
     this.setState({ timerEnded: true });
-
   }
 
 
   render() {
-
-    const { allPlayersReady, isFacilitator, notReady, rolecardShow, timerStarted, timerEnded } = this.state;
-    const data = this.props.data;
+    const {
+      allPlayersReady, isFacilitator, notReady, rolecardShow, timerStarted, timerEnded,
+    } = this.state;
+    const { data } = this.props;
 
     return (
       <div>
-
         {/* MEET PHASE UI */}
         <div id="meet">
           {/* ROLECARD */}
@@ -94,7 +82,7 @@ class Meet extends PureComponent {
             <div className="screen initial">
               <Rolecard
                 visible={rolecardShow}
-                intro={true}
+                intro
                 role={data.role}
                 close={this.proceedFromRolecard}
               />
@@ -121,11 +109,11 @@ class Meet extends PureComponent {
             {!isFacilitator && notReady ? (
               <button
                 id="btn-ready"
-                className={`btn submit player`}
+                className="btn submit player"
                 type="submit"
                 name="submit"
                 onClick={() => {
-                  this.socket.emit("game:ready", GameData.get().assemble());
+                  this.socket.emit('game:ready', GameData.get().assemble());
                   this.setState({ notReady: false });
                 }}
               >
@@ -144,12 +132,12 @@ class Meet extends PureComponent {
               facilitator={isFacilitator}
               body="Problem Scenario"
               subBody={data.shared.question}
-              bold={true}
+              bold
             />
 
             {isFacilitator && !allPlayersReady ? (
               <div className="not-ready decider">
-                Wait until every player is ready to continue  
+                Wait until every player is ready to continue
               </div>
             ) : null}
 
@@ -158,18 +146,19 @@ class Meet extends PureComponent {
                 Time’s up! Consider wrapping this discussion up
               </div>
             ) : null}
-            
+
             {/* Skip/go to next phase */}
-            {timerStarted ?
-              <button id="skip-next" onClick={() => { this.socket.emit("game:next", GameData.get().assemble()); }}>
-               {timerEnded ? 'Continue' : 'Skip'} to Phase 2
-                <CdnImage
-                  publicId="v1540488090/at-stake/icons/check-btn"
-                  format="svg"
+            {timerStarted
+              ? (
+                <button type="button" id="skip-next" onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}>
+                  {`${timerEnded ? 'Continue' : 'Skip'} to Phase 2`}
+                  <CdnImage
+                    publicId="v1540488090/at-stake/icons/check-btn"
+                    format="svg"
                   />
-              </button>
-            : null
-            }
+                </button>
+              )
+              : null}
 
           </div>
         ) : null}
@@ -186,17 +175,15 @@ class Meet extends PureComponent {
 
                 {/* Show all player role names */}
                 {Object.keys(data.shared.roles).map((key) => {
+                  const role = data.shared.roles[key];
 
-                  let role = data.shared.roles[key];
-                  
                   return (
                     <div key={key}>
                       <b>{role.username}</b>
                       <br />
                       {role.isFacilitator ? 'Facilitator' : role.title}
                     </div>
-                  )
-
+                  );
                 })}
 
               </div>
@@ -221,10 +208,10 @@ class Meet extends PureComponent {
   }
 }
 
-const MeetWithSocket = props => (
+const MeetWithSocket = (props) => (
   <SocketContext.Consumer>
-    {socket => <Meet {...props} socket={socket} />}
+    {(socket) => <Meet {...props} socket={socket} />}
   </SocketContext.Consumer>
-)
+);
 
 export default MeetWithSocket;
