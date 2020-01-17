@@ -173,7 +173,7 @@ class Lobby extends Component {
             <br />
             <button type="button" onClick={() => this.start(true)}>Host</button>
             <br />
-              /////////
+              ______
             <br />
             <button type="button" onClick={() => this.join()}>Join</button>
           </div>
@@ -194,8 +194,7 @@ class Lobby extends Component {
               type="text"
               placeholder="room code"
               onChange={(event) => this.setState({ joinCode: event.target.value })}
-v
-              alue={roomCode}
+              value={roomCode}
             />
             <input
               type="text"
@@ -217,7 +216,7 @@ v
         ) : null}
 
         <p>
-          {`<b>Lobby Status</b>: ${status}`}
+          <b>Lobby Status:</b> {status}
         </p>
 
         {!playerData ? null : (
