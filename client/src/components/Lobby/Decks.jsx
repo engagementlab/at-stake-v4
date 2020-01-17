@@ -10,25 +10,23 @@ class Decks extends Component {
 
     return (
 
-      decks && decks.map((deck, i) => {
-        return (
-          <button key={deck._id} type="button" onClick={() => callback(deck)}>
-            <h2 className="deck">
-              <div className="header">
-                <span>{deck.name}</span>
-                {/*
-                {{{cloudinaryUrl 'v1540488090/at-stake/icons/magnify'
-                    className='open' format='svg' alt='Magnifying glass icon'}}}
-                */}
-              </div>
+      decks && decks.map((deck, i) => (
+        <button key={deck._id} type="button" onClick={() => callback(deck)}>
+          <h2 className="deck">
+            <div className="header">
+              <span>{deck.name}</span>
+              {/*
+              {{{cloudinaryUrl 'v1540488090/at-stake/icons/magnify'
+                  className='open' format='svg' alt='Magnifying glass icon'}}}
+              */}
+            </div>
 
-              <div className="description">
-                {/* {deck.description} */}
-              </div>
-            </h2>
-          </button>
-        );
-      })
+            <div className="description">
+              {/* {deck.description} */}
+            </div>
+          </h2>
+        </button>
+      ))
     );
   }
 }

@@ -27,7 +27,7 @@ describe('Decks', () => {
       mountedDecks = mount(<Decks {...props} />);
     }
     return mountedDecks;
-  };  
+  };
 
   beforeEach(() => {
     props = {};
@@ -37,7 +37,6 @@ describe('Decks', () => {
   });
 
   // Shallow / unit tests begin here
- 
+
   // Render / mount / integration tests begin here
-  
 });
