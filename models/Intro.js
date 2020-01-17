@@ -39,7 +39,7 @@ Intro.add({
   },
   dateCreated: {
     type: Date,
-    noedit: true
+    noedit: true,
   },
 
 });

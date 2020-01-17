@@ -1,5 +1,6 @@
 module.exports = {
   env: {
+    commonjs: true,
     es6: true,
     node: true,
   },
@@ -9,11 +10,12 @@ module.exports = {
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
+    _: 'readonly',
   },
   parserOptions: {
     ecmaVersion: 2018,
-    sourceType: 'module',
   },
+  "ignorePatterns": ["client/.eslintrc.js"],
   rules: {
   },
 };

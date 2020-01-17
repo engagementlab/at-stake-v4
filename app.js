@@ -44,7 +44,7 @@ logger = winston.createLogger({
   format: logFormat,
   transports: [
     new winston.transports.Console(),
-  ]
+  ],
 });
 
 const bootstrap = require('@engagementlab/el-bootstrapper');
@@ -65,7 +65,7 @@ bootstrap.start(
   './config.json',
   app,
   `${__dirname}/`, {
-    name: '@Stake CMS'
+    name: '@Stake CMS',
   },
   () => {
     mongoose.connect('mongodb://localhost/at-stake', {

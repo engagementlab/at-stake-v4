@@ -1,4 +1,4 @@
-'use strict';
+
 /**
  * Developed by Engagement Lab, 2019
  * ==============
@@ -8,36 +8,32 @@
  *
  * ==========
  */
-const keystone = global.keystone;
+const { keystone } = global;
 
-var buildData = async (type, key, res) => {
+const buildData = async (type, key, res) => {
+  const intro = keystone.list('Intro').model;
 
-    let intro = keystone.list('Intro').model;
+  let data = null;
+  const getRes = [];
 
-    let data = null;
-    let getRes = [];
+  if (type === 'intro') {
+    // Get intro text
+    data = intro.findOne({});
+  }
 
-    if (type === 'intro') {
-        // Get intro text
-        data = intro.findOne({});
-    }
-
-    try {
-        getRes.push(await data.exec());
-        res.json(getRes);
-    } catch (e) {
-        res.status(500).json({
-            e
-        });
-    }
-
+  try {
+    getRes.push(await data.exec());
+    res.json(getRes);
+  } catch (e) {
+    res.status(500).json({
+      e,
+    });
+  }
 };
 
 /*
  * Get data
  */
 exports.get = function (req, res) {
-
-    return buildData(req.params.type, req.params.key, res);
-
-}
+  return buildData(req.params.type, req.params.key, res);
+};

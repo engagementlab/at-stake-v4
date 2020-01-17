@@ -7,12 +7,10 @@ exports = module.exports = (done) => {
     const functions = [];
 
     for (let i = 0; i < roleDocs.length; i += 1) {
-      functions.push(((doc) => {
-        return function (callback) {
-          doc.needs = ['Sample need 1', 'Sample need 2'];
-          doc.secretGoal = 'Sample Secret Goal';
-          doc.save(callback);
-        };
+      functions.push(((doc) => function (callback) {
+        doc.needs = ['Sample need 1', 'Sample need 2'];
+        doc.secretGoal = 'Sample Secret Goal';
+        doc.save(callback);
       })(roleDocs[i]));
     }
 
