@@ -1,3 +1,3 @@
 export default {
-    cloud_name: 'engagement-lab-home',
+  cloud_name: 'engagement-lab-home',
 };
