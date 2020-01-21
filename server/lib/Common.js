@@ -12,9 +12,8 @@
  * ==========
  */
 
-const coreModule = require('learning-games-core');
-
-const TemplateLoader = require('./TemplateLoader');
+const coreModule = require('learning-games-core'),
+  TemplateLoader = require('./TemplateLoader');
 
 const {
   Core,
@@ -24,12 +23,12 @@ class Common extends Core {
   constructor() {
     super();
 
-    this.Templates;
+    this.Templates = null;
     this.Session = coreModule.SessionManager;
     this.events = require('events');
     this.eventEmitter = new this.events.EventEmitter();
 
-    this.groupSocket;
+    this.groupSocket = null;
 
     this._deck_data = {};
     this._active_deck_roles = {};
@@ -39,8 +38,8 @@ class Common extends Core {
 
     this._current_players = {};
     this._currentPlayerIndex = 0;
-    this._game_session;
-    this._game_timeout;
+    this._game_session = null;
+    this._game_timeout = null;
     this._player_timeout;
     this._player_timeout_time_left = 0;
 
@@ -49,10 +48,10 @@ class Common extends Core {
 
     this._countdown;
     this._countdown_duration = 0;
-    this._countdown_paused;
+    this._countdown_paused = false;
     this._event_countdown_done;
-    this._current_round;
-    this._current_winner;
+    this._current_round = 0;
+    this._current_winner = null;
     this._active_player_index = 0;
     this._player_icon_index = 0;
 
@@ -104,20 +103,19 @@ class Common extends Core {
 
       // Get data about this session's deck
       require('bluebird').props({
-        deck: queryDeck,
-        facilitator: queryFacilitator,
-        events: queryEvent,
-      })
+          deck: queryDeck,
+          facilitator: queryFacilitator,
+          events: queryEvent,
+        })
         .then((results) => {
           this._deck_data = results.deck;
           this._active_deck_roles = results.deck.roles;
-          debugger;
           this._active_deck_facilitator = results.facilitator;
           this._game_events = results.events;
 
           callback();
         }).catch((err) => {
-          console.error(err);
+          logger.error(err);
         });
     });
   }
@@ -153,7 +151,7 @@ class Common extends Core {
   // Get disconnected players
   GetDisconnectedPlayers() {
     const players = _.pick(this._current_players,
-      (val, key, obj) => (val.connected === false));
+      (val) => (val.connected === false));
 
     return players;
   }

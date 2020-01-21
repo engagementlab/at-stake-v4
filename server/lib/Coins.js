@@ -14,15 +14,13 @@
 class Coins {
   constructor(playersId) {
     // Track current count
-    this.playerCoins = new Map();
-
-    // Track count at start of rounds
-    this.startingPlayerCoins = new Map();
-
-    this.currentPot;
-    this.endingPotAmount;
-    this.initialPotAmount;
-    this.playersId = playersId;
+    (this.playerCoins = new Map()),
+      // Track count at start of rounds
+      (this.startingPlayerCoins = new Map()),
+      (this.currentPot = 0),
+      (this.endingPotAmount = 0),
+      (this.initialPotAmount = 0),
+      (this.playersId = playersId);
   }
 
   GetPotAmount() {
@@ -35,7 +33,7 @@ class Coins {
 
   // eslint-disable-next-line class-methods-use-this
   GetScoreDelta(starting, current) {
-    return (starting > current) ? (starting - current) : (current - starting);
+    return starting > current ? starting - current : current - starting;
   }
 
   GetTopPlayerId() {
@@ -60,7 +58,7 @@ class Coins {
     return {
       starting: start,
       current: curr,
-      delta,
+      delta
     };
   }
 
@@ -68,8 +66,10 @@ class Coins {
     this.initialPotAmount = this.currentPot = config.potCoinCount;
 
     // Dispense initial coin amounts to all players
-    _.each(players, (player, index) => {
-      const amt = (player.decider ? config.deciderStartCoinCount : config.playerStartCoinCount);
+    _.each(players, player => {
+      const amt = player.decider
+        ? config.deciderStartCoinCount
+        : config.playerStartCoinCount;
 
       // Map amount for each player
       this.playerCoins.set(player.uid, amt);
@@ -77,14 +77,14 @@ class Coins {
 
       socket.to(player.socket_id).emit('coins:add', {
         amt,
-        type: 'player',
+        type: 'player'
       });
     });
 
     // Send initial pot amount
     socket.to(this.playersId).emit('coins:add', {
       amt: this.currentPot,
-      type: 'pot',
+      type: 'pot'
     });
   }
 
@@ -97,13 +97,13 @@ class Coins {
       this.currentPot -= amount;
       socket.to(this.playersId).emit('coins:remove', {
         amt: this.currentPot,
-        type: 'pot',
+        type: 'pot'
       });
     }
 
     socket.to(player.socket_id).emit('coins:add', {
       amt: this.playerCoins.get(player.uid),
-      type: 'player',
+      type: 'player'
     });
   }
 
@@ -117,11 +117,11 @@ class Coins {
 
     socket.to(winner.socket_id).emit('coins:add', {
       amt: this.playerCoins.get(winner.uid),
-      type: 'player',
+      type: 'player'
     });
     socket.to(this.playersId).emit('coins:remove', {
       amt: this.currentPot,
-      type: 'pot',
+      type: 'pot'
     });
   }
 
@@ -134,18 +134,21 @@ class Coins {
 
     socket.to(player.socket_id).emit('coins:remove', {
       amt: this.playerCoins.get(player.uid),
-      type: 'player',
+      type: 'player'
     });
     socket.to(this.playersId).emit('coins:add', {
       amt: this.currentPot,
-      type: 'pot',
+      type: 'pot'
     });
   }
 
   RestorePot(players, socket) {
     // Save the prior round's coin count for all players
-    _.each(players, (player, index) => {
-      this.startingPlayerCoins.set(player.uid, this.playerCoins.get(player.uid));
+    _.each(players, player => {
+      this.startingPlayerCoins.set(
+        player.uid,
+        this.playerCoins.get(player.uid)
+      );
     });
 
     // Reset
@@ -154,7 +157,7 @@ class Coins {
     // Tell all players
     socket.to(this.playersId).emit('coins:add', {
       amt: this.currentPot,
-      type: 'pot',
+      type: 'pot'
     });
   }
 }

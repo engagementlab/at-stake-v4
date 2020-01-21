@@ -11,69 +11,70 @@
  */
 
 // Load .env vars
-if (process.env.NODE_ENV !== 'test') {
-  require('dotenv').config();
-}
+import {
+  format as _format,
+  createLogger,
+  transports as _transports,
+} from 'winston';
+import { json, urlencoded } from 'body-parser';
+import { connect, connection } from 'mongoose';
 
-const winston = require('winston');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+import { start } from '@engagementlab/el-bootstrapper';
+import express from 'express';
 
-const logFormat = winston.format.combine(
-  winston.format.colorize(),
-  winston.format.timestamp(),
-  winston.format.align(),
-  winston.format.printf((info) => {
+if (process.env.NODE_ENV !== 'test') require('dotenv').config();
+
+const logFormat = _format.combine(
+  _format.colorize(),
+  _format.timestamp(),
+  _format.align(),
+  _format.printf((info) => {
     const {
-      timestamp,
-      level,
-      message,
-      ...args
+      timestamp, level, message, ...args
     } = info;
 
     const ts = timestamp.slice(0, 19).replace('T', ' ');
-    return `${ts} [${level}]: ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+    return `${ts} [${level}]: ${message} ${
+      Object.keys(args).length ? JSON.stringify(args, null, 2) : ''
+    }`;
   }),
 );
 
 // Globals
 _ = require('underscore');
 
-logger = winston.createLogger({
+logger = createLogger({
   level: 'info',
   format: logFormat,
-  transports: [
-    new winston.transports.Console(),
-  ],
+  transports: [new _transports.Console()],
 });
 
-const bootstrap = require('@engagementlab/el-bootstrapper');
-const express = require('express');
-
-const
-  app = express();
+const app = express();
 
 // for parsing application/json
-app.use(bodyParser.json());
+app.use(json());
 
 // for parsing application/xwww-
-app.use(bodyParser.urlencoded({
-  extended: true,
-}));
+app.use(
+  urlencoded({
+    extended: true,
+  }),
+);
 
-bootstrap.start(
+start(
   './config.json',
   app,
-  `${__dirname}/`, {
+  `${__dirname}/`,
+  {
     name: '@Stake CMS',
   },
   () => {
-    mongoose.connect('mongodb://localhost/at-stake', {
+    connect('mongodb://localhost/at-stake', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
 
-    const db = mongoose.connection;
+    const db = connection;
     db.on('error', console.error.bind(console, 'connection error:'));
 
     // Load sockets and serve http
