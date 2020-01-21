@@ -19,7 +19,7 @@ const socket = io('http://localhost:3001', {
   path: '/at-stake-socket/',
   reconnection: true,
   reconnectionDelay: 500,
-  maxReconnectionAttempts: Infinity,
+  maxReconnectionAttempts: Infinity
 });
 
 class App extends Component {
@@ -33,7 +33,7 @@ class App extends Component {
 
       screens: ['meet', 'deliberate', 'ranking'],
       phaseIndex: -1,
-      screenData: null,
+      screenData: null
     };
 
     this.roleData = null;
@@ -59,20 +59,20 @@ class App extends Component {
       this.setState({ phaseIndex: 1 });
     });
 
-    socket.on('game:next_phase', (screenData) => {
+    socket.on('game:next_phase', screenData => {
       this.setState({ phaseIndex: this.state.phaseIndex + 1, screenData });
 
       // Cache player's role data as it is emitted only in first phase
       this.roleData = screenData.role;
     });
-    socket.on('game:refresh_screen', (screenData) => {
+    socket.on('game:refresh_screen', screenData => {
       this.setState({ phaseIndex: screenData.phase, screenData });
     });
 
-    socket.on('player:reconnected', (eventData) => {
+    socket.on('player:reconnected', eventData => {
       this.setState({ response: 'Player re-joined.' });
     });
-    socket.on('player:lost', (eventData) => {
+    socket.on('player:lost', eventData => {
       this.setState({ response: `${eventData.names.join(',')} disconnected.` });
     });
   }
@@ -91,45 +91,54 @@ class App extends Component {
 
   render() {
     const {
-      isHost, response, rolecardShow, phaseIndex, screenData, screens,
+      isHost,
+      response,
+      rolecardShow,
+      phaseIndex,
+      screenData,
+      screens
     } = this.state;
     const currentScreen = screens[phaseIndex];
 
     return (
-
       <SocketContext.Provider value={socket}>
-
         <CloudinaryContext cloudName={this.props.cloudName}>
-
           <div id="app">
-            <h1>
-              {currentScreen}
-            </h1>
+            <h1>{currentScreen}</h1>
 
             {/* <Interstitial title="Introduction" /> */}
 
-            { phaseIndex < 0 ? <Lobby done={this.advanceScreen} host={this.playerIsHost} /> : null }
-            { currentScreen === 'intro' ? <Intro host={isHost} /> : null }
+            {phaseIndex < 0 ? (
+              <Lobby done={this.advanceScreen} host={this.playerIsHost} />
+            ) : null}
+            {currentScreen === 'intro' ? <Intro host={isHost} /> : null}
 
             {/* Phases */}
-            {/* { currentScreen === 'meet' && <Meet host={isHost} data={screenData} /> } */}
-            {/* { currentScreen === 'deliberate' && <Deliberate host={isHost} data={screenData} role={this.roleData} /> } */}
-            { currentScreen === 'meet' && <Ranking host={isHost} data={screenData} /> }
+            {currentScreen === 'meet' && (
+              <Meet host={isHost} data={screenData} />
+            )}
+            {currentScreen === 'deliberate' && (
+              <Deliberate
+                host={isHost}
+                data={screenData}
+                role={this.roleData}
+              />
+            )}
+            {currentScreen === 'ranking' && (
+              <Ranking host={isHost} data={screenData} />
+            )}
 
             {/* ROLECARD */}
-            { rolecardShow ? <Rolecard role={this.roleData} close={this.closeRolecard} /> : null }
+            {rolecardShow ? (
+              <Rolecard role={this.roleData} close={this.closeRolecard} />
+            ) : null}
 
             <div id="state">
-              <em>Socket:</em>
-              {' '}
-              {response}
+              <em>Socket:</em> {response}
             </div>
           </div>
-
         </CloudinaryContext>
-
       </SocketContext.Provider>
-
     );
   }
 }

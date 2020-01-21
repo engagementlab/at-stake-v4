@@ -225,9 +225,7 @@ class Common extends Core {
 
       this.assignedRoleIndices.push(roleIndex);
 
-      this.Templates.Load('partials/shared/rolecard', newRole, (html) => {
-        socket.to(playerObj.socket_id).emit('player:assignrole', html);
-      });
+      // socket.to(playerObj.socket_id).emit('player:assignrole', html);
     }
 
     // Replace cached object
