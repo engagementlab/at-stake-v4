@@ -447,7 +447,7 @@ class GameLogic extends Common {
     }
   }
 
-  PlayerMetGoal(playerUid, needIndex) {
+  PlayerMetGoal(playerUid) {
     const uid = parseInt(playerUid);
     const player = this.GetPlayerByUserId(uid);
     this.playersMetGoal.push(uid);
@@ -456,7 +456,8 @@ class GameLogic extends Common {
   }
 
   PlayerMetNeed(playerUid, needIndex) {
-    const player = this.GetPlayerByUserId(parseInt(playerUid));
+    const player = this.GetPlayerByUserId(playerUid);
+    debugger
     // Get need that was met
     const need = player.role.needs[needIndex];
 
