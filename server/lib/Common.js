@@ -214,7 +214,7 @@ class Common extends Core {
     if (playerObj) {
       if (!newRole) {
         console.log(this._active_deck_roles, roleIndex);
-        throw new Error(`Unable to assign role for player ${playerObj.uid}`);
+        console.log(`Unable to assign role for player ${playerObj.uid}`);
       }
 
       playerObj.role = newRole;

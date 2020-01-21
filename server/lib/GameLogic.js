@@ -256,7 +256,9 @@ class GameLogic extends Common {
 
       sendData(this.groupSocket);
     } else {
-      const allData = _.extend({ name: screenName }, screenData, data);
+      const allData = _.extend({
+        name: screenName
+      }, screenData, data);
 
       // Emit only to given socket, if specified
       if (socket !== undefined) socket.emit(eventId, allData);
@@ -494,6 +496,7 @@ class GameLogic extends Common {
   }
 
   GameRating(ratingData) {
+
     const calcRating = (total, num) => total + Number(num);
     const scales = Object.values(ratingData.rating).reduce(calcRating, 0);
     const score = scales + ratingData.needs;
@@ -502,11 +505,11 @@ class GameLogic extends Common {
     const thresholdPerc = this.GetConfig().minWinThreshold / 100;
     const didWin = (score / this.maxScore) >= thresholdPerc;
 
-    this.Templates.Load('partials/shared/end', {
-      won: didWin,
-    }, (html) => {
-      this.groupSocket.to(this.players_id).emit('game:end', html);
+    // Send to all players
+    this.groupSocket.to(this.players_id).emit('game:end', {
+      won: didWin
     });
+
   }
 }
 
