@@ -1,15 +1,14 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "./client",
-			"name": "Client"
-		}
-	],
-	"settings": {
-		"eslint.autoFixOnSave": true,
-		"eslint.provideLintTask": true
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "eslint.linkTask.enabled": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    }
+  }
 }

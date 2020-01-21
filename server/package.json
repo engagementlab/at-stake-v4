@@ -3,8 +3,9 @@
   "version": "4.0.0",
   "homepage": "https://atstakegame.org/",
   "scripts": {
-    "client": "cd client && npm start",
+    "client": "cd ../client && npm start",
     "server": "node app.js",
+    "lint": "eslint .",
     "start": "npm-run-all --parallel client server",
     "test": "eslint --no-eslintrc -c .eslintrc.js --max-warnings 0 ."
   },
@@ -49,6 +50,7 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-prettier": "^3.1.2",
     "grunt": "^1.0.4",
     "grunt-concurrent": "^3.0.0",
     "grunt-contrib-watch": "1.1.0",
@@ -57,6 +59,7 @@
     "load-grunt-configs": "1.0.0",
     "load-grunt-tasks": "5.1.0",
     "npm-run-all": "^4.1.5",
+    "prettier": "1.19.1",
     "time-grunt": "2.0.0"
   }
 }
