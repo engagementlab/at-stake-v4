@@ -23,7 +23,7 @@ class Lobby extends Component {
       // for dev only
       username: 'user1',
 
-      mode: '',
+      mode: ''
     };
 
     this.selectDeck = this.selectDeck.bind(this);
@@ -48,7 +48,7 @@ class Lobby extends Component {
   join() {
     this.setState({
       mode: 'join',
-      username: 'player1',
+      username: 'player1'
     });
   }
 
@@ -57,14 +57,16 @@ class Lobby extends Component {
       this.props.host();
 
       // Generate session
-      fetch(`${process.env.REACT_APP_API_URL}/api/generate`, { signal: this.abortCtrl.signal })
-        .then((response) => response.json())
-        .then((response) => {
+      fetch(`${process.env.REACT_APP_API_URL}/api/generate`, {
+        signal: this.abortCtrl.signal
+      })
+        .then(response => response.json())
+        .then(response => {
           this.setState({
             data: response,
             mode: 'host',
             showDecks: true,
-            joinCode: response.code,
+            joinCode: response.code
           });
 
           // Cache game id in data singleton
@@ -74,7 +76,7 @@ class Lobby extends Component {
 
     socket.on('player:loggedin', () => {
       this.setState({
-        response: 'Player joined!',
+        response: 'Player joined!'
       });
     });
   }
@@ -96,16 +98,16 @@ class Lobby extends Component {
       data,
       {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        cancelToken: this.cancelSrc.token,
-      },
+        cancelToken: this.cancelSrc.token
+      }
     );
 
     if (response.data.sessionCreated) {
       this.setState({
         status: 'Session created',
-        showDecks: false,
+        showDecks: false
       });
 
       // Join host player to room
@@ -115,23 +117,27 @@ class Lobby extends Component {
 
   playerJoin(code) {
     // Watch for new players in lobby
-    socket.on('players:update', (data) => {
+    socket.on('players:update', data => {
       this.setState({
-        playerData: data.players,
+        playerData: data.players
       });
     });
 
     let playerUID = Math.floor(1000000000 + Math.random() * 900000);
 
     // Cache uid for player
-    if (!sessionStorage.getItem('uUID')) { sessionStorage.setItem('uUID', playerUID); } else { playerUID = sessionStorage.getItem('uUID'); }
+    if (!sessionStorage.getItem('uUID')) {
+      sessionStorage.setItem('uUID', playerUID);
+    } else {
+      playerUID = sessionStorage.getItem('uUID');
+    }
 
     // Host = "decider"
     const roomData = {
       type: this.state.mode === 'host' ? 'decider' : 'player',
       username: this.state.username,
       uid: playerUID,
-      joinCode: code || this.state.joinCode,
+      joinCode: code || this.state.joinCode
     };
 
     const payload = GameData.get().assemble(roomData);
@@ -145,7 +151,7 @@ class Lobby extends Component {
     // Save game code for resuming
     sessionStorage.setItem('gameCode', roomData.joinCode);
     // Flag client if is host/moderator
-    sessionStorage.setItem('isModerator', (this.state.mode === 'host'));
+    sessionStorage.setItem('isModerator', this.state.mode === 'host');
     // Save username
     sessionStorage.setItem('username', roomData.username);
   }
@@ -156,32 +162,44 @@ class Lobby extends Component {
   }
 
   render() {
-    const {
-      data, mode, playerData, showDecks, status,
-    } = this.state;
+    const { data, mode, playerData, showDecks, status } = this.state;
     // Pre-populated join form for dev
     const roomCode = process.env.NODE_ENV === 'development' ? 'TEST' : '';
     const playerName = process.env.NODE_ENV === 'development' ? 'player1' : '';
 
     return (
-
       <div>
         {mode === '' ? (
           <div>
-            <input type="text" value="host1" onChange={(event) => this.setState({ username: event.target.value })} />
-
+            <input
+              type="text"
+              value="host1"
+              onChange={event =>
+                this.setState({ username: event.target.value })
+              }
+            />
             <br />
-            <button type="button" onClick={() => this.start(true)}>Host</button>
+            <button type="button" onClick={() => this.start(true)}>
+              Host
+            </button>
             <br />
-              ______
+            ______
             <br />
-            <button type="button" onClick={() => this.join()}>Join</button>
+            <button type="button" onClick={() => this.join()}>
+              Join
+            </button>
           </div>
         ) : null}
 
-        {mode === 'host' && (playerData && playerData.length >= 2) ? (
+        {mode === 'host' && playerData && playerData.length >= 2 ? (
           <div id="start">
-            <button type="button" id="btn-start-game" onClick={() => { this.startGame(); }}>
+            <button
+              type="button"
+              id="btn-start-game"
+              onClick={() => {
+                this.startGame();
+              }}
+            >
               <h2>Start</h2>
             </button>
           </div>
@@ -193,25 +211,31 @@ class Lobby extends Component {
             <input
               type="text"
               placeholder="room code"
-              onChange={(event) => this.setState({ joinCode: event.target.value })}
+              onChange={event =>
+                this.setState({ joinCode: event.target.value })
+              }
               value={roomCode}
             />
             <input
               type="text"
               placeholder="name"
-              onChange={(event) => this.setState({ username: event.target.value })}
+              onChange={event =>
+                this.setState({ username: event.target.value })
+              }
               value={playerName}
             />
-            <button type="button" onClick={() => this.playerJoin()}>Start</button>
+            <button type="button" onClick={() => this.playerJoin()}>
+              Start
+            </button>
           </p>
         ) : null}
 
         {data ? (
           <div>
-            <p>
-              {`Room Code: ${data.code}`}
-            </p>
-            {showDecks && mode === 'host' ? <Decks decks={data.decks} callback={this.selectDeck} /> : null}
+            <p>{`Room Code: ${data.code}`}</p>
+            {showDecks && mode === 'host' ? (
+              <Decks decks={data.decks} callback={this.selectDeck} />
+            ) : null}
           </div>
         ) : null}
 
@@ -223,28 +247,28 @@ class Lobby extends Component {
           <div>
             Players:
             <ol>
-              {playerData.map((player) => <li key={player.username}>{player.username}</li>)}
+              {playerData.map(player => (
+                <li key={player.username}>{player.username}</li>
+              ))}
             </ol>
-
           </div>
         )}
-
       </div>
     );
   }
 }
 
 Lobby.defaultProps = {
-  mode: '',
+  mode: ''
 };
 
 Lobby.propTypes = {
-  mode: PropTypes.string,
+  mode: PropTypes.string
 };
 
-const LobbyWithSocket = (props) => (
+const LobbyWithSocket = props => (
   <SocketContext.Consumer>
-    {(socket) => <Lobby {...props} socket={socket} />}
+    {socket => <Lobby {...props} socket={socket} />}
   </SocketContext.Consumer>
 );
 
