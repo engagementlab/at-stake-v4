@@ -3,7 +3,7 @@ import { CloudinaryContext } from 'cloudinary-react';
 import io from 'socket.io-client';
 import SocketContext from './SocketContext';
 
-import './App.css';
+import './App.scss';
 
 import GameData from './GameData';
 
@@ -19,7 +19,7 @@ const socket = io('http://localhost:3001', {
   path: '/at-stake-socket/',
   reconnection: true,
   reconnectionDelay: 500,
-  maxReconnectionAttempts: Infinity
+  maxReconnectionAttempts: Infinity,
 });
 
 class App extends Component {
@@ -33,7 +33,7 @@ class App extends Component {
 
       screens: ['meet', 'deliberate', 'ranking'],
       phaseIndex: -1,
-      screenData: null
+      screenData: null,
     };
 
     this.roleData = null;
@@ -59,20 +59,21 @@ class App extends Component {
       this.setState({ phaseIndex: 1 });
     });
 
-    socket.on('game:next_phase', screenData => {
-      this.setState({ phaseIndex: this.state.phaseIndex + 1, screenData });
+    socket.on('game:next_phase', (screenData) => {
+      const { phaseIndex } = this.state;
+      this.setState({ phaseIndex: phaseIndex + 1, screenData });
 
       // Cache player's role data as it is emitted only in first phase
       this.roleData = screenData.role;
     });
-    socket.on('game:refresh_screen', screenData => {
+    socket.on('game:refresh_screen', (screenData) => {
       this.setState({ phaseIndex: screenData.phase, screenData });
     });
 
-    socket.on('player:reconnected', eventData => {
+    socket.on('player:reconnected', (eventData) => {
       this.setState({ response: 'Player re-joined.' });
     });
-    socket.on('player:lost', eventData => {
+    socket.on('player:lost', (eventData) => {
       this.setState({ response: `${eventData.names.join(',')} disconnected.` });
     });
   }
@@ -82,7 +83,8 @@ class App extends Component {
   }
 
   advanceScreen() {
-    this.setState({ phaseIndex: this.state.phaseIndex + 1 });
+    const { phaseIndex } = this.state;
+    this.setState({ phaseIndex: phaseIndex + 1 });
   }
 
   closeRolecard() {
@@ -90,19 +92,20 @@ class App extends Component {
   }
 
   render() {
+    const { cloudName } = this.props;
     const {
       isHost,
       response,
       rolecardShow,
       phaseIndex,
       screenData,
-      screens
+      screens,
     } = this.state;
     const currentScreen = screens[phaseIndex];
 
     return (
       <SocketContext.Provider value={socket}>
-        <CloudinaryContext cloudName={this.props.cloudName}>
+        <CloudinaryContext cloudName={cloudName}>
           <div id="app">
             <h1>{currentScreen}</h1>
 
@@ -134,7 +137,8 @@ class App extends Component {
             ) : null}
 
             <div id="state">
-              <em>Socket:</em> {response}
+              <em>Socket:</em>
+              {` ${response}`}
             </div>
           </div>
         </CloudinaryContext>
