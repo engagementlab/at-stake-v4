@@ -1,0 +1,30 @@
+// Override default Bootstrap variables
+
+// Colors
+$white: #f4f4f4;
+$red: #e4323c;
+$pink: #ff6ca8;
+$blue: #0067d8;
+$indigo: #002ab7;
+$yellow: #f7f248;
+$green: #02826a;
+
+// Colors (not overriden)
+// $purple: #6f42c1;
+// $orange: #fd7e14;
+// $teal: #20c997;
+// $cyan: #17a2b8;
+
+// Button settings
+$btn-border-radius: 0;
+$btn-border-radius-lg: 0;
+$btn-border-radius-sm: 0;
+
+// Font settings
+$font-family-sans-serif: 'Roboto',
+sans-serif;
+$font-family-monospace: 'Source Code Pro',
+monospace;
+
+// Import Bootstrap
+@import '~bootstrap/scss/bootstrap.scss';

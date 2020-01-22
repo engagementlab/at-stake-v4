@@ -1,5 +1,18 @@
 @import '_variables';
 
+// Import customized Bootstrap
+@import '_bootstrap';
+
+#root {
+    margin: 0 auto;
+    // 9x16 aspect ratio
+    max-width: calc(100vh * 0.5625);
+}
+
+.monospace {
+    font-family: $font-family-monospace;
+}
+
 .hide {
     display: none;
 }
