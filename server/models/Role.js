@@ -1,5 +1,5 @@
 /**
- * @Stake v3
+ * @Stake v4
  *
  * Role Model
  * @module models

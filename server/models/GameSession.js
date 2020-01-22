@@ -1,5 +1,5 @@
 /**
- * @Stake v3
+ * @Stake v4
  *
  * GameSession Model
  * @module models

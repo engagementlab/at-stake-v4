@@ -1,5 +1,5 @@
 /**
- * @Stake v3
+ * @Stake v4
  * Developed by Engagement Lab, 2015
  * ==============
  * Home page view controller.
@@ -14,13 +14,11 @@
  */
 
 const keystone = require('keystone');
-// const async = require('async');
 
 const GameSession = keystone.list('GameSession');
 const Session = require('learning-games-core').SessionManager;
 const randomstring = require('randomstring');
 
-const TemplateLoader = require('../../lib/TemplateLoader');
 const Game = require('../../lib/GameManager');
 
 const Deck = keystone.list('Deck');
@@ -87,19 +85,17 @@ exports.generate = (req, res) => {
     // Get all decks
     const decksQuery = Deck.model.find({}).populate('roles');
     decksQuery.exec((_err, decks) => {
-      const Templates = new TemplateLoader();
 
       // Shuffle deck roles and only get 6
       _.each(decks, (deck, i) => {
         deck.roles = _.sample(deck.roles, 6);
       });
 
-      Templates.Load('partials/decider/decks', decks, (data) => {
-        res.send({
-          code: gameCode,
-          decks: data,
-        });
+      res.send({
+        code: gameCode,
+        decks: decks,
       });
+
     });
   });
 };

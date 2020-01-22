@@ -1,5 +1,5 @@
 /**
- * @Stake v3
+ * @Stake v4
  * Developed by Engagement Lab, 2015
  * ==============
  * Game player view controller.

@@ -4,7 +4,7 @@ module.exports = () => {
   const _helpers = {};
 
   /**
-   * @Stake v3 HBS Helpers
+   * @Stake v4 HBS Helpers
    * ===================
    */
 

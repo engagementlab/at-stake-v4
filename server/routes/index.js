@@ -1,4 +1,4 @@
-/* @Stake v3 */
+/* @Stake v4 */
 
 /**
  * Route definitions

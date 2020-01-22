@@ -58,11 +58,14 @@ app.use(
 );
 
 bootstrap.start(
+
   './config.json',
+
   app,
   `${__dirname}/`, {
     name: '@Stake CMS',
   },
+
   () => {
     mongoose.connect('mongodb://localhost/at-stake', {
       useNewUrlParser: true,
@@ -76,6 +79,21 @@ bootstrap.start(
     const http = require('http').Server(app);
     require('./sockets/')(http);
 
+    // Start redis on core lib
+    let redis = require('learning-games-core').Redis;
+    redis.Init(async () => {
+      /*  
+      redis.SetHash('sesh', 'player.uid', JSON.stringify({
+        id: 0,
+        id2: 1
+      }));
+
+      let res2 = await redis.GetHashLength('sesh');
+      console.log(res2) 
+      */
+    });
+
     http.listen(process.env.PORT);
-  },
+  }
+
 );

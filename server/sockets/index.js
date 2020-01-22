@@ -5,6 +5,13 @@ module.exports = (app) => {
   const io = require('socket.io')(app, {
     path: '/at-stake-socket',
   });
+  const redisAdapter = require('socket.io-redis');
+
+  // Setup redis adapter
+  io.adapter(redisAdapter({
+    host: 'localhost',
+    port: 6379
+  }));
 
   const CommonHandler = require('./handlers/Common');
   const PlayerLogin = require('./handlers/PlayerLogin');
@@ -22,7 +29,9 @@ module.exports = (app) => {
         return;
       }
 
-      const { handler } = eventHandlers[category];
+      const {
+        handler
+      } = eventHandlers[category];
 
       for (const event in handler) {
         socket.on(event, handler[event]);

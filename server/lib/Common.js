@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 /**
- * @Stake v3
+ * @Stake v4
  * Developed by Engagement Lab, 2016-2017
  * ==============
  * Common functionality game controller
@@ -25,6 +25,7 @@ class Common extends Core {
 
     this.Templates = null;
     this.Session = coreModule.SessionManager;
+
     this.events = require('events');
     this.eventEmitter = new this.events.EventEmitter();
 
@@ -34,7 +35,6 @@ class Common extends Core {
     this._active_deck_roles = {};
     this._active_deck_facilitator = {};
     this._game_events = {};
-    // this._all_agenda_items = {};
 
     this._current_players = {};
     this._currentPlayerIndex = 0;
@@ -141,6 +141,14 @@ class Common extends Core {
     return this._config;
   }
 
+  // Get all players
+  async GetAllPlayers() {
+
+    let players = await this.Redis.GetHashAll(this._game_session.accessCode);
+    return players;
+
+  }
+
   // Get active players (all non-deciders)
   GetActivePlayers() {
     const players = _.filter(this._current_players, (val) => val.connected && !val.decider);
@@ -171,8 +179,9 @@ class Common extends Core {
     return this._current_players[uid].decider;
   }
 
-  AssignRoleToPlayer(player, socket, isDecider) {
-    const playerObj = this._current_players[player.uid];
+  AssignRoleToPlayer = async (player, isDecider) => {
+
+    const playerObj = await this.Redis.GetHash(this._game_session.accessCode, player.uid);
 
     // Is decider (ensure falsey is false)?
     if (!isDecider) playerObj.decider = false;
@@ -182,15 +191,13 @@ class Common extends Core {
       playerObj.decider = true;
       playerObj.role = this._active_deck_facilitator;
 
-      this.Templates.Load('partials/shared/rolecard', playerObj.role, (roleHtml) => {
-        // Tell new decider to start being decider
-        if (this.groupSocket) {
-          this.groupSocket.to(this._current_decider.socket_id).emit('game:decider', {
-            facilitator: true,
-            role: roleHtml,
-          });
-        }
-      });
+      // Tell new decider to start being decider
+      if (this.groupSocket) {
+        this.groupSocket.to(this._current_decider.socket_id).emit('game:decider', {
+          facilitator: true,
+          role: playerObj.role,
+        });
+      }
 
       return;
     }
@@ -314,10 +321,10 @@ class Common extends Core {
       });
 
       if (allPlayersActive) clearTimeout(this._player_timeout);
-    } else this.AssignRoleToPlayer(player, socket, isDecider);
+    } else this.AssignRoleToPlayer(player, isDecider);
 
     const data = {
-      players: _.sortBy(this._current_players, (player) => player.index),
+      players: _.sortBy(this.GetAllPlayers(), (player) => player.index),
       disconnected_players: _.pluck(disconnectedPlayers, 'username'),
       state: (playerRejoining ? 'player_rejoined' : 'gained_player'),
       all_connected: allPlayersActive,
@@ -399,7 +406,7 @@ class Common extends Core {
       const isDecider = (this._current_winner.uid === player.uid);
 
       // Assign new decider and new roles
-      this.AssignRoleToPlayer(player, socket, isDecider);
+      this.AssignRoleToPlayer(player, isDecider);
     });
 
     // Nullify winner for new round

@@ -1,5 +1,5 @@
 /**
- * @Stake v3
+ * @Stake v4
  *
  * GameConfig Model
  * @module models
@@ -28,78 +28,78 @@ const GameConfig = new keystone.List('GameConfig', {
 });
 
 GameConfig.add({
-  name: {
-    type: String,
-    required: true,
-    default: 'Game Settings',
+    name: {
+      type: String,
+      required: true,
+      default: 'Game Settings',
+    },
+
+    playerCountRangeMin: {
+      type: Number,
+      label: 'Player Allowed Count Min',
+      required: true,
+      initial: true,
+    },
+    playerCountRangeMax: {
+      type: Number,
+      label: 'Player Allowed Count Max',
+      required: true,
+      initial: true,
+    },
+    timeTimeoutPlayer: {
+      type: Number,
+      label: 'Player Disconnect Timeout',
+      note: 'Time (seconds) before game ends after player disconnects',
+      required: true,
+      initial: true,
+    },
   },
 
-  playerCountRangeMin: {
-    type: Number,
-    label: 'Player Allowed Count Min',
-    required: true,
-    initial: true,
-  },
-  playerCountRangeMax: {
-    type: Number,
-    label: 'Player Allowed Count Max',
-    required: true,
-    initial: true,
-  },
-  timeTimeoutPlayer: {
-    type: Number,
-    label: 'Player Disconnect Timeout',
-    note: 'Time (seconds) before game ends after player disconnects',
-    required: true,
-    initial: true,
-  },
-},
-
-/*
+  /*
    * Time settings
    */
-'Time settings', {
-  thinkSeconds: {
-    type: Number,
-    label: 'Meet Seconds',
-    note: 'Amount of time in the "think" segment of the round',
-    required: true,
-    initial: true,
+  'Time settings', {
+    thinkSeconds: {
+      type: Number,
+      label: 'Meet Seconds',
+      note: 'Amount of time in the "think" segment of the round',
+      required: true,
+      initial: true,
+    },
+    deliberateSeconds: {
+      type: Number,
+      label: 'Deliberate Seconds',
+      note: 'Amount of time in the "deliberate" segment of the round',
+      required: true,
+      initial: true,
+    },
   },
-  deliberateSeconds: {
-    type: Number,
-    label: 'Deliberate Seconds',
-    note: 'Amount of time in the "deliberate" segment of the round',
-    required: true,
-    initial: true,
-  },
-},
 
-/*
+  /*
    * Scoring settings
    */
-'Scoring settings', {
-  minWinThreshold: {
-    type: Number,
-    label: 'Minimum Score Threshold',
-    note: 'The percent out of possible max score (needs * secret goal * num of players + ratings) final score must reach to win (0-100).',
-    required: true,
-    initial: true,
-    default: 75,
+  'Scoring settings', {
+    minWinThreshold: {
+      type: Number,
+      label: 'Minimum Score Threshold',
+      note: 'The percent out of possible max score (needs * secret goal * num of players + ratings) final score must reach to win (0-100).',
+      required: true,
+      initial: true,
+      default: 75,
+    },
   },
-},
 
 
-/*
+  /*
    * Debrief settings
    */
-'Debrief', {
-  debriefQuestions: {
-    type: Types.TextArray,
-    label: 'Debrief Questions',
-    note: 'Needs 4 questions.',
-  },
-});
+  'Debrief', {
+    debriefQuestions: {
+      type: Types.TextArray,
+      label: 'Debrief Questions',
+      note: 'Needs 4 questions.',
+    },
+  });
 
 /**
  * Registration

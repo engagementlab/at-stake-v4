@@ -1,5 +1,5 @@
 /**
- * @Stake v3
+ * @Stake v4
  * Developed by Engagement Lab, 2016-2017
  * ==============
  * Currency controller
@@ -15,12 +15,12 @@ class Coins {
   constructor(playersId) {
     // Track current count
     (this.playerCoins = new Map()),
-      // Track count at start of rounds
-      (this.startingPlayerCoins = new Map()),
-      (this.currentPot = 0),
-      (this.endingPotAmount = 0),
-      (this.initialPotAmount = 0),
-      (this.playersId = playersId);
+    // Track count at start of rounds
+    (this.startingPlayerCoins = new Map()),
+    (this.currentPot = 0),
+    (this.endingPotAmount = 0),
+    (this.initialPotAmount = 0),
+    (this.playersId = playersId);
   }
 
   GetPotAmount() {
@@ -67,9 +67,9 @@ class Coins {
 
     // Dispense initial coin amounts to all players
     _.each(players, player => {
-      const amt = player.decider
-        ? config.deciderStartCoinCount
-        : config.playerStartCoinCount;
+      const amt = player.decider ?
+        config.deciderStartCoinCount :
+        config.playerStartCoinCount;
 
       // Map amount for each player
       this.playerCoins.set(player.uid, amt);

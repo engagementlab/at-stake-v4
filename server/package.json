@@ -34,7 +34,7 @@
     "express": "4.16.3",
     "express-handlebars": "^3.1.0",
     "html-entities": "1.2.0",
-    "learning-games-core": "engagementlab/learning-games-core#production",
+    "learning-games-core": "engagementlab/learning-games-core#redis",
     "merge": "1.2.1",
     "mongoose": "^5.6.2",
     "node-sass": "^4.13.1",
@@ -44,6 +44,7 @@
     "sentencer": "^0.2.0",
     "socket.io": "^2.1.1",
     "socket.io-client": "^2.1.0",
+    "socket.io-redis": "^5.2.0",
     "underscore": "^1.9.1",
     "winston": "^3.2.1"
   },

@@ -1,4 +1,4 @@
-/* @Stake v3 */
+/* @Stake v4 */
 /**
  * Route middleware
  * This file contains the common middleware used by all routes.

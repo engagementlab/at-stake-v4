@@ -1,5 +1,5 @@
 /**
- * @Stake v3
+ * @Stake v4
  *
  * Deck Model
  * @module models
@@ -12,7 +12,9 @@
 
 const keystone = require('keystone');
 
-const { Types } = keystone.Field;
+const {
+  Types
+} = keystone.Field;
 
 /**
  * Deck Model
@@ -28,9 +30,19 @@ const Deck = new keystone.List('Deck', {
  */
 Deck.add({
 
-  name: { type: String, required: true, initial: true },
-  description: { type: String, required: true, initial: true },
-  questions: { type: Types.TextArray },
+  name: {
+    type: String,
+    required: true,
+    initial: true
+  },
+  description: {
+    type: String,
+    required: true,
+    initial: true
+  },
+  questions: {
+    type: Types.TextArray
+  },
   roles: {
     type: Types.Relationship,
     ref: 'Role',
@@ -39,7 +51,10 @@ Deck.add({
     initial: true,
     label: 'Roles',
   },
-  dateCreated: { type: Date, noedit: true },
+  dateCreated: {
+    type: Date,
+    noedit: true
+  },
 
 });
 
