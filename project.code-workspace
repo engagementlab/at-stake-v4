@@ -1,7 +1,14 @@
 {
-  "folders": [
-    {
+  "folders": [{
       "path": "."
+    },
+    {
+      "path": "./client",
+      "name": "Client"
+    },
+    {
+      "path": "./server",
+      "name": "Server"
     }
   ],
   "settings": {
