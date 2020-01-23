@@ -1,8 +1,12 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable guard-for-in */
 
+const Server = require('socket.io');
+const CommonHandler = require('./handlers/Common');
+const PlayerLogin = require('./handlers/PlayerLogin');
+
 module.exports = (app) => {
-  const io = require('socket.io')(app, {
+  const io = new Server(app, {
     path: '/at-stake-socket',
   });
   const redisAdapter = require('socket.io-redis');
@@ -10,11 +14,9 @@ module.exports = (app) => {
   // Setup redis adapter
   io.adapter(redisAdapter({
     host: 'localhost',
-    port: 6379
+    port: 6379,
+    key: 'at-stake-socket',
   }));
-
-  const CommonHandler = require('./handlers/Common');
-  const PlayerLogin = require('./handlers/PlayerLogin');
 
   io.on('connection', (socket) => {
     // Create event handlers for this socket
@@ -30,7 +32,7 @@ module.exports = (app) => {
       }
 
       const {
-        handler
+        handler,
       } = eventHandlers[category];
 
       for (const event in handler) {

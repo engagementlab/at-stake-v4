@@ -19,14 +19,14 @@ class GameLogic extends Common {
 
     this.currentScreens = [{
         id: 'meet',
-        unique: true
+        unique: true,
       },
       {
-        id: 'deliberate'
+        id: 'deliberate',
       },
       {
-        id: 'ranking'
-      }
+        id: 'ranking',
+      },
     ];
 
     this.currentPhaseIndex = -1;
@@ -76,11 +76,11 @@ class GameLogic extends Common {
   Initialize(gameSession) {
     // Invoke common method
     super.Initialize(gameSession, () => {
-      this.eventEmitter.on('playerReconnected', info => {
+      this.eventEmitter.on('playerReconnected', (info) => {
         // If game in progress (phase => 0), refresh the current screen for reconnected player
         if (this.currentPhaseIndex > -1) {
           const {
-            id
+            id,
           } = this.currentScreens[this.currentPhaseIndex];
           this.FindScreen(id, true, info.socket, false);
 
@@ -106,8 +106,6 @@ class GameLogic extends Common {
 
     this.NextPhase();
     this.ShowTeamInfo();
-
-    this.Redis.Get('test-key');
   }
 
   // Core method invocation
@@ -124,80 +122,59 @@ class GameLogic extends Common {
     return _.pluck(this.currentScreens, 'id');
   }
 
-  GetData(screenName) {
-    let screenData = {};
-    const activePlayerInfo = this.GetActivePlayerData();
-
-    const playerMap = _.map(this._current_players, player => ({
-      username: player.username,
-      decider: player.decider,
-      title: player.role.title,
-      icon: player.index,
-      isFacilitator: player.role.isFacilitator
-    }));
+  async GetData(screenName) {
+    const screenData = {};
+    screenData.players = await this.GetAllPlayers();
 
     switch (screenName) {
       default:
         break;
 
       case 'meet':
-        screenData = {
-          question: this._deck_data.questions[0],
-          players: this._current_players,
-          roles: _.mapObject(this._current_players, player => ({
-            username: player.username,
-            title: player.role.title,
-            isFacilitator: player.role.isFacilitator
-          }))
-        };
+        screenData.roles = _.mapObject(screenData.players, (player) => ({
+          username: player.username,
+          title: player.role.title,
+          isFacilitator: player.role.isFacilitator,
+        }));
         break;
 
       case 'deliberate':
-        screenData = {
-          question: this._deck_data.questions[0],
-          events: this.Shuffler(this._game_events),
-          players: _.mapObject(this._current_players, player => ({
-            username: player.username,
-            needs: player.role.needs,
-            isFacilitator: player.role.isFacilitator
-          }))
-        };
-
+        screenData.events = this.Shuffler(this._game_events);
         break;
 
       case 'ranking':
-        screenData.players = _.map(this.GetActivePlayers(), player => ({
-          uid: player.uid,
-          username: player.username,
-          needs: player.role.needs,
-          secretGoal: player.role.secretGoal,
-          goalMet: _.contains(this.playersMetGoal, player.uid)
-        }));
+        // Add to player data obj
+        screenData.players = _.map(screenData.players, (player) => {
+          const extraData = {
+            needs: player.role.needs,
+            secretGoal: player.role.secretGoal,
+            goalMet: _.contains(this.playersMetGoal, player.uid),
+          };
+          return _.extend({}, player, extraData);
+        });
 
         break;
     }
 
     // Apply to data for all screens
-    // screenData.config = _.omit(this.GetConfig(), 'debriefQuestions');
+    screenData.question = this.deck_data.questions[0];
     screenData.decider = this._current_decider.username;
-    screenData.round = this._current_round + 1;
     screenData.timerRunning = this.timerRunning;
-    screenData.repeatScreen =
-      this._active_player_index <
+    screenData.repeatScreen = this._active_player_index <
       Object.keys(this.GetActivePlayers()).length - 1;
     return screenData;
   }
 
-  FindScreen(screenName, refreshCurrent, socket, uniqueOverride) {
+  async FindScreen(screenName, refreshCurrent, socket, uniqueOverride) {
     const screenInfo = _.where(this.currentScreens, {
-      id: screenName
+      id: screenName,
     })[0];
     let isUnique = screenInfo.unique;
     if (uniqueOverride !== undefined) {
       isUnique = uniqueOverride;
     }
 
-    const data = this.GetData(screenName);
+    const data = await this.GetData(screenName);
     this.ShowScreen(screenName, data, isUnique, refreshCurrent, socket);
   }
 
@@ -211,10 +188,9 @@ class GameLogic extends Common {
    * @class GameLogic
    * @name ShowScreen
    */
-  ShowScreen(screenName, data, uniqueData, refreshCurrent, socket) {
+  ShowScreen(screenName, data, isUnique, refreshCurrent, socket) {
     const eventId = refreshCurrent ? 'game:refresh_screen' : 'game:next_phase';
-    const seconds =
-      screenName === 'meet' ?
+    const seconds = screenName === 'meet' ?
       this.GetConfig().thinkSeconds :
       this.GetConfig().deliberateSeconds;
 
@@ -225,21 +201,21 @@ class GameLogic extends Common {
       timerLength: seconds,
       timerRunning: this.timerRunning,
       timerDuration: this.timerTime,
-      ready: this.playersReady === _.keys(this.GetActivePlayers()).length
+      ready: this.playersReady === _.keys(this.GetActivePlayers()).length,
     };
 
-    if (uniqueData) {
+    if (isUnique) {
       const arrPlayerUnique = [];
       let playerIndex = 0;
 
       // eslint-disable-next-line no-inner-declarations
       function sendData(_socket) {
-        const playerData = arrPlayerUnique[playerIndex];
-        playerData.shared = _.omit(data, 'players');
+        const thisPlayer = arrPlayerUnique[playerIndex];
+        thisPlayer.shared = _.omit(data, 'players');
 
         _socket
           .to(arrPlayerUnique[playerIndex].socket_id)
-          .emit(eventId, _.extend(screenData, playerData));
+          .emit(eventId, _.extend(screenData, thisPlayer));
 
         if (playerIndex < arrPlayerUnique.length - 1) {
           playerIndex += 1;
@@ -247,21 +223,17 @@ class GameLogic extends Common {
         }
       }
 
-      _.each(this._current_players, (player, id) => {
-        const playerData = data.players[id];
-        playerData.socket_id = player.socket_id;
-
-        arrPlayerUnique.push(playerData);
+      _.each(data.players, (player) => {
+        arrPlayerUnique.push(player);
       });
 
       sendData(this.groupSocket);
     } else {
       const allData = _.extend({
-          name: screenName
+          name: screenName,
         },
         screenData,
-        data
-      );
+        data);
 
       // Emit only to given socket, if specified
       if (socket !== undefined) socket.emit(eventId, allData);
@@ -270,16 +242,16 @@ class GameLogic extends Common {
   }
 
   ShowTeamInfo() {
-    const data = _.map(this.GetActivePlayers(), player => ({
+    const data = _.map(this.GetActivePlayers(), (player) => ({
       uid: player.uid,
       username: player.username,
       needs: player.role.needs,
       secretGoal: player.role.secretGoal,
-      goalMet: _.contains(this.playersMetGoal, player.uid)
+      goalMet: _.contains(this.playersMetGoal, player.uid),
     }));
 
     // Load team info
-    this.Templates.Load('partials/shared/teaminfo', data, teamHtml => {
+    this.Templates.Load('partials/shared/teaminfo', data, (teamHtml) => {
       // Tell facilitator team info
       if (this.groupSocket) {
         this.groupSocket
@@ -291,17 +263,16 @@ class GameLogic extends Common {
 
   StartTimer(socket, timeAdded) {
     const {
-      id
+      id,
     } = this.currentScreens[this.currentPhaseIndex];
-    const seconds =
-      id === 'meet' ?
+    const seconds = id === 'meet' ?
       this.GetConfig().thinkSeconds :
       this.GetConfig().deliberateSeconds;
 
     // Begin countdown and assign countdown end event
     const data = {
       timeLimit: seconds,
-      countdownName: `${id}Countdown`
+      countdownName: `${id}Countdown`,
     };
     if (timeAdded) {
       const name = _.first(this._deliberate_time_queue).username;
@@ -327,15 +298,14 @@ class GameLogic extends Common {
   }
 
   PlayerTurnDone(socket) {
-    let resetActive =
-      this._active_player_index === _.keys(this.GetActivePlayers()).length - 1;
+    let resetActive = this._active_player_index === _.keys(this.GetActivePlayers()).length - 1;
 
     if (resetActive) {
       this._active_player_index = 0;
     }
 
     const {
-      id
+      id,
     } = this.currentScreens[this.currentPhaseIndex];
 
     // If doubledown phase, track how many players say 'no',
@@ -354,7 +324,7 @@ class GameLogic extends Common {
 
     this.groupSocket.to(this.players_id).emit('game:player_done', {
       end: resetActive,
-      phase: id
+      phase: id,
     });
   }
 
@@ -370,7 +340,7 @@ class GameLogic extends Common {
     }
 
     const {
-      id
+      id,
     } = this.currentScreens[this.currentPhaseIndex];
     this.FindScreen(id);
   }
@@ -380,64 +350,33 @@ class GameLogic extends Common {
     const forceScreen = force;
     this.currentScreenIndex += 1;
     this.groupSocket.to(this.players_id).emit('game:next_screen', {
-      force: forceScreen
+      force: forceScreen,
     });
   }
 
   SkipScreen() {
     const {
-      id
+      id,
     } = this.currentScreens[this.currentPhaseIndex];
     const forceScreen = 'true';
 
     this.groupSocket.to(this.players_id).emit('game:skip_rules', {
-      force: forceScreen
+      force: forceScreen,
     });
-  }
-
-  NextPlayer() {
-    const {
-      id
-    } = this.currentScreens[this.currentPhaseIndex];
-
-    // At last player?
-    const resetActive =
-      this._active_player_index === _.keys(this.GetActivePlayers()).length - 1;
-
-    // If doubledown phase, reset active player to cycle 'buy' screen back to first player
-    if (id === 'doubledown') {
-      if (resetActive) {
-        this._active_player_index = 0;
-        this.playersDoubledownDone = 0;
-      } else {
-        this._active_player_index++;
-      }
-    } else if (id === 'pitch') {
-      if (resetActive) {
-        this._active_player_index = 0;
-        this.currentScreenIndex++;
-      } else {
-        this._active_player_index++;
-      }
-    } else {
-      this._active_player_index++;
-    }
-
-    this.FindScreen(id, true);
   }
 
   LoadScreenAtIndex(index) {
     this.currentPhaseIndex = index - 1;
 
     const {
-      id
+      id,
     } = this.currentScreens[this.currentPhaseIndex];
     this.FindScreen(id);
   }
 
   PlayerRejoined(socket) {
     const {
-      id
+      id,
     } = this.currentScreens[this.currentPhaseIndex];
     this.FindScreen(id, false, socket);
   }
@@ -447,21 +386,20 @@ class GameLogic extends Common {
     this.groupSocket.to(this.players_id).emit('player:show_event', index);
   }
 
-  PlayerDone(data) {
-    this.playersReady++;
-    const playerCt = _.keys(this.GetActivePlayers()).length;
+  async PlayerDone(data) {
+    this.playersReady += 1;
+    const playerCt = _.keys(await this.GetActivePlayers()).length;
 
     if (this.playersReady === playerCt) {
       this.groupSocket
         .to(this._current_decider.socket_id)
         .emit('game:ready', data);
-      // this.playersReady = 0;
     }
   }
 
-  PlayerMetGoal(playerUid) {
-    const uid = parseInt(playerUid);
-    const player = this.GetPlayerByUserId(uid);
+  async PlayerMetGoal(playerUid) {
+    const uid = parseInt(playerUid, 10);
+    const player = await this.GetPlayerByUserId(uid);
     this.playersMetGoal.push(uid);
 
     this.groupSocket.to(this.players_id).emit('game:met_goal', player.username);
@@ -469,7 +407,7 @@ class GameLogic extends Common {
 
   PlayerMetNeed(playerUid, needIndex) {
     const player = this.GetPlayerByUserId(playerUid);
-    debugger;
+
     // Get need that was met
     const need = player.role.needs[needIndex];
 
@@ -479,8 +417,8 @@ class GameLogic extends Common {
   PlayerCallVote(socket) {
     const player = this.GetPlayerById(socket.id);
     const data = {
-      question: this._deck_data.questions[0],
-      username: player.username
+      question: this.deck_data.questions[0],
+      username: player.username,
     };
 
     this.voteCallerSocketId = player.uid;
@@ -496,7 +434,7 @@ class GameLogic extends Common {
       const voteWon = this.votesYes === _.keys(this.GetActivePlayers()).length;
       this.groupSocket.to(this.players_id).emit('players:voted', {
         yes: voteWon,
-        votecallerid: this.voteCallerSocketId
+        votecallerid: this.voteCallerSocketId,
       });
       this.votesYes = 0;
       this.votesReceived = 0;
@@ -518,7 +456,7 @@ class GameLogic extends Common {
 
     // Send to all players
     this.groupSocket.to(this.players_id).emit('game:end', {
-      won: didWin
+      won: didWin,
     });
   }
 }

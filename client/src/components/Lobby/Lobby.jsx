@@ -1,3 +1,4 @@
+/* eslint-disable arrow-parens */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
@@ -30,7 +31,7 @@ class Lobby extends Component {
       // for dev only
       username: 'user1',
 
-      mode: '',
+      mode: ''
     };
 
     this.selectDeck = this.selectDeck.bind(this);
@@ -55,7 +56,7 @@ class Lobby extends Component {
   join() {
     this.setState({
       mode: 'join',
-      username: 'player1',
+      username: 'player1'
     });
   }
 
@@ -65,15 +66,15 @@ class Lobby extends Component {
 
       // Generate session
       fetch(`${process.env.REACT_APP_API_URL}/api/generate`, {
-        signal: this.abortCtrl.signal,
+        signal: this.abortCtrl.signal
       })
-        .then((response) => response.json())
-        .then((response) => {
+        .then(response => response.json())
+        .then(response => {
           this.setState({
             data: response,
             mode: 'host',
             showDecks: true,
-            joinCode: response.code,
+            joinCode: response.code
           });
 
           // Cache game id in data singleton
@@ -83,7 +84,7 @@ class Lobby extends Component {
 
     socket.on('player:loggedin', () => {
       this.setState({
-        response: 'Player joined!',
+        response: 'Player joined!'
       });
     });
   }
@@ -105,16 +106,16 @@ class Lobby extends Component {
       data,
       {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        cancelToken: this.cancelSrc.token,
-      },
+        cancelToken: this.cancelSrc.token
+      }
     );
 
     if (response.data.sessionCreated) {
       this.setState({
         status: 'Session created',
-        showDecks: false,
+        showDecks: false
       });
 
       // Join host player to room
@@ -124,9 +125,9 @@ class Lobby extends Component {
 
   playerJoin(code) {
     // Watch for new players in lobby
-    socket.on('players:update', (data) => {
+    socket.on('players:update', data => {
       this.setState({
-        playerData: data.players,
+        playerData: data.players
       });
     });
 
@@ -144,20 +145,20 @@ class Lobby extends Component {
       type: this.state.mode === 'host' ? 'decider' : 'player',
       username: this.state.username,
       uid: playerUID,
-      joinCode: code || this.state.joinCode,
+      joinCode: code || this.state.joinCode
     };
 
     const payload = GameData.get().assemble(roomData);
 
-    // Log player in
-    socket.emit('login:submit', payload);
-
     // Session started, let's sign-up the decider for this room
     socket.emit('room', payload);
 
+    // Log player in (non-fac only)
+    if (roomData.type === 'player') socket.emit('login:submit', payload);
+
     // Save game code for resuming
     sessionStorage.setItem('gameCode', roomData.joinCode);
-    // Flag client if is host/moderator
+    // Flag client if is host/facilitator
     sessionStorage.setItem('isModerator', this.state.mode === 'host');
     // Save username
     sessionStorage.setItem('username', roomData.username);
@@ -169,89 +170,66 @@ class Lobby extends Component {
   }
 
   render() {
-    const {
-      data, mode, playerData, showDecks, status,
-    } = this.state;
+    const { data, mode, playerData, showDecks, status } = this.state;
     // Pre-populated join form for dev
     const roomCode = process.env.NODE_ENV === 'development' ? 'TEST' : '';
     const playerName = process.env.NODE_ENV === 'development' ? 'player1' : '';
 
     return (
       // TODO: Implement initial name input screen
+      <div>
+        <Container>
+          <Row>
+            <Col>
+              {/* TODO: Load @1x, @2x, @3x resolutions depending on screen size? */}
+              <Image src="/img/intro/start-banner@2x.png" fluid />
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <h1>
+                Hello,
+                <b>Player</b>!
+              </h1>
+            </Col>
+          </Row>
 
-      <Container>
-        <Row>
-          <Col>
-            {/* TODO: Load @1x, @2x, @3x resolutions depending on screen size? */}
-            <Image src="/img/intro/start-banner@2x.png" fluid />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <h1>
-              Hello,
-              {' '}
-              <b>Ralph</b>
-              !
-            </h1>
-          </Col>
-        </Row>
+          <Row>
+            <Col>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => this.join()}
+                block
+              >
+                Join A Game
+              </Button>
+            </Col>
+          </Row>
 
-        <Row>
-          <Col>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => this.join()}
-              block
-            >
-              Join A Game
-            </Button>
-          </Col>
-        </Row>
+          <Row>
+            <Col>
+              <hr />
+              <p className="monospace">
+                If you are a facilitator, start a new game.
+              </p>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <Button
+                variant="info"
+                size="lg"
+                onClick={() => this.start(true)}
+                block
+              >
+                Create A New Game
+              </Button>
+            </Col>
+          </Row>
+        </Container>
 
-        <Row>
-          <Col>
-            <hr />
-            <p className="monospace">If you are a facilitator, start a new game.</p>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Button
-              variant="info"
-              size="lg"
-              onClick={() => this.start(true)}
-              block
-            >
-              Create A New Game
-            </Button>
-          </Col>
-        </Row>
-      </Container>
-
-      /*
         <div>
-          {mode === '' ? (
-            <div>
-              <input
-                type="text"
-                value="host1"
-                onChange={(event) => this.setState({ username: event.target.value })}
-              />
-              <br />
-              <Button variant="primary" size="lg" onClick={() => this.start(true)}>
-                Host
-              </Button>
-              <br />
-              ______
-              <br />
-              <Button variant="primary" size="lg" onClick={() => this.join()}>
-                Join
-              </Button>
-            </div>
-          ) : null}
-
           {mode === 'host' && playerData && playerData.length >= 2 ? (
             <div id="start">
               <button
@@ -272,13 +250,17 @@ class Lobby extends Component {
               <input
                 type="text"
                 placeholder="room code"
-                onChange={(event) => this.setState({ joinCode: event.target.value })}
+                onChange={event =>
+                  this.setState({ joinCode: event.target.value })
+                }
                 value={roomCode}
               />
               <input
                 type="text"
                 placeholder="name"
-                onChange={(event) => this.setState({ username: event.target.value })}
+                onChange={event =>
+                  this.setState({ username: event.target.value })
+                }
                 value={playerName}
               />
               <button type="button" onClick={() => this.playerJoin()}>
@@ -301,33 +283,33 @@ class Lobby extends Component {
             {` ${status}`}
           </p>
 
-          {!playerData ? null : (
+          {playerData && (
             <div>
               Players:
               <ol>
-                {playerData.map((player) => (
+                {playerData.map(player => (
                   <li key={player.username}>{player.username}</li>
                 ))}
               </ol>
             </div>
           )}
         </div>
-        */
+      </div>
     );
   }
 }
 
 Lobby.defaultProps = {
-  mode: '',
+  mode: ''
 };
 
 Lobby.propTypes = {
-  mode: PropTypes.string,
+  mode: PropTypes.string
 };
 
-const LobbyWithSocket = (props) => (
+const LobbyWithSocket = props => (
   <SocketContext.Consumer>
-    {(socket) => <Lobby {...props} socket={socket} />}
+    {socket => <Lobby {...props} socket={socket} />}
   </SocketContext.Consumer>
 );
 

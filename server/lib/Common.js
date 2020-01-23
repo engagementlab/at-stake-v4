@@ -12,8 +12,8 @@
  * ==========
  */
 
-const coreModule = require('learning-games-core'),
-  TemplateLoader = require('./TemplateLoader');
+const coreModule = require('learning-games-core');
+const TemplateLoader = require('./TemplateLoader');
 
 const {
   Core,
@@ -31,12 +31,11 @@ class Common extends Core {
 
     this.groupSocket = null;
 
-    this._deck_data = {};
+    this.deck_data = {};
     this._active_deck_roles = {};
     this._active_deck_facilitator = {};
     this._game_events = {};
 
-    this._current_players = {};
     this._currentPlayerIndex = 0;
     this._game_session = null;
     this._game_timeout = null;
@@ -108,7 +107,7 @@ class Common extends Core {
           events: queryEvent,
         })
         .then((results) => {
-          this._deck_data = results.deck;
+          this.deck_data = results.deck;
           this._active_deck_roles = results.deck.roles;
           this._active_deck_facilitator = results.facilitator;
           this._game_events = results.events;
@@ -143,30 +142,29 @@ class Common extends Core {
 
   // Get all players
   async GetAllPlayers() {
-
-    let players = await this.Redis.GetHashAll(this._game_session.accessCode);
+    const players = await this.Redis.GetHashAll(this._game_session.accessCode);
     return players;
-
   }
 
   // Get active players (all non-deciders)
-  GetActivePlayers() {
-    const players = _.filter(this._current_players, (val) => val.connected && !val.decider);
+  async GetActivePlayers() {
+    const allPlayers = await this.GetAllPlayers();
+    const players = _.filter(allPlayers, (val) => val.connected && !val.decider);
 
     return players;
   }
 
   // Get disconnected players
-  GetDisconnectedPlayers() {
-    const players = _.pick(this._current_players,
-      (val) => (val.connected === false));
+  async GetDisconnectedPlayers() {
+    const allPlayers = await this.GetAllPlayers();
+    const players = _.pick(allPlayers, (val) => (val.connected === false));
 
     return players;
   }
 
   // Get active player (it's their turn)
-  GetActivePlayerData() {
-    const players = this.GetActivePlayers();
+  async GetActivePlayerData() {
+    const players = await this.GetActivePlayers();
     const uids = Object.keys(players);
 
     return players[uids[this._active_player_index]];
@@ -179,8 +177,7 @@ class Common extends Core {
     return this._current_players[uid].decider;
   }
 
-  AssignRoleToPlayer = async (player, isDecider) => {
-
+  async AssignRoleToPlayer(player, isDecider) {
     const playerObj = await this.Redis.GetHash(this._game_session.accessCode, player.uid);
 
     // Is decider (ensure falsey is false)?
@@ -191,13 +188,8 @@ class Common extends Core {
       playerObj.decider = true;
       playerObj.role = this._active_deck_facilitator;
 
-      // Tell new decider to start being decider
-      if (this.groupSocket) {
-        this.groupSocket.to(this._current_decider.socket_id).emit('game:decider', {
-          facilitator: true,
-          role: playerObj.role,
-        });
-      }
+      // Cache updated player
+      await this.Redis.SetHash(this._game_session.accessCode, player.uid, playerObj);
 
       return;
     }
@@ -230,9 +222,10 @@ class Common extends Core {
       if (!playerObj.prior_roles) playerObj.prior_roles = [roleIndex];
       else playerObj.prior_roles.push(roleIndex);
 
-      this.assignedRoleIndices.push(roleIndex);
+      // Cache updated player
+      await this.Redis.SetHash(this._game_session.accessCode, player.uid, playerObj);
 
-      // socket.to(playerObj.socket_id).emit('player:assignrole', html);
+      this.assignedRoleIndices.push(roleIndex);
     }
 
     // Replace cached object
@@ -273,7 +266,7 @@ class Common extends Core {
   /**
    * @override
    */
-  PlayerReady(player, socket, assignDecider) {
+  async PlayerReady(player, socket, assignDecider) {
     const playerRejoining = this.GetPlayerByUserId(player.uid) !== undefined;
     const isDecider = this.IsDecider(player.uid) || (assignDecider === true);
 
@@ -323,8 +316,9 @@ class Common extends Core {
       if (allPlayersActive) clearTimeout(this._player_timeout);
     } else this.AssignRoleToPlayer(player, isDecider);
 
+    const allPlayers = await this.GetAllPlayers();
     const data = {
-      players: _.sortBy(this.GetAllPlayers(), (player) => player.index),
+      players: _.sortBy(allPlayers, (player) => player.index),
       disconnected_players: _.pluck(disconnectedPlayers, 'username'),
       state: (playerRejoining ? 'player_rejoined' : 'gained_player'),
       all_connected: allPlayersActive,
@@ -394,7 +388,7 @@ class Common extends Core {
     if (this._current_round === 3) this.End(socket);
 
     // Reset active deck roles
-    this._active_deck_roles = this._deck_data.roles;
+    this._active_deck_roles = this.deck_data.roles;
 
     // Reset active player
     this._active_player_index = 0;

@@ -19,7 +19,7 @@ const socket = io('http://localhost:3001', {
   path: '/at-stake-socket/',
   reconnection: true,
   reconnectionDelay: 500,
-  maxReconnectionAttempts: Infinity,
+  maxReconnectionAttempts: Infinity
 });
 
 class App extends Component {
@@ -33,7 +33,7 @@ class App extends Component {
 
       screens: ['meet', 'deliberate', 'ranking'],
       phaseIndex: -1,
-      screenData: null,
+      screenData: null
     };
 
     this.roleData = null;
@@ -59,21 +59,21 @@ class App extends Component {
       this.setState({ phaseIndex: 1 });
     });
 
-    socket.on('game:next_phase', (screenData) => {
+    socket.on('game:next_phase', screenData => {
       const { phaseIndex } = this.state;
       this.setState({ phaseIndex: phaseIndex + 1, screenData });
 
       // Cache player's role data as it is emitted only in first phase
       this.roleData = screenData.role;
     });
-    socket.on('game:refresh_screen', (screenData) => {
+    socket.on('game:refresh_screen', screenData => {
       this.setState({ phaseIndex: screenData.phase, screenData });
     });
 
-    socket.on('player:reconnected', (eventData) => {
+    socket.on('player:reconnected', () => {
       this.setState({ response: 'Player re-joined.' });
     });
-    socket.on('player:lost', (eventData) => {
+    socket.on('player:lost', eventData => {
       this.setState({ response: `${eventData.names.join(',')} disconnected.` });
     });
   }
@@ -99,7 +99,7 @@ class App extends Component {
       rolecardShow,
       phaseIndex,
       screenData,
-      screens,
+      screens
     } = this.state;
     const currentScreen = screens[phaseIndex];
 

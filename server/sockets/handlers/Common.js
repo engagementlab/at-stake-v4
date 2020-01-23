@@ -77,13 +77,6 @@ const Common = function (nsp, socket) {
       session.NextScreen(pkg.msgData);
     },
 
-    'game:next_player': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.NextPlayer();
-    },
-
     'game:load_screen': (pkg) => {
       const session = Session.Get(pkg.gameId);
 
