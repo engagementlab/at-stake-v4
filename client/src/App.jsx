@@ -50,7 +50,6 @@ class App extends Component {
       // Cache socket id in data singleton
       GameData.get().socketId = socket.id;
 
-
       if (sessionStorage.getItem('gameCode')) {
         // Check if player is active in game
         socket.emit(
@@ -84,9 +83,19 @@ class App extends Component {
     socket.on('game:refresh_screen', screenData => {
       // Cache player's role data as it is emitted only on refresh
       this.roleData = screenData.role;
-      debugger;
 
       this.setState({ phaseIndex: screenData.phase, screenData });
+
+      const roomData = {
+          type: this.roleData.isFacilitator ? 'decider' : 'player',
+          username: screenData.username,
+          uid: screenData.uid,
+          joinCode: sessionStorage.getItem('gameCode')
+        },
+        payload = GameData.get().assemble(roomData);
+
+      // Session re-started, let's signup again for room
+      socket.emit('room', payload);
     });
 
     socket.on('player:reconnected', () => {

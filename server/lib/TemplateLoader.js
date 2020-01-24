@@ -24,7 +24,7 @@ class TemplateLoader {
     // Apply game type to all template input data
     data.gameType = this.gameType;
 
-    logger.info('TemplateLoader', `Loading ${rootDir}${filePath}.hbs`);
+    logger.info(`TemplateLoader: Loading ${rootDir}${filePath}.hbs`);
 
     // Banish HBS!
     /* handlebars

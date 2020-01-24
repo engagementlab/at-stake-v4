@@ -254,15 +254,12 @@ class GameLogic extends Common {
       goalMet: _.contains(this.playersMetGoal, player.uid),
     }));
 
-    // Load team info
-    this.Templates.Load('partials/shared/teaminfo', data, (teamHtml) => {
-      // Tell facilitator team info
-      if (this.groupSocket) {
-        this.groupSocket
-          .to(this._current_decider.socket_id)
-          .emit('game:team_info', teamHtml);
-      }
-    });
+    // Tell facilitator team info
+    if (this.groupSocket) {
+      this.groupSocket
+        .to(this._current_decider.socket_id)
+        .emit('game:team_info', data);
+    }
   }
 
   StartTimer(socket, timeAdded) {
