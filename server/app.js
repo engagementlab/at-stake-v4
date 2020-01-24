@@ -13,11 +13,11 @@
 // Load .env vars
 if (process.env.NODE_ENV !== 'test') require('dotenv').config();
 
-const winston = require('winston'),
-  bodyParser = require('body-parser'),
-  mongoose = require('mongoose'),
-  bootstrap = require('@engagementlab/el-bootstrapper'),
-  express = require('express');
+const winston = require('winston');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const bootstrap = require('@engagementlab/el-bootstrapper');
+const express = require('express');
 
 const logFormat = winston.format.combine(
   winston.format.colorize(),
@@ -80,20 +80,10 @@ bootstrap.start(
     require('./sockets/')(http);
 
     // Start redis on core lib
-    let redis = require('learning-games-core').Redis;
-    redis.Init(async () => {
-      /*  
-      redis.SetHash('sesh', 'player.uid', JSON.stringify({
-        id: 0,
-        id2: 1
-      }));
-
-      let res2 = await redis.GetHashLength('sesh');
-      console.log(res2) 
-      */
-    });
+    const redis = require('learning-games-core').Redis;
+    redis.Init();
 
     http.listen(process.env.PORT);
-  }
+  },
 
 );

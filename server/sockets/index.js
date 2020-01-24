@@ -17,6 +17,9 @@ module.exports = (app) => {
     port: 6379,
     key: 'at-stake-socket',
   }));
+  io.of('/').adapter.on('error', (err) => {
+    throw new Error('Socket.io redis unable to connect! Make sure redis is running.', err);
+  });
 
   io.on('connection', (socket) => {
     // Create event handlers for this socket
@@ -39,7 +42,6 @@ module.exports = (app) => {
         socket.on(event, handler[event]);
       }
     }
-    // socket.emit('pong');
 
     socket.send(socket.id);
   });
