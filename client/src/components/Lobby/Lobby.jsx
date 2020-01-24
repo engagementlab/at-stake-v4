@@ -51,6 +51,9 @@ class Lobby extends Component {
     // Cancel requests
     this.cancelSrc.cancel('Lobby unmounting');
     this.abortCtrl.abort();
+
+    // Cancel socket listeners
+    socket.off('players:update');
   }
 
   join() {

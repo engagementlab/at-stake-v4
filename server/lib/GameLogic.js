@@ -82,7 +82,7 @@ class GameLogic extends Common {
           const {
             id,
           } = this.currentScreens[this.currentPhaseIndex];
-          this.FindScreen(id, true, info.socket, false);
+          this.FindScreen(id, true, info.player, false);
 
           if (info.is_decider) {
             this.ShowTeamInfo();
@@ -165,7 +165,7 @@ class GameLogic extends Common {
     return screenData;
   }
 
-  async FindScreen(screenName, refreshCurrent, socket, uniqueOverride) {
+  async FindScreen(screenName, refreshCurrent, player, uniqueOverride) {
     const screenInfo = _.where(this.currentScreens, {
       id: screenName,
     })[0];
@@ -175,7 +175,7 @@ class GameLogic extends Common {
     }
 
     const data = await this.GetData(screenName);
-    this.ShowScreen(screenName, data, isUnique, refreshCurrent, socket);
+    this.ShowScreen(screenName, data, isUnique, refreshCurrent, player);
   }
 
   /**
@@ -185,10 +185,11 @@ class GameLogic extends Common {
    * @param {Object} Data for the screen
    * @param {Boolean} Data is unique for each player (data must be an array where indexes are playerId)?
    * @param {Boolean} Don't send next phase, just refresh current screen(s) with new data?
+   * @param {Object} Player to send data to
    * @class GameLogic
    * @name ShowScreen
    */
-  ShowScreen(screenName, data, isUnique, refreshCurrent, socket) {
+  ShowScreen(screenName, data, isUnique, refreshCurrent, player) {
     const eventId = refreshCurrent ? 'game:refresh_screen' : 'game:next_phase';
     const seconds = screenName === 'meet' ?
       this.GetConfig().thinkSeconds :
@@ -204,6 +205,7 @@ class GameLogic extends Common {
       ready: this.playersReady === _.keys(this.GetActivePlayers()).length,
     };
 
+    // We omit 'players' key from sent data; not needed by client, only here
     if (isUnique) {
       const arrPlayerUnique = [];
       let playerIndex = 0;
@@ -211,6 +213,7 @@ class GameLogic extends Common {
       // eslint-disable-next-line no-inner-declarations
       function sendData(_socket) {
         const thisPlayer = arrPlayerUnique[playerIndex];
+        // Players unneeded in share data
         thisPlayer.shared = _.omit(data, 'players');
 
         _socket
@@ -223,20 +226,21 @@ class GameLogic extends Common {
         }
       }
 
-      _.each(data.players, (player) => {
-        arrPlayerUnique.push(player);
+      // Assemble array of players to send to
+      _.each(data.players, (thisPlayer) => {
+        arrPlayerUnique.push(thisPlayer);
       });
 
       sendData(this.groupSocket);
     } else {
       const allData = _.extend({
           name: screenName,
+          shared: _.omit(data, 'players'),
         },
-        screenData,
-        data);
+        screenData);
 
-      // Emit only to given socket, if specified
-      if (socket !== undefined) socket.emit(eventId, allData);
+      // Emit only to given player, if specified
+      if (player !== undefined) this.groupSocket.to(player.socket_id).emit(eventId, _.extend(allData, player));
       else this.groupSocket.to(this.players_id).emit(eventId, allData);
     }
   }
@@ -372,13 +376,6 @@ class GameLogic extends Common {
       id,
     } = this.currentScreens[this.currentPhaseIndex];
     this.FindScreen(id);
-  }
-
-  PlayerRejoined(socket) {
-    const {
-      id,
-    } = this.currentScreens[this.currentPhaseIndex];
-    this.FindScreen(id, false, socket);
   }
 
   ShowEvent(state, index) {

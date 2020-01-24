@@ -267,21 +267,21 @@ class Common extends Core {
    * @override
    */
   async PlayerReady(player, socket, assignDecider) {
-    const playerRejoining = this.GetPlayerByUserId(player.uid) !== undefined;
+    const playerRejoining = await this.GetPlayerByUserId(player.uid);
     const isDecider = this.IsDecider(player.uid) || (assignDecider === true);
 
     // Was player disconnected?
     let wasDisconnected = false;
-    if (this._current_players[player.uid]) wasDisconnected = !this._current_players[player.uid].connected;
+    if (playerRejoining) wasDisconnected = !playerRejoining.connected;
 
-    // Invoke common method
-    super.PlayerReady(player, socket, false);
+    // Invoke common method, which also updates player cache and returns update
+    const updatedPlayer = await super.PlayerReady(playerRejoining || player, socket);
 
     // Get any disconnected players and then if all players are active
-    const disconnectedPlayers = this.GetDisconnectedPlayers();
+    const disconnectedPlayers = await this.GetDisconnectedPlayers();
     const allPlayersActive = _.isEmpty(disconnectedPlayers);
 
-    if (playerRejoining && wasDisconnected) {
+    if (updatedPlayer && wasDisconnected) {
       const reconnectInfo = {};
       if (this._countdown_paused) {
         // Resume any current timers
@@ -293,24 +293,23 @@ class Common extends Core {
 
       const {
         role,
-      } = this.GetPlayerById(player.socket_id);
+      } = updatedPlayer;
 
-      this.Templates.Load('partials/shared/rolecard', role, (roleHtml) => {
-        // Is decider?
-        reconnectInfo.is_decider = isDecider;
+      // Is decider?
+      reconnectInfo.is_decider = isDecider;
 
-        reconnectInfo.disconnected_players = _.pluck(disconnectedPlayers, 'username');
-        reconnectInfo.timeout_remaining = this._player_timeout_time_left;
-        reconnectInfo.role = roleHtml;
+      reconnectInfo.disconnected_players = _.pluck(disconnectedPlayers, 'username');
+      reconnectInfo.timeout_remaining = this._player_timeout_time_left;
+      reconnectInfo.role = role;
 
-        // Set client to reconnected state
-        if (isDecider) this._current_decider = player;
+      // Set client to reconnected state
+      if (isDecider) this._current_decider = player;
 
-        socket.emit('player:reconnected', reconnectInfo);
-        this.eventEmitter.emit('playerReconnected', {
-          is_decider: isDecider,
-          socket,
-        });
+      socket.emit('player:reconnected', reconnectInfo);
+
+      // Dispatch event for reconnection
+      this.eventEmitter.emit('playerReconnected', {
+        player: updatedPlayer,
       });
 
       if (allPlayersActive) clearTimeout(this._player_timeout);
@@ -318,7 +317,7 @@ class Common extends Core {
 
     const allPlayers = await this.GetAllPlayers();
     const data = {
-      players: _.sortBy(allPlayers, (player) => player.index),
+      players: _.sortBy(allPlayers, (thisPlayer) => thisPlayer.index),
       disconnected_players: _.pluck(disconnectedPlayers, 'username'),
       state: (playerRejoining ? 'player_rejoined' : 'gained_player'),
       all_connected: allPlayersActive,
@@ -333,18 +332,18 @@ class Common extends Core {
   /**
    * @override
    */
-  PlayerLost(playerSocketId, socket) {
-    const thisPlayer = this.GetPlayerById(playerSocketId);
+  async PlayerLost(playerSocketId, socket) {
+    const thisPlayer = await this.GetPlayerById(playerSocketId);
 
     if (!thisPlayer) return;
 
     thisPlayer.connected = false;
 
+    // Update player in redis store
+    this.Redis.SetHash(this._game_session.accessCode, thisPlayer.uid, thisPlayer);
+
     // If game is currently in session...
     if (this._game_in_session) {
-      // Pause any current timers
-      // this._countdown_paused = true;
-
       // Get all currently disconnected players
       const missingPlayers = _.pluck(this.GetDisconnectedPlayers(), 'username');
 

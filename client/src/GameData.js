@@ -1,12 +1,12 @@
 class GameData {
   constructor() {
-    this._socketId = null;
+    this.socketId = null;
     this._gameId = null;
   }
 
   /**
-     * @returns {GameData}
-     */
+   * @returns {GameData}
+   */
   static get() {
     if (GameData.instance == null) {
       GameData.instance = new GameData();

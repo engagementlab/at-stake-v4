@@ -1,5 +1,6 @@
 {
-  "folders": [{
+  "folders": [
+    {
       "path": "."
     },
     {
@@ -9,6 +10,10 @@
     {
       "path": "./server",
       "name": "Server"
+    },
+    {
+      "path": "./server/node_modules/learning-games-core",
+      "name": "Core"
     }
   ],
   "settings": {

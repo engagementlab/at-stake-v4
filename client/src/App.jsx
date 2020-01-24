@@ -48,13 +48,28 @@ class App extends Component {
       socket.emit('hello');
 
       // Cache socket id in data singleton
-      GameData.get()._socketId = socket.id;
+      GameData.get().socketId = socket.id;
+
+
+      if (sessionStorage.getItem('gameCode')) {
+        // Check if player is active in game
+        socket.emit(
+          'login:active',
+          GameData.get().assemble({
+            joinCode: sessionStorage.getItem('gameCode'),
+            username: sessionStorage.getItem('username'),
+            uid: sessionStorage.getItem('uUID')
+          })
+        );
+      }
 
       this.setState({ response: 'Connected' });
     });
+
     socket.on('disconnect', () => {
       this.setState({ response: 'Disconnected' });
     });
+
     socket.on('game:intro', () => {
       this.setState({ phaseIndex: 1 });
     });
@@ -67,6 +82,10 @@ class App extends Component {
       this.roleData = screenData.role;
     });
     socket.on('game:refresh_screen', screenData => {
+      // Cache player's role data as it is emitted only on refresh
+      this.roleData = screenData.role;
+      debugger;
+
       this.setState({ phaseIndex: screenData.phase, screenData });
     });
 

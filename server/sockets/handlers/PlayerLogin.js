@@ -115,9 +115,9 @@ const PlayerLogin = function (nsp, socket, emitter) {
 
       if (!session) return;
 
-      const isGroup = (currentSocket.id === session.groupModerator);
+      const isFacilitator = (currentSocket.id === session.groupModerator);
 
-      if (isGroup) {
+      if (isFacilitator) {
         logger.info(`${this.playerGameId} group view disconnecting. Bu-bye.`);
         if (process.env.NODE_ENV === 'development') session.End(currentSocket, true);
       } else {
