@@ -45,8 +45,6 @@ class App extends Component {
 
   componentDidMount() {
     socket.on('connect', () => {
-      socket.emit('hello');
-
       // Cache socket id in data singleton
       GameData.get().socketId = socket.id;
 

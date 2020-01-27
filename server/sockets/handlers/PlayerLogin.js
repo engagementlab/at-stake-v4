@@ -1,6 +1,6 @@
 /**
  * @Stake v4
- * Developed by Engagement Lab, 2016-2017
+ * Developed by Engagement Lab, 2016-2020
  * ==============
  * PlayerLogin submission socket handler.
  *
@@ -16,7 +16,7 @@ const Session = require('learning-games-core').SessionManager;
 
 // Arrow functions can't be used as constructors, so we must use function()
 // eslint-disable-next-line func-names
-const PlayerLogin = function (nsp, socket, emitter) {
+const PlayerLogin = function (nsp, socket) {
   const currentSpace = nsp;
   const currentSocket = socket;
 
@@ -110,7 +110,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
       }
     },
 
-    disconnect: () => {
+    disconnect: async () => {
       const session = Session.Get(this.playerGameId);
 
       if (!session) return;
@@ -121,7 +121,7 @@ const PlayerLogin = function (nsp, socket, emitter) {
         logger.info(`${this.playerGameId} group view disconnecting. Bu-bye.`);
         if (process.env.NODE_ENV === 'development') session.End(currentSocket, true);
       } else {
-        const player = session.GetPlayerById(currentSocket.id);
+        const player = await session.GetPlayerById(currentSocket.id);
 
         if (player) logger.info(`Player '${player.username}' disconnecting. Nooooo!`);
       }
