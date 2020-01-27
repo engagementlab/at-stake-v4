@@ -259,7 +259,7 @@ class Deliberate extends PureComponent {
             {!isFacilitator && (
               <div>
                 <div id="events">
-                  {data.events.map(
+                  {data.shared.events.map(
                     (evt, i) =>
                       // Show event only if it's the one broadcast
                       visibleEventIndex === i &&
@@ -281,22 +281,22 @@ class Deliberate extends PureComponent {
 
                 <h2>Team's Needs</h2>
                 <div className="grid">
-                  {Object.keys(data.players).map(id => {
-                    const player = data.players[id];
+                  {Object.keys(data.shared.roles).map(key => {
+                    const role = data.shared.roles[key];
                     const classStr = `player${
-                      player.isFacilitator ? ' facilitator' : ''
+                      role.isFacilitator ? ' facilitator' : ''
                     }`;
 
                     return (
-                      <div className={classStr} key={id}>
+                      <div className={classStr} key={key}>
                         <div>
-                          <b>{player.username}</b>
+                          <b>{role.username}</b>
                           <br />
-                          {!player.isFacilitator ? (
+                          {!role.isFacilitator ? (
                             <div>
-                              <span>{player.role.needs[0]}</span>
+                              <span>{role.needs[0]}</span>
                               <br />
-                              <span>{player.role.needs[1]}</span>
+                              <span>{role.needs[1]}</span>
                             </div>
                           ) : (
                             <span>Facilitator</span>
@@ -324,7 +324,7 @@ class Deliberate extends PureComponent {
             {/* Show 'random' events to facilitator */}
             {isFacilitator && (
               <div id="events">
-                {data.events.map(
+                {data.shared.events.map(
                   (evt, i) =>
                     // Show event only if it's the current one in state
                     visibleEventIndex === i &&

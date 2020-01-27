@@ -34,7 +34,7 @@ class Common extends Core {
     this.deck_data = {};
     this._active_deck_roles = {};
     this._active_deck_facilitator = {};
-    this._game_events = {};
+    this.game_events = {};
 
     this._currentPlayerIndex = 0;
     this._game_session = null;
@@ -110,7 +110,9 @@ class Common extends Core {
           this.deck_data = results.deck;
           this._active_deck_roles = results.deck.roles;
           this._active_deck_facilitator = results.facilitator;
-          this._game_events = results.events;
+          this.game_events = results.events;
+
+          console.log('roles ===> ', results.facilitator);
 
           callback();
         }).catch((err) => {
@@ -188,6 +190,8 @@ class Common extends Core {
       playerObj.decider = true;
       playerObj.role = this._active_deck_facilitator;
 
+      console.log('assigned FAC role ====>', playerObj.role);
+
       // Cache updated player
       await this.Redis.SetHash(this._game_session.accessCode, player.uid, playerObj);
 
@@ -211,10 +215,7 @@ class Common extends Core {
 
     // Assign role to player object
     if (playerObj) {
-      if (!newRole) {
-        console.log(this._active_deck_roles, roleIndex);
-        console.log(`Unable to assign role for player ${playerObj.uid}`);
-      }
+      if (!newRole) throw new Error(`Unable to assign role for player ${playerObj.uid}`);
 
       playerObj.role = newRole;
 

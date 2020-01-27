@@ -21,7 +21,7 @@ class Meet extends PureComponent {
       notReady: true,
       rolecardShow: true,
       timerStarted: false,
-      timerEnded: false,
+      timerEnded: false
     };
 
     this.socket = null;
@@ -31,8 +31,14 @@ class Meet extends PureComponent {
   }
 
   componentDidMount() {
-    // Set if facilitator
-    this.setState({ isFacilitator: this.props.data.role.isFacilitator });
+    // Set if facilitator, if rolecard shows, & if timer is running (player is 'ready')
+    let skipInitScreen = this.props.data.timerRunning;
+    this.setState({
+      isFacilitator: this.props.data.role.isFacilitator,
+      rolecardShow: this.props.data.screen === 0,
+      timerStarted: skipInitScreen,
+      notReady: !skipInitScreen
+    });
 
     this.socket = this.props.socket;
 
@@ -61,13 +67,18 @@ class Meet extends PureComponent {
   }
 
   timerEnd() {
+    debugger;
     this.setState({ timerEnded: true });
   }
 
-
   render() {
     const {
-      allPlayersReady, isFacilitator, notReady, rolecardShow, timerStarted, timerEnded,
+      allPlayersReady,
+      isFacilitator,
+      notReady,
+      rolecardShow,
+      timerStarted,
+      timerEnded
     } = this.state;
     const { data } = this.props;
 
@@ -148,33 +159,34 @@ class Meet extends PureComponent {
             ) : null}
 
             {/* Skip/go to next phase */}
-            {timerStarted
-              ? (
-                <button type="button" id="skip-next" onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}>
-                  {`${timerEnded ? 'Continue' : 'Skip'} to Phase 2`}
-                  <CdnImage
-                    publicId="v1540488090/at-stake/icons/check-btn"
-                    format="svg"
-                  />
-                </button>
-              )
-              : null}
-
+            {timerStarted ? (
+              <button
+                type="button"
+                id="skip-next"
+                onClick={() => {
+                  this.socket.emit('game:next', GameData.get().assemble());
+                }}
+              >
+                {`${timerEnded ? 'Continue' : 'Skip'} to Phase 2`}
+                <CdnImage
+                  publicId="v1540488090/at-stake/icons/check-btn"
+                  format="svg"
+                />
+              </button>
+            ) : null}
           </div>
         ) : null}
 
         {/* QUESTION (NON-FACILITATOR) */}
         <div className="screen bg">
-
           {/* Player ready */}
           {!notReady ? (
             <div className="player-roles col-sm-6">
               <h3>Team's Roles</h3>
 
               <div className="grid">
-
                 {/* Show all player role names */}
-                {Object.keys(data.shared.roles).map((key) => {
+                {Object.keys(data.shared.roles).map(key => {
                   const role = data.shared.roles[key];
 
                   return (
@@ -185,7 +197,6 @@ class Meet extends PureComponent {
                     </div>
                   );
                 })}
-
               </div>
             </div>
           ) : null}
@@ -201,16 +212,15 @@ class Meet extends PureComponent {
               <h1>Time's up!</h1>
             </div>
           ) : null}
-
         </div>
       </div>
     );
   }
 }
 
-const MeetWithSocket = (props) => (
+const MeetWithSocket = props => (
   <SocketContext.Consumer>
-    {(socket) => <Meet {...props} socket={socket} />}
+    {socket => <Meet {...props} socket={socket} />}
   </SocketContext.Consumer>
 );
 

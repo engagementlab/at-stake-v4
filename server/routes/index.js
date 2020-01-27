@@ -37,7 +37,6 @@ router.all('/*', (req, res, next) => {
 
 // Views
 router.get('/', routes.views.index);
-router.get('/play/host/:accesscode', routes.views.decider.game);
 router.get('/play/:accesscode?/:username?', routes.views.game.play);
 
 router.post('/login', routes.views.game.player);

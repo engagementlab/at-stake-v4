@@ -73,7 +73,7 @@ class GameLogic extends Common {
     }
   }
 
-  Initialize(gameSession) {
+  Initialize(gameSession, callback) {
     // Invoke common method
     super.Initialize(gameSession, () => {
       this.eventEmitter.on('playerReconnected', (info) => {
@@ -89,6 +89,8 @@ class GameLogic extends Common {
           }
         }
       });
+
+      if (callback) callback();
     });
   }
 
@@ -139,7 +141,12 @@ class GameLogic extends Common {
         break;
 
       case 'deliberate':
-        screenData.events = this.Shuffler(this._game_events);
+        screenData.events = this.Shuffler(this.game_events);
+        screenData.roles = _.mapObject(screenData.players, (player) => ({
+          username: player.username,
+          needs: player.role.needs,
+          isFacilitator: player.role.isFacilitator,
+        }));
         break;
 
       case 'ranking':

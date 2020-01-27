@@ -45,13 +45,13 @@ exports.create = (req, res) => {
     if (err) return res.apiError('error', err);
 
     // Save this session to memory for faster retrieval (deleted when game ends)
-    Session.Create(data.accessCode, new Game(session));
-
-    res.apiResponse({
-      sessionCreated: true,
-      accessCode: data.accessCode,
-      decider: data.deciderName,
-    });
+    Session.Create(data.accessCode, new Game(session, () => {
+      res.apiResponse({
+        sessionCreated: true,
+        accessCode: data.accessCode,
+        decider: data.deciderName,
+      });
+    }));
   });
 };
 
@@ -85,7 +85,6 @@ exports.generate = (req, res) => {
     // Get all decks
     const decksQuery = Deck.model.find({}).populate('roles');
     decksQuery.exec((_err, decks) => {
-
       // Shuffle deck roles and only get 6
       _.each(decks, (deck, i) => {
         deck.roles = _.sample(deck.roles, 6);
@@ -93,9 +92,8 @@ exports.generate = (req, res) => {
 
       res.send({
         code: gameCode,
-        decks: decks,
+        decks,
       });
-
     });
   });
 };
