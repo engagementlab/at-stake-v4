@@ -1,9 +1,8 @@
 /* eslint-disable no-restricted-syntax */
-/* eslint-disable guard-for-in */
 
 const Server = require('socket.io');
 const CommonHandler = require('./handlers/Common');
-const PlayerLogin = require('./handlers/PlayerLogin');
+const ConnectionHandler = require('./handlers/Connection');
 
 module.exports = (app) => {
   const io = new Server(app, {
@@ -17,29 +16,30 @@ module.exports = (app) => {
     port: 6379,
     key: 'at-stake-socket',
   }));
+
   io.of('/').adapter.on('error', (err) => {
     throw new Error('Socket.io redis unable to connect! Make sure redis is running.', err);
   });
 
   io.on('connection', (socket) => {
     // Create event handlers for this socket
-    const eventHandlers = {
+    const eventTypes = {
       common: new CommonHandler(io, socket),
-      login: new PlayerLogin(io, socket),
+      connection: new ConnectionHandler(io, socket),
     };
 
-    for (const category in eventHandlers) {
-      if (typeof eventHandlers[category] === 'undefined' || eventHandlers[category] === null) {
-        logger.warn(`eventHandlers[${category}] is undefined!`);
-        return;
-      }
-
-      const {
-        handler,
-      } = eventHandlers[category];
-
-      for (const event in handler) {
-        socket.on(event, handler[event]);
+    for (const category in eventTypes) {
+      if (typeof eventTypes[category] !== 'undefined' && eventTypes[category] !== null) {
+        const events = eventTypes[category].eventIds;
+        events.forEach((event) => {
+          const {
+            handler,
+          } = eventTypes[category];
+          socket.on(event, (req) => {
+            // Call handler tied to event
+            handler(event, req);
+          });
+        });
       }
     }
 

@@ -13,16 +13,37 @@
 
 const Session = require('learning-games-core').SessionManager;
 
-// eslint-disable-next-line func-names
-const Common = function (nsp, socket) {
+function Common(nsp, socket) {
   const currentSpace = nsp;
   const currentSocket = socket;
 
-  this.getSession = (pkg, action) => {
-    const session = Session.Get(pkg.gameId);
+  this.eventIds = [
+    'game:intro',
+    'game:ready',
+    'game:event',
+    'game:tutorial',
+    'game:start',
+    'game:next',
+    'game:skip_rules',
+    'game:next_screen',
+    'game:load_screen',
+    'game:start_timer',
+    'game:ranking',
+    'game:stop_countdown',
+    'game:exit',
+
+    'player:met_goal',
+    'player:met_need',
+    'player:call_vote',
+    'player:vote',
+    'player:vote_end',
+  ];
+
+  this.getSession = (payload, action) => {
+    const session = Session.Get(payload.gameId);
 
     if (!session) {
-      logger.error(`Game w/ code ${pkg.gameId} not found!`, action);
+      logger.error(`Game w/ code ${payload.gameId} not found!`, action);
       return;
     }
 
@@ -30,127 +51,91 @@ const Common = function (nsp, socket) {
   };
 
   // Expose handler methods for events
-  this.handler = {
+  this.handler = (id, payload) => {
+    this.getSession(payload, (session) => {
+      switch (id) {
+        default:
+          break;
 
-    'game:intro': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.Intro(currentSpace));
-    },
+        case 'game:intro':
+          session.Intro(currentSpace);
+          break;
 
-    'game:ready': (pkg) => {
-      const session = Session.Get(pkg.gameId);
+        case 'game:ready':
+          session.PlayerDone(payload.msgData);
+          break;
 
-      if (!session) return;
-      session.PlayerDone(pkg.msgData);
-    },
+        case 'game:event':
+          session.ShowEvent(payload.msgData.state, payload.msgData.index);
+          break;
 
-    'game:event': (pkg) => {
-      const session = Session.Get(pkg.gameId);
+        case 'game:tutorial':
+          session.StartTutorial(currentSpace);
+          break;
 
-      if (!session) return;
-      session.ShowEvent(pkg.msgData.state, pkg.msgData.index);
-    },
+        case 'game:start':
+          session.StartGame();
+          break;
 
-    'game:tutorial': (pkg) => {
-      const session = Session.Get(pkg.gameId);
+        case 'game:next':
+          session.NextPhase();
+          break;
+        case 'game:skip_rules':
+          session.SkipScreen();
+          break;
+        case 'game:next_screen':
+          session.NextScreen();
+          break;
+        case 'game:load_screen':
+          session.LoadScreenAtIndex(payload.msgData.index);
+          break;
+        case 'game:start_timer':
+          session.StartTimer();
+          break;
+        case 'game:ranking':
+          session.GameRating(payload.msgData);
+          break;
+        case 'game:stop_countdown':
+          session.StopCountdown();
+          break;
+        case 'game:exit':
+          session.EndGame();
+          break;
 
-      if (!session) return;
-      session.StartTutorial(currentSpace);
-    },
-
-    'game:start': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.StartGame());
-    },
-
-    'game:next': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.NextPhase());
-    },
-
-    'game:skip_rules': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.SkipScreen());
-    },
-
-    'game:next_screen': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.NextScreen());
-    },
-
-    'game:load_screen': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.LoadScreenAtIndex(pkg.msgData.index));
-    },
-
-    'game:start_timer': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.StartTimer());
-    },
-
-    'game:ranking': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.GameRating(pkg.msgData);
-    },
-
-    'game:stop_countdown': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.StopCountdown();
-    },
-
-    'game:exit': (pkg) => {
-      this.getSession(pkg, (sesh) => sesh.EndGame());
-    },
-
-    'player:met_goal': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.PlayerMetGoal(pkg.msgData.uid);
-    },
-
-    'player:met_need': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.PlayerMetNeed(pkg.msgData.uid, pkg.msgData.index);
-    },
-
-    'player:call_vote': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.PlayerCallVote(currentSocket);
-    },
-
-    'player:vote': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.PlayerVote(pkg.msgData);
-    },
-
-    'player:vote_end': (pkg) => {
-      const session = Session.Get(pkg.gameId);
-
-      if (!session) return;
-      session.PlayerVoteEnd(currentSpace);
-    },
+        case 'player:met_goal':
+          session.PlayerMetGoal(payload.msgData.uid);
+          break;
+        case 'player:met_need':
+          session.PlayerMetNeed(payload.msgData.uid, payload.msgData.index);
+          break;
+        case 'player:call_vote':
+          session.PlayerCallVote(currentSocket);
+          break;
+        case 'player:vote':
+          session.PlayerVote(payload.msgData);
+          break;
+        case 'player:vote_end':
+          session.PlayerVoteEnd(currentSpace);
+          break;
+      }
+    });
 
     /* Pauses all game cooldowns (debugging only) */
-    'debug:pause': (pkg) => {
-      const session = Session.Get(pkg.gameId);
+    /*     'debug:pause': (payload) => {
+      const session = Session.Get(payload.gameId);
 
       if (!session) return;
       session.PauseResumeCooldown(currentSpace);
-    },
+    }, */
 
     /* End game now (debugging only) */
-    'debug:end': (pkg) => {
-      const session = Session.Get(pkg.gameId);
+    /*     'debug:end': (payload) => {
+      const session = Session.Get(payload.gameId);
 
       if (!session) return;
       session.EndGame(currentSpace);
-    },
-
+    }, */
   };
-};
+}
 
 module.exports = Common;
