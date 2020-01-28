@@ -30,7 +30,7 @@ module.exports = (app) => {
 
     for (const category in eventHandlers) {
       if (typeof eventHandlers[category] === 'undefined' || eventHandlers[category] === null) {
-        console.warn(`eventHandlers[${category}] is undefined!`);
+        logger.warn(`eventHandlers[${category}] is undefined!`);
         return;
       }
 

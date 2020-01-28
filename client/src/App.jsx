@@ -137,10 +137,10 @@ class App extends Component {
 
             {/* <Interstitial title="Introduction" /> */}
 
-            {phaseIndex < 0 ? (
+            {phaseIndex < 0 && (
               <Lobby done={this.advanceScreen} host={this.playerIsHost} />
-            ) : null}
-            {currentScreen === 'intro' ? <Intro host={isHost} /> : null}
+            )}
+            {currentScreen === 'intro' && <Intro host={isHost} />}
 
             {/* Phases */}
             {currentScreen === 'meet' && (

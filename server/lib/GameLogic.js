@@ -415,8 +415,8 @@ class GameLogic extends Common {
     this.groupSocket.to(this.players_id).emit('game:met_need', need);
   }
 
-  PlayerCallVote(socket) {
-    const player = this.GetPlayerById(socket.id);
+  async PlayerCallVote(socket) {
+    const player = await this.GetPlayerById(socket.id);
     const data = {
       question: this.deck_data.questions[0],
       username: player.username,
@@ -426,13 +426,16 @@ class GameLogic extends Common {
     this.groupSocket.to(this.players_id).emit('player:call_vote', data);
   }
 
-  PlayerVote(data) {
-    this.votesReceived++;
-    if (data.yes) this.votesYes++;
+  async PlayerVote(data) {
+    this.votesReceived += 1;
+    if (data.yes) this.votesYes += 1;
+
+    // Get player count sans facilitator
+    const playerCt = await this.Redis.GetHashLength(this._game_session.accessCode) - 1;
 
     // Tell all players result of vote
-    if (this.votesReceived === _.keys(this.GetActivePlayers()).length) {
-      const voteWon = this.votesYes === _.keys(this.GetActivePlayers()).length;
+    if (this.votesReceived === playerCt) {
+      const voteWon = this.votesYes === playerCt;
       this.groupSocket.to(this.players_id).emit('players:voted', {
         yes: voteWon,
         votecallerid: this.voteCallerSocketId,

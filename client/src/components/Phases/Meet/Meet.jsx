@@ -28,6 +28,7 @@ class Meet extends PureComponent {
     this.proceedFromRolecard = this.proceedFromRolecard.bind(this);
     this.timerStart = this.timerStart.bind(this);
     this.timerEnd = this.timerEnd.bind(this);
+    this.timerData = null;
   }
 
   componentDidMount() {
@@ -48,6 +49,15 @@ class Meet extends PureComponent {
     this.socket.on('game:ready', () => {
       this.setState({ allPlayersReady: true });
     });
+
+    // If screen is refreshed, we check if timer should kick off
+    if (this.props.data.timerRunning) {
+      // Run timer w/ remaining duration by updating prop used by timer
+      this.timerData = {
+        timerLength: this.props.data.timerLength,
+        timerDuration: this.props.data.timerDuration
+      };
+    }
   }
 
   componentDidUpdate() {
@@ -67,7 +77,6 @@ class Meet extends PureComponent {
   }
 
   timerEnd() {
-    debugger;
     this.setState({ timerEnded: true });
   }
 
@@ -117,7 +126,7 @@ class Meet extends PureComponent {
               body="Give each player an equal opportunity to introduce their character and how they are impacted by this scenario."
             />
 
-            {!isFacilitator && notReady ? (
+            {!isFacilitator && notReady && (
               <button
                 id="btn-ready"
                 className="btn submit player"
@@ -130,13 +139,14 @@ class Meet extends PureComponent {
               >
                 Ready
               </button>
-            ) : null}
+            )}
 
             <Timer
               show={isFacilitator}
               disabled={!allPlayersReady}
               started={this.timerStart}
               done={this.timerEnd}
+              isRunningData={this.timerData}
             />
 
             <Speech
@@ -159,7 +169,7 @@ class Meet extends PureComponent {
             ) : null}
 
             {/* Skip/go to next phase */}
-            {timerStarted ? (
+            {timerStarted && isFacilitator && (
               <button
                 type="button"
                 id="skip-next"
@@ -173,7 +183,7 @@ class Meet extends PureComponent {
                   format="svg"
                 />
               </button>
-            ) : null}
+            )}
           </div>
         ) : null}
 

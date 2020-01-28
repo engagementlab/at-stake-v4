@@ -11,119 +11,107 @@ import SocketContext from '../../../SocketContext';
 
 import moment from 'moment';
 
-class Timer extends PureComponent { 
-  
+class Timer extends PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
-
       countdown: true,
       countdownDuration: number,
       countdownLabel: ''
-
     };
 
     this.clockInterval = null;
   }
 
   componentDidMount = () => {
- 
     /* Socket Listeners */
 
     // Start countdown
-    this.props.socket.on('game:countdown', (data) => {
-      this.startTimer(data.duration); 
+    this.props.socket.on('game:countdown', data => {
+      this.startTimer(data.duration);
 
-      if(this.props.started) this.props.started();
+      if (this.props.started) this.props.started();
     });
-      
-  }
+
+    // Is timer already running based on prop data from parent?
+    if (this.props.isRunningData) {
+      const data = this.props.isRunningData;
+      this.startTimer(data.timerLength, data.timerDuration);
+    }
+  };
 
   componentWillUnmount = () => {
-
     // Cleanup
     clearTimeout(this.clockInterval);
     this.props.socket.off('game:countdown');
-
-  }
+  };
 
   startTimer(timerDuration, timerCurrent) {
-
-    var currentTime = timerCurrent ? timerCurrent*1000 : 0,
-    maxDuration = timerDuration*1000;
+    var currentTime = timerCurrent ? timerCurrent * 1000 : 0,
+      maxDuration = timerDuration * 1000;
 
     this.clockInterval = setInterval(() => {
-    
       currentTime += 1000;
-      var perc = (currentTime/maxDuration)*100;
-      // timer.css('background', 
-      //     'linear-gradient(90deg, #0067d8 ' + perc + '%, #000 ' + perc + '%)'); 
-      this.setState({ countdownLabel: moment().startOf("day").add(currentTime).format('mm:ss') });
+      var perc = (currentTime / maxDuration) * 100;
+      // timer.css('background',
+      //     'linear-gradient(90deg, #0067d8 ' + perc + '%, #000 ' + perc + '%)');
+      this.setState({
+        countdownLabel: moment()
+          .startOf('day')
+          .add(currentTime)
+          .format('mm:ss')
+      });
 
-      if(perc === 100) {
+      if (perc === 100) {
+        clearInterval(this.clockInterval);
+        // timer.addClass('done');
+        // timer.removeClass('running');
+        // timer.css('background', '');
+        // $('#skip').fadeOut(function() {
+        //     $('#times-up, #go-to').fadeIn();
+        // });
 
-          clearInterval(this.clockInterval);
-          // timer.addClass('done');
-          // timer.removeClass('running');
-          // timer.css('background', '');
-          // $('#skip').fadeOut(function() {
-          //     $('#times-up, #go-to').fadeIn();
-          // });
-
-          if(this.props.done) this.props.done();
-
+        if (this.props.done) this.props.done();
       }
-
-  }, 1000);
+    }, 1000);
   }
 
   render() {
-
     let { countdownLabel } = this.state;
 
     return (
-
       // TIMER at 0
       <div className="timer-wrap">
         {this.props.show ? (
-
           <div>
-        
-            <button 
-              id="btn-start-timer" 
-              className={this.props.disabled ? ("disabled") : ""} 
-              disabled={this.props.disabled ? ("disabled") : null}
-              onClick={() => { 
-                this.props.socket.emit('game:start_timer', GameData.get().assemble()); 
+            <button
+              id="btn-start-timer"
+              className={this.props.disabled ? 'disabled' : ''}
+              disabled={this.props.disabled ? 'disabled' : null}
+              onClick={() => {
+                this.props.socket.emit(
+                  'game:start_timer',
+                  GameData.get().assemble()
+                );
               }}
-              >
-
-              <h1>
-                  Start Timer
-              </h1>
-
+            >
+              <h1>Start Timer</h1>
             </button>
 
-            <div>
-              {countdownLabel}
-            </div>
-
+            <div>{countdownLabel}</div>
           </div>
-
         ) : null}
       </div>
-
     );
-  
   }
-
 }
 
 Timer.propTypes = {
   socket: PropTypes.any,
   facilitator: PropTypes.bool,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  isRunningData: PropTypes.object
 };
 
 Timer.defaultProps = {
@@ -134,6 +122,6 @@ const TimerWithSocket = props => (
   <SocketContext.Consumer>
     {socket => <Timer {...props} socket={socket} />}
   </SocketContext.Consumer>
-)
+);
 
 export default TimerWithSocket;

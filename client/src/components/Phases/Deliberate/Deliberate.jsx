@@ -37,6 +37,7 @@ class Deliberate extends PureComponent {
     this.eventCountdown = null;
     this.timerStart = this.timerStart.bind(this);
     this.timerEnd = this.timerEnd.bind(this);
+    this.timerData = null;
   }
 
   componentDidMount() {
@@ -83,8 +84,6 @@ class Deliberate extends PureComponent {
 
     // Show voting result
     this.socket.on('players:voted', data => {
-      console.log(this.isFacilitator, data.yes);
-
       // If vote won, facilitator just moves to next phase
       if (this.state.isFacilitator && data.yes) {
         this.socket.emit('game:next', GameData.get().assemble());
@@ -110,6 +109,17 @@ class Deliberate extends PureComponent {
         }
       });
     });
+
+    // If screen is refreshed, we check if timer should kick off
+    if (this.props.data.timerRunning) {
+      // Run timer w/ remaining duration by updating prop used by timer
+      this.timerData = {
+        timerLength: this.props.data.timerLength,
+        timerDuration: this.props.data.timerDuration
+      };
+      // Player is in ready state/is deliberating
+      this.setState({ playerReady: true, screenIndex: 1 });
+    }
   }
 
   componentDidUpdate() {
@@ -253,6 +263,7 @@ class Deliberate extends PureComponent {
               disabled={!allPlayersReady}
               started={this.timerStart}
               done={this.timerEnd}
+              isRunningData={this.timerData}
             />
 
             {/* Show team/events to non-facilitator */}
@@ -418,7 +429,9 @@ class Deliberate extends PureComponent {
                   width={200}
                   format="png"
                 />
-                <h1>{`${voting.callerName} called a vote!`}</h1>
+                {!voting.resultsShow && (
+                  <h1>{`${voting.callerName} called a vote!`}</h1>
+                )}
               </div>
             )}
 

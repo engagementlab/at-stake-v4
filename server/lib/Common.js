@@ -190,8 +190,6 @@ class Common extends Core {
       playerObj.decider = true;
       playerObj.role = this._active_deck_facilitator;
 
-      console.log('assigned FAC role ====>', playerObj.role);
-
       // Cache updated player
       await this.Redis.SetHash(this._game_session.accessCode, player.uid, playerObj);
 
