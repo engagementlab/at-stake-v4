@@ -11,14 +11,11 @@
  * ==========
  */
 
-
 const Session = require('learning-games-core').SessionManager;
 
-const JoinRoom = function (payload, currentSocket, currentSpace) {
+const JoinRoom = function(payload, currentSocket, currentSpace) {
   if (!payload.gameId) return;
-  const {
-    gameId,
-  } = payload;
+  const { gameId } = payload;
   const session = Session.Get(gameId);
 
   if (!session) {
@@ -26,7 +23,7 @@ const JoinRoom = function (payload, currentSocket, currentSpace) {
     return;
   }
 
-  currentSocket.join(gameId, (err) => {
+  currentSocket.join(gameId, err => {
     if (err) throw err;
   });
 
@@ -35,7 +32,7 @@ const JoinRoom = function (payload, currentSocket, currentSpace) {
     const player = {
       socket_id: currentSocket.id,
       username: payload.msgData.username,
-      uid: payload.msgData.uid,
+      uid: payload.msgData.uid
     };
 
     Session.GroupView(gameId, currentSocket.id);
@@ -45,9 +42,10 @@ const JoinRoom = function (payload, currentSocket, currentSpace) {
   logger.info(`${currentSocket.id} connected to room.`);
   if (!gameId) return;
 
-  currentSocket.join(gameId, (err) => {
+  currentSocket.join(gameId, err => {
     if (err) throw err;
   });
+
   logger.info(`${currentSocket.id} connected to room.`);
 };
 
@@ -55,24 +53,20 @@ function PlayerLogin(payload, currentSocket, currentSpace) {
   const player = {
     socket_id: currentSocket.id,
     username: payload.msgData.username,
-    uid: payload.msgData.uid,
+    uid: payload.msgData.uid
   };
 
   if (!Session.Get(payload.gameId)) return;
 
   // Mark player as ready inside game session
-  Session.Get(payload.gameId).PlayerReady(
-    player,
-    currentSpace,
-    false,
-  );
+  Session.Get(payload.gameId).PlayerReady(player, currentSpace, false);
 
   logger.info(`${player.username} logged in.`);
 
   // Advance player to waiting screen
   const data = {
     code: payload.gameId,
-    id: currentSocket.id,
+    id: currentSocket.id
   };
 
   currentSocket.emit('player:loggedin', data);
@@ -85,18 +79,21 @@ async function PlayerDisconnect(playerGameId, currentSocket) {
 
   if (!session) return;
 
-  const isFacilitator = (currentSocket.id === session.groupModerator);
+  const isFacilitator = currentSocket.id === session.groupModerator;
 
   if (isFacilitator) {
     logger.info(`${playerGameId} group view disconnecting. Bu-bye.`);
-    if (process.env.NODE_ENV === 'development') session.End(currentSocket, true);
+    if (process.env.NODE_ENV === 'development')
+      session.End(currentSocket, true);
   } else {
     const player = await session.GetPlayerById(currentSocket.id);
 
-    if (player) logger.info(`Player '${player.username}' disconnecting. Nooooo!`);
+    if (player)
+      logger.info(`Player '${player.username}' disconnecting. Nooooo!`);
   }
 
-  if (playerGameId && session) await session.PlayerLost(currentSocket.id, currentSocket);
+  if (playerGameId && session)
+    await session.PlayerLost(currentSocket.id, currentSocket);
 }
 
 async function PlayerCheckActive(payload, currentSocket) {
@@ -116,15 +113,11 @@ async function PlayerCheckActive(payload, currentSocket) {
     const player = {
       socket_id: currentSocket.id,
       username: payload.msgData.username,
-      uid: payload.msgData.uid,
+      uid: payload.msgData.uid
     };
 
     // Mark player as ready inside game session
-    await session.PlayerReady(
-      player,
-      currentSocket,
-      payload.msgData.decider,
-    );
+    await session.PlayerReady(player, currentSocket, payload.msgData.decider);
   } else {
     logger.info(`Player "${payload.msgData.uid}" not active.`);
   }
@@ -132,17 +125,12 @@ async function PlayerCheckActive(payload, currentSocket) {
 
 // Arrow functions can't be used as constructors, so we must use function()
 // eslint-disable-next-line func-names
-const Connection = function (nsp, socket) {
+const Connection = function(nsp, socket) {
   const currentSpace = nsp;
   const currentSocket = socket;
 
   this.playerGameId = null;
-  this.eventIds = [
-    'room',
-    'login:submit',
-    'login:active',
-    'disconnect',
-  ];
+  this.eventIds = ['room', 'login:submit', 'login:active', 'disconnect'];
 
   // Expose handler methods for events
   this.handler = (id, payload) => {
@@ -151,7 +139,6 @@ const Connection = function (nsp, socket) {
         break;
 
       case 'room':
-
         // Cache this game id and join
         this.playerGameId = payload.gameId;
         JoinRoom(payload, currentSocket, currentSpace);
@@ -159,19 +146,16 @@ const Connection = function (nsp, socket) {
         break;
 
       case 'login:submit':
-
         PlayerLogin(payload, currentSocket, currentSpace);
 
         break;
 
       case 'login:active':
-
         PlayerCheckActive(payload, currentSocket);
 
         break;
 
       case 'disconnect':
-
         PlayerDisconnect(this.playerGameId, currentSocket);
         break;
     }

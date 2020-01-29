@@ -15,7 +15,7 @@ class Ranking extends PureComponent {
       ratingInclusivity: 1,
       ratingCreativity: 1,
 
-      screenIndex: 1,
+      screenIndex: 0,
 
       showResult: false
     };
@@ -44,7 +44,6 @@ class Ranking extends PureComponent {
   };
 
   nextScreen() {
-    debugger;
     this.setState({
       screenIndex: this.state.screenIndex + 1
     });
@@ -153,7 +152,7 @@ class Ranking extends PureComponent {
                 <h2>Did the team meet any secret goals?</h2>
 
                 {/* Show all player secret goals */}
-                {data.players.map((player, i) => {
+                {data.shared.playerData.map((player, i) => {
                   return (
                     <div key={player.uid} className="check toggle">
                       <p>{player.username}</p>
@@ -193,51 +192,42 @@ class Ranking extends PureComponent {
               <div id="pt2" className="form">
                 <h2>Did the team meet their needs?</h2>
 
-                {data.players &&
-                  data.players.map((player, i) => {
-                    return (
-                      <div key={player.uid} className="toggle">
-                        <p>{player.username}</p>
-                        <div className="needs">
-                          <div className="need">
-                            <label className="switch">
-                              <input
-                                type="checkbox"
-                                onClick={() =>
-                                  this.playerMetNeed(player.uid, 0)
-                                }
-                              />
-                              <span className="slider round"></span>
-                            </label>
+                {data.shared.playerData.map((player, i) => {
+                  return (
+                    <div key={player.uid} className="toggle">
+                      <p>{player.username}</p>
+                      <div className="needs">
+                        <div className="need">
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              onClick={() => this.playerMetNeed(player.uid, 0)}
+                            />
+                            <span className="slider round"></span>
+                          </label>
 
-                            <span>
-                              {player.needs
-                                ? player.needs[0]
-                                : 'Example need 1'}
-                            </span>
-                          </div>
-                          <div className="need">
-                            <label className="switch">
-                              <input
-                                type="checkbox"
-                                onClick={() =>
-                                  this.playerMetNeed(player.uid, 1)
-                                }
-                              />
-                              <span className="slider round"></span>
-                            </label>
-
-                            <span>
-                              {player.needs
-                                ? player.needs[1]
-                                : 'Example need 2'}
-                            </span>
-                          </div>
+                          <span>
+                            {player.needs ? player.needs[0] : 'Example need 1'}
+                          </span>
                         </div>
-                        <hr />
+                        <div className="need">
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              onClick={() => this.playerMetNeed(player.uid, 1)}
+                            />
+                            <span className="slider round"></span>
+                          </label>
+
+                          <span>
+                            {player.needs ? player.needs[1] : 'Example need 2'}
+                          </span>
+                        </div>
                       </div>
-                    );
-                  })}
+                      <hr />
+                    </div>
+                  );
+                })}
               </div>
             )}
 
