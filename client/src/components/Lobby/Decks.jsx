@@ -24,22 +24,6 @@ class Decks extends Component {
               </Button>
             </Col>
           </Row>
-
-          // <button key={deck._id} type="button" onClick={() => callback(deck)}>
-          //   <h2 className="deck">
-          //     <div className="header">
-          //       <span>{deck.name}</span>
-          //       {/*
-          //       {{{cloudinaryUrl 'v1540488090/at-stake/icons/magnify'
-          //           className='open' format='svg' alt='Magnifying glass icon'}}}
-          //       */}
-          //     </div>
-
-          //     <div className="description">
-          //       {/* {deck.description} */}
-          //     </div>
-          //   </h2>
-          // </button>
         ))}
       </ButtonGroup>
     );

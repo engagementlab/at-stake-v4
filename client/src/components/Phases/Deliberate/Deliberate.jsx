@@ -29,8 +29,8 @@ class Deliberate extends PureComponent {
         callerName: null,
         resultsShow: false,
         show: false,
-        won: false
-      }
+        won: false,
+      },
     };
 
     this.socket = null;
@@ -43,7 +43,7 @@ class Deliberate extends PureComponent {
   componentDidMount() {
     // Set if facilitator
     this.setState({
-      isFacilitator: this.props.role.isFacilitator
+      isFacilitator: this.props.role.isFacilitator,
     });
 
     this.socket = this.props.socket;
@@ -54,7 +54,7 @@ class Deliberate extends PureComponent {
     this.socket.on('game:ready', () => {
       this.setState({
         allPlayersReady: true,
-        screenIndex: this.state.screenIndex + 1
+        screenIndex: this.state.screenIndex + 1,
       });
     });
     this.socket.on('game:next_screen', () => {
@@ -65,25 +65,25 @@ class Deliberate extends PureComponent {
     });
 
     // Tell non-fac to show event
-    this.socket.on('player:show_event', data => {
+    this.socket.on('player:show_event', (data) => {
       this.setState({
         showEvent: true,
-        visibleEventIndex: data
+        visibleEventIndex: data,
       });
     });
 
     // Show voting
-    this.socket.on('player:call_vote', data => {
+    this.socket.on('player:call_vote', (data) => {
       this.setState({
         voting: {
           show: true,
-          callerName: data.username
-        }
+          callerName: data.username,
+        },
       });
     });
 
     // Show voting result
-    this.socket.on('players:voted', data => {
+    this.socket.on('players:voted', (data) => {
       // If vote won, facilitator just moves to next phase
       if (this.state.isFacilitator && data.yes) {
         this.socket.emit('game:next', GameData.get().assemble());
@@ -96,17 +96,17 @@ class Deliberate extends PureComponent {
           callerName: null,
           callerId: data.votecallerid,
           resultsShow: true,
-          won: data.yes
-        }
+          won: data.yes,
+        },
       });
     });
 
     // Close voting
-    this.socket.on('players:vote_ended', data => {
+    this.socket.on('players:vote_ended', (data) => {
       this.setState({
         voting: {
-          show: false
-        }
+          show: false,
+        },
       });
     });
 
@@ -115,7 +115,7 @@ class Deliberate extends PureComponent {
       // Run timer w/ remaining duration by updating prop used by timer
       this.timerData = {
         timerLength: this.props.data.timerLength,
-        timerDuration: this.props.data.timerDuration
+        timerDuration: this.props.data.timerDuration,
       };
       // Player is in ready state/is deliberating
       this.setState({ playerReady: true, screenIndex: 1 });
@@ -138,7 +138,7 @@ class Deliberate extends PureComponent {
 
   timerStart() {
     this.setState({
-      timerStarted: true
+      timerStarted: true,
     });
 
     // Begin event queue
@@ -147,7 +147,7 @@ class Deliberate extends PureComponent {
 
   timerEnd() {
     this.setState({
-      timerEnded: true
+      timerEnded: true,
     });
   }
 
@@ -167,7 +167,7 @@ class Deliberate extends PureComponent {
     // Increment visible event and show
     this.setState({
       showEvent: true,
-      visibleEventIndex: this.state.visibleEventIndex + 1
+      visibleEventIndex: this.state.visibleEventIndex + 1,
     });
 
     clearTimeout(this.eventCountdown);
@@ -178,8 +178,8 @@ class Deliberate extends PureComponent {
       'game:event',
       GameData.get().assemble({
         state,
-        index: evtIndex
-      })
+        index: evtIndex,
+      }),
     );
 
     // Hide events and restart queue
@@ -201,7 +201,7 @@ class Deliberate extends PureComponent {
       timerStarted,
       timerEnded,
       visibleEventIndex,
-      voting
+      voting,
     } = this.state;
     const { data } = this.props;
     const isVoteCaller = sessionStorage.getItem('uUID') === voting.callerId;
@@ -230,8 +230,8 @@ class Deliberate extends PureComponent {
               subBody={data.question}
             />
 
-            {!isFacilitator &&
-              (notReady ? (
+            {!isFacilitator
+              && (notReady ? (
                 <button
                   id="btn-ready"
                   className="btn submit player"
@@ -273,8 +273,8 @@ class Deliberate extends PureComponent {
                   {data.shared.events.map(
                     (evt, i) =>
                       // Show event only if it's the one broadcast
-                      visibleEventIndex === i &&
-                      showEvent && (
+                      visibleEventIndex === i
+                      && showEvent && (
                         <div
                           key={i}
                           className="event"
@@ -286,13 +286,13 @@ class Deliberate extends PureComponent {
                             <span>(tap to dismiss)</span>
                           </div>
                         </div>
-                      )
+                      ),
                   )}
                 </div>
 
                 <h2>Team's Needs</h2>
                 <div className="grid">
-                  {Object.keys(data.shared.roles).map(key => {
+                  {Object.keys(data.shared.roles).map((key) => {
                     const role = data.shared.roles[key];
                     const classStr = `player${
                       role.isFacilitator ? ' facilitator' : ''
@@ -320,12 +320,10 @@ class Deliberate extends PureComponent {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    this.socket.emit(
+                  onClick={() => this.socket.emit(
                       'player:call_vote',
-                      GameData.get().assemble()
-                    )
-                  }
+                      GameData.get().assemble(),
+                    )}
                 >
                   Call vote
                 </button>
@@ -338,8 +336,8 @@ class Deliberate extends PureComponent {
                 {data.shared.events.map(
                   (evt, i) =>
                     // Show event only if it's the current one in state
-                    visibleEventIndex === i &&
-                    showEvent && (
+                    visibleEventIndex === i
+                    && showEvent && (
                       <div key={i} className="event">
                         <div className="content">
                           <div>
@@ -380,7 +378,7 @@ class Deliberate extends PureComponent {
                           </div>
                         </div>
                       </div>
-                    )
+                    ),
                 )}
               </div>
             )}
@@ -453,7 +451,7 @@ class Deliberate extends PureComponent {
                   onClick={() => {
                     this.socket.emit(
                       'player:vote',
-                      GameData.get().assemble({ yes: true })
+                      GameData.get().assemble({ yes: true }),
                     );
                   }}
                 >
@@ -467,7 +465,7 @@ class Deliberate extends PureComponent {
                   onClick={() => {
                     this.socket.emit(
                       'player:vote',
-                      GameData.get().assemble({ yes: false })
+                      GameData.get().assemble({ yes: false }),
                     );
                   }}
                 >
@@ -490,7 +488,7 @@ class Deliberate extends PureComponent {
                       onClick={() => {
                         this.socket.emit(
                           'player:vote_end',
-                          GameData.get().assemble()
+                          GameData.get().assemble(),
                         );
                       }}
                     >
@@ -512,9 +510,9 @@ class Deliberate extends PureComponent {
   }
 }
 
-const DeliberateWithSocket = props => (
+const DeliberateWithSocket = (props) => (
   <SocketContext.Consumer>
-    {socket => <Deliberate {...props} socket={socket} />}
+    {(socket) => <Deliberate {...props} socket={socket} />}
   </SocketContext.Consumer>
 );
 

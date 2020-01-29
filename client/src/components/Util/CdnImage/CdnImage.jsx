@@ -3,24 +3,26 @@ import PropTypes from 'prop-types';
 
 import { Image, Transformation } from 'cloudinary-react';
 
-const CdnImage = (props) => (
-  
-  <Image publicId={props.publicId} secure="true">
-    <Transformation width={props.width} format={props.format} />
-  </Image>
+const CdnImage = (props) => {
+  const { publicId, width, format } = props;
 
-);
+  return (
+    <Image publicId={publicId} secure="true">
+      <Transformation width={width} format={format} />
+    </Image>
+  );
+};
 
 CdnImage.propTypes = {
   publicId: PropTypes.string,
   format: PropTypes.string,
-  width: PropTypes.number
+  width: PropTypes.number,
 };
 
 CdnImage.defaultProps = {
   publicId: null,
   width: 1080,
-  format: 'auto'
+  format: 'auto',
 };
 
 export default CdnImage;

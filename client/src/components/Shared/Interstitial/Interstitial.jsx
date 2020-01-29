@@ -11,7 +11,6 @@ import './Interstitial.scss';
 import CdnImage from '../../Util/CdnImage/CdnImage';
 
 class Interstitial extends PureComponent {
-
   constructor(props) {
     super(props);
 
@@ -34,25 +33,22 @@ class Interstitial extends PureComponent {
   }
 
   render() {
-    const {visible} = this.state;
+    const { visible } = this.state;
     const { phase, title } = this.props;
+
+    if (!visible) return null;
 
     return (
       <div>
-
-        {visible ? (
-          <section id="interstitial">
-            <h2>
-              Phase
-              {' '}
-              {phase}
-            </h2>
-            <h1>{title}</h1>
-            {/* <CdnImage publicId="v1540488090/at-stake/bg/interstitial" format="png" /> */}
-
-          </section>
-        ) : null}
-
+        <section id="interstitial">
+          <h2>
+            Phase
+            {' '}
+            {phase}
+          </h2>
+          <h1>{title}</h1>
+          {/* <CdnImage publicId="v1540488090/at-stake/bg/interstitial" format="png" /> */}
+        </section>
       </div>
     );
   }

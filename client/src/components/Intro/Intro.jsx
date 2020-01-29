@@ -21,7 +21,8 @@ class Intro extends PureComponent {
 
     // Listeners
     this.socket.on('game:next_screen', (data) => {
-      this.setState({ screenIndex: this.state.screenIndex + 1 });
+      const { screenIndex } = this.state;
+      this.setState({ screenIndex: screenIndex + 1 });
     });
 
     // Get intro text
@@ -39,7 +40,7 @@ class Intro extends PureComponent {
   render() {
     const { text, screenIndex } = this.state;
     const imageNames = ['street', 'evil', 'city', 'bunker'];
-    const isHost = this.props.host;
+    const { host } = this.props;
 
     return (
 
@@ -54,7 +55,7 @@ class Intro extends PureComponent {
                 <div className="text">{text[index]}</div>
               </div>
 
-              { isHost ? (
+              { host ? (
                 <button
                   type="button"
                   className="submit"

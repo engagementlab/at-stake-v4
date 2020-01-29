@@ -1,15 +1,15 @@
-/* 
-  COMPONENT: Timer 
+/*
+  COMPONENT: Timer
   @param {Bool} disabled - Timer button disabled state
 */
 
 import React, { PureComponent } from 'react';
 import PropTypes, { number } from 'prop-types';
 
+import moment from 'moment';
 import GameData from '../../../GameData';
 import SocketContext from '../../../SocketContext';
 
-import moment from 'moment';
 
 class Timer extends PureComponent {
   constructor(props) {
@@ -18,49 +18,52 @@ class Timer extends PureComponent {
     this.state = {
       countdown: true,
       countdownDuration: number,
-      countdownLabel: ''
+      countdownLabel: '',
     };
 
     this.clockInterval = null;
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
+    const { socket, started, isRunningData } = this.props;
     /* Socket Listeners */
 
     // Start countdown
-    this.props.socket.on('game:countdown', data => {
+    socket.on('game:countdown', (data) => {
       this.startTimer(data.duration);
 
-      if (this.props.started) this.props.started();
+      if (started) started();
     });
 
     // Is timer already running based on prop data from parent?
-    if (this.props.isRunningData) {
-      const data = this.props.isRunningData;
+    if (isRunningData) {
+      const data = isRunningData;
       this.startTimer(data.timerLength, data.timerDuration);
     }
-  };
+  }
 
-  componentWillUnmount = () => {
+  componentWillUnmount() {
+    const { socket } = this.props;
+
     // Cleanup
     clearTimeout(this.clockInterval);
-    this.props.socket.off('game:countdown');
-  };
+    socket.off('game:countdown');
+  }
 
   startTimer(timerDuration, timerCurrent) {
-    var currentTime = timerCurrent ? timerCurrent * 1000 : 0,
-      maxDuration = timerDuration * 1000;
+    let currentTime = timerCurrent ? timerCurrent * 1000 : 0;
+    const maxDuration = timerDuration * 1000;
 
     this.clockInterval = setInterval(() => {
       currentTime += 1000;
-      var perc = (currentTime / maxDuration) * 100;
+      const perc = (currentTime / maxDuration) * 100;
       // timer.css('background',
       //     'linear-gradient(90deg, #0067d8 ' + perc + '%, #000 ' + perc + '%)');
       this.setState({
         countdownLabel: moment()
           .startOf('day')
           .add(currentTime)
-          .format('mm:ss')
+          .format('mm:ss'),
       });
 
       if (perc === 100) {
@@ -78,21 +81,23 @@ class Timer extends PureComponent {
   }
 
   render() {
-    let { countdownLabel } = this.state;
+    const { countdownLabel } = this.state;
+    const { show, disabled, socket } = this.props;
 
     return (
       // TIMER at 0
       <div className="timer-wrap">
-        {this.props.show ? (
+        {show ? (
           <div>
             <button
               id="btn-start-timer"
-              className={this.props.disabled ? 'disabled' : ''}
-              disabled={this.props.disabled ? 'disabled' : null}
+              type="button"
+              className={disabled ? 'disabled' : ''}
+              disabled={disabled ? 'disabled' : null}
               onClick={() => {
-                this.props.socket.emit(
+                socket.emit(
                   'game:start_timer',
-                  GameData.get().assemble()
+                  GameData.get().assemble(),
                 );
               }}
             >
@@ -111,16 +116,19 @@ Timer.propTypes = {
   socket: PropTypes.any,
   facilitator: PropTypes.bool,
   disabled: PropTypes.bool,
-  isRunningData: PropTypes.object
+  show: PropTypes.bool,
+  isRunningData: PropTypes.object,
 };
 
 Timer.defaultProps = {
-  // bla: 'test',
+  facilitator: false,
+  disabled: true,
+  show: false,
 };
 
-const TimerWithSocket = props => (
+const TimerWithSocket = (props) => (
   <SocketContext.Consumer>
-    {socket => <Timer {...props} socket={socket} />}
+    {(socket) => <Timer {...props} socket={socket} />}
   </SocketContext.Consumer>
 );
 
