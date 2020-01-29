@@ -21,7 +21,7 @@ module.exports = {
   plugins: [
     'react',
   ],
-  rules: {
-    "arrow-parens": "as-needed"
-  },
+  // rules: {
+  //   "arrow-parens": "as-needed"
+  // },
 };
