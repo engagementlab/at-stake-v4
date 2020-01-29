@@ -32,16 +32,18 @@ class Meet extends PureComponent {
   }
 
   componentDidMount() {
+    const { data, socket } = this.props;
+
     // Set if facilitator, if rolecard shows, & if timer is running (player is 'ready')
-    const skipInitScreen = this.props.data.timerRunning;
+    const skipInitScreen = data.timerRunning;
     this.setState({
-      isFacilitator: this.props.data.role.isFacilitator,
-      rolecardShow: this.props.data.screen === 0,
+      isFacilitator: data.role.isFacilitator,
+      rolecardShow: data.screen === 0,
       timerStarted: skipInitScreen,
       notReady: !skipInitScreen,
     });
 
-    this.socket = this.props.socket;
+    this.socket = socket;
 
     /* Socket Listeners */
 
@@ -51,17 +53,18 @@ class Meet extends PureComponent {
     });
 
     // If screen is refreshed, we check if timer should kick off
-    if (this.props.data.timerRunning) {
+    if (data.timerRunning) {
       // Run timer w/ remaining duration by updating prop used by timer
       this.timerData = {
-        timerLength: this.props.data.timerLength,
-        timerDuration: this.props.data.timerDuration,
+        timerLength: data.timerLength,
+        timerDuration: data.timerDuration,
       };
     }
   }
 
   componentDidUpdate() {
-    console.log('DATA', this.props.data);
+    const { data } = this.props;
+    console.log('DATA', data);
   }
 
   componentWillUnmount() {
@@ -101,7 +104,7 @@ class Meet extends PureComponent {
           {data && !data.timerRunning && rolecardShow ? (
             <div className="screen initial">
               <Rolecard
-                show={rolecardShow}
+                visible={rolecardShow}
                 intro
                 role={data.role}
                 close={this.proceedFromRolecard}

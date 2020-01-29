@@ -2,17 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 // import { Test } from './Instructions.styles';
 
-const Instructions = (props) => (
+const Instructions = (props) => {
+  const { show, heading, body } = props;
 
-  props.show ? (
+  if (!show) return null;
+
+  return (
     <div className="InstructionsWrapper">
-      <h3>{props.heading}</h3>
-      <p>{props.body}</p>
+      <h3>{heading}</h3>
+      <p>{body}</p>
     </div>
-  )
-    : null
-
-);
+  );
+};
 
 Instructions.propTypes = {
   show: PropTypes.bool,
@@ -22,6 +23,7 @@ Instructions.propTypes = {
 };
 
 Instructions.defaultProps = {
+  show: false,
   heading: 'Instructions',
   body: 'Body Text',
   subBody: 'Sub-body Text',

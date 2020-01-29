@@ -17,13 +17,13 @@ class Ranking extends PureComponent {
 
       screenIndex: 0,
 
-      showResult: false
+      showResult: false,
     };
 
     this.needsMet = 0;
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
     this.socket = this.props.socket;
 
     /* Socket Listeners */
@@ -34,18 +34,20 @@ class Ranking extends PureComponent {
     // });
 
     // Show game result
-    this.socket.on('game:end', data => {
+    this.socket.on('game:end', (data) => {
       this.setState({ showResult: true, gameWon: data.won });
     });
-  };
+  }
 
-  componentWillUnmount = () => {
+  componentWillUnmount() {
     console.log('Ranking will unmount');
-  };
+  }
 
   nextScreen() {
+    const { screenIndex } = this.state;
+
     this.setState({
-      screenIndex: this.state.screenIndex + 1
+      screenIndex: screenIndex + 1,
     });
   }
 
@@ -53,27 +55,27 @@ class Ranking extends PureComponent {
     this.socket.emit(
       'player:met_goal',
       GameData.get().assemble({
-        uid: id
-      })
+        uid: id,
+      }),
     );
   }
 
   playerMetNeed(id, index) {
     // Cache increase for ranking submission
-    this.needsMet++;
+    this.needsMet += 1;
 
     this.socket.emit(
       'player:met_need',
       GameData.get().assemble({
         uid: id,
-        index: index
-      })
+        index,
+      }),
     );
   }
 
   // Ranking sliders update
   sliderChange(evt, index) {
-    let val = evt.currentTarget.value;
+    const val = evt.currentTarget.value;
     let state = {};
 
     switch (index) {
@@ -93,14 +95,13 @@ class Ranking extends PureComponent {
   }
 
   submitRating() {
-    let ratingSum =
-      this.state.ratingCreativity +
-      this.state.ratingInclusivity +
-      this.state.ratingEquity;
+    const { ratingCreativity, ratingInclusivity, ratingEquity } = this.state;
+
+    const ratingSum = ratingCreativity + ratingInclusivity + ratingEquity;
 
     this.socket.emit(
       'game:ranking',
-      GameData.get().assemble({ needs: this.needsMet, rating: ratingSum })
+      GameData.get().assemble({ needs: this.needsMet, rating: ratingSum }),
     );
   }
 
@@ -110,15 +111,16 @@ class Ranking extends PureComponent {
 
   render() {
     const {
-        gameWon,
-        isFacilitator,
-        ratingEquity,
-        ratingCreativity,
-        ratingInclusivity,
-        screenIndex,
-        showResult
-      } = this.state,
-      data = this.props.data;
+      gameWon,
+      isFacilitator,
+      ratingEquity,
+      ratingCreativity,
+      ratingInclusivity,
+      screenIndex,
+      showResult,
+    } = this.state;
+
+    const { data } = this.props;
 
     // RANKING UI
     return (
@@ -133,7 +135,7 @@ class Ranking extends PureComponent {
               Wait as the facilitator reviews.
             </div>
 
-            <div id="results"></div>
+            <div id="results" />
           </div>
         )}
 
@@ -152,38 +154,36 @@ class Ranking extends PureComponent {
                 <h2>Did the team meet any secret goals?</h2>
 
                 {/* Show all player secret goals */}
-                {data.shared.playerData.map((player, i) => {
-                  return (
-                    <div key={player.uid} className="check toggle">
-                      <p>{player.username}</p>
-                      <div className="goal">{player.secretGoal}</div>
+                {data.shared.playerData.map((player, i) => (
+                  <div key={player.uid} className="check toggle">
+                    <p>{player.username}</p>
+                    <div className="goal">{player.secretGoal}</div>
 
-                      <label className="switch">
-                        {i === 0 && (
-                          <span className="tooltip-content">
-                            When a player meets their secret goal, you can check
-                            it off. They'll score extra points at the end of the
-                            game.
-                          </span>
-                        )}
+                    <label className="switch">
+                      {i === 0 && (
+                        <span className="tooltip-content">
+                          When a player meets their secret goal, you can check
+                          it off. They&apos;ll score extra points at the end of the
+                          game.
+                        </span>
+                      )}
 
-                        {player.goalMet ? (
-                          <input
-                            type="checkbox"
-                            checked="checked"
-                            disabled="disabled"
-                          />
-                        ) : (
-                          <input
-                            type="checkbox"
-                            onClick={() => this.playerMetGoal(player.uid)}
-                          />
-                        )}
-                        <span className="slider round"></span>
-                      </label>
-                    </div>
-                  );
-                })}
+                      {player.goalMet ? (
+                        <input
+                          type="checkbox"
+                          checked="checked"
+                          disabled="disabled"
+                        />
+                      ) : (
+                        <input
+                          type="checkbox"
+                          onClick={() => this.playerMetGoal(player.uid)}
+                        />
+                      )}
+                      <span className="slider round" />
+                    </label>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -192,42 +192,40 @@ class Ranking extends PureComponent {
               <div id="pt2" className="form">
                 <h2>Did the team meet their needs?</h2>
 
-                {data.shared.playerData.map((player, i) => {
-                  return (
-                    <div key={player.uid} className="toggle">
-                      <p>{player.username}</p>
-                      <div className="needs">
-                        <div className="need">
-                          <label className="switch">
-                            <input
-                              type="checkbox"
-                              onClick={() => this.playerMetNeed(player.uid, 0)}
-                            />
-                            <span className="slider round"></span>
-                          </label>
+                {data.shared.playerData.map((player, i) => (
+                  <div key={player.uid} className="toggle">
+                    <p>{player.username}</p>
+                    <div className="needs">
+                      <div className="need">
+                        <label className="switch">
+                          <input
+                            type="checkbox"
+                            onClick={() => this.playerMetNeed(player.uid, 0)}
+                          />
+                          <span className="slider round" />
+                        </label>
 
-                          <span>
-                            {player.needs ? player.needs[0] : 'Example need 1'}
-                          </span>
-                        </div>
-                        <div className="need">
-                          <label className="switch">
-                            <input
-                              type="checkbox"
-                              onClick={() => this.playerMetNeed(player.uid, 1)}
-                            />
-                            <span className="slider round"></span>
-                          </label>
-
-                          <span>
-                            {player.needs ? player.needs[1] : 'Example need 2'}
-                          </span>
-                        </div>
+                        <span>
+                          {player.needs ? player.needs[0] : 'Example need 1'}
+                        </span>
                       </div>
-                      <hr />
+                      <div className="need">
+                        <label className="switch">
+                          <input
+                            type="checkbox"
+                            onClick={() => this.playerMetNeed(player.uid, 1)}
+                          />
+                          <span className="slider round" />
+                        </label>
+
+                        <span>
+                          {player.needs ? player.needs[1] : 'Example need 2'}
+                        </span>
+                      </div>
                     </div>
-                  );
-                })}
+                    <hr />
+                  </div>
+                ))}
               </div>
             )}
 
@@ -242,7 +240,7 @@ class Ranking extends PureComponent {
                   max="5"
                   step="1"
                   value={ratingEquity}
-                  onChange={e => this.sliderChange(e, 0)}
+                  onChange={(e) => this.sliderChange(e, 0)}
                 />
                 <div className="labels">
                   <span>1</span>
@@ -260,7 +258,7 @@ class Ranking extends PureComponent {
                   max="5"
                   step="1"
                   value={ratingInclusivity}
-                  onChange={e => this.sliderChange(e, 1)}
+                  onChange={(e) => this.sliderChange(e, 1)}
                 />
                 <div className="labels">
                   <span>1</span>
@@ -278,7 +276,7 @@ class Ranking extends PureComponent {
                   max="5"
                   step="1"
                   value={ratingCreativity}
-                  onChange={e => this.sliderChange(e, 2)}
+                  onChange={(e) => this.sliderChange(e, 2)}
                 />
                 <div className="labels">
                   <span>1</span>
@@ -324,11 +322,11 @@ class Ranking extends PureComponent {
               <div>
                 <img
                   src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1541442374/at-stake/bg/win"
-                  alt="Win image"
+                  alt="You won!"
                 />
                 <h1>Congratulations</h1>
                 <div className="text">
-                  Together you've managed to bring a little peace and stability
+                  Together you&apos;ve managed to bring a little peace and stability
                   back to the world. Maybe there is hope for the future.
                 </div>
               </div>
@@ -336,11 +334,11 @@ class Ranking extends PureComponent {
               <div>
                 <img
                   src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1541442374/at-stake/bg/lose"
-                  alt="Lose image"
+                  alt="You lost."
                 />
                 <h1>Tragedy</h1>
                 <div className="text">
-                  Your team wasn't able to present a solution that fixed the
+                  Your team wasn&apos;t able to present a solution that fixed the
                   problem. Reflect with your group and the facilitator about
                   what went wrong.
                 </div>
@@ -353,9 +351,9 @@ class Ranking extends PureComponent {
   }
 }
 
-const RankingWithSocket = props => (
+const RankingWithSocket = (props) => (
   <SocketContext.Consumer>
-    {socket => <Ranking {...props} socket={socket} />}
+    {(socket) => <Ranking {...props} socket={socket} />}
   </SocketContext.Consumer>
 );
 
