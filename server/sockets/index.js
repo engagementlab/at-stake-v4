@@ -1,14 +1,26 @@
-/* eslint-disable no-restricted-syntax */
+/**
+ * @Stake v4
+ * Developed by Engagement Lab, 2016-2020
+ * ==============
+ * Socket connection, event, and handlers initialization.
+ *
+ * @class sockets
+ * @static
+ * @author Johnny Richardson
+ *
+ * ==========
+ */
 
-const Server = require('socket.io');
+const SocketIO = require('socket.io');
+const SocketIORedis = require('socket.io-redis');
 const CommonHandler = require('./handlers/Common');
 const ConnectionHandler = require('./handlers/Connection');
 
 module.exports = (app) => {
-  const io = new Server(app, {
+  const io = new SocketIO(app, {
     path: '/at-stake-socket',
   });
-  const redisAdapter = require('socket.io-redis');
+  const redisAdapter = SocketIORedis;
 
   // Setup redis adapter
   io.adapter(redisAdapter({
@@ -28,20 +40,24 @@ module.exports = (app) => {
       connection: new ConnectionHandler(io, socket),
     };
 
-    for (const category in eventTypes) {
-      if (typeof eventTypes[category] !== 'undefined' && eventTypes[category] !== null) {
-        const events = eventTypes[category].eventIds;
+    // Parse through all events and assign to handler
+    Object.keys(eventTypes).forEach((key) => {
+      const category = eventTypes[key];
+
+      if (typeof category !== 'undefined' && category !== null) {
+        const events = category.eventIds;
         events.forEach((event) => {
+          // Get handler
           const {
             handler,
-          } = eventTypes[category];
+          } = category;
           socket.on(event, (req) => {
             // Call handler tied to event
             handler(event, req);
           });
         });
       }
-    }
+    });
 
     socket.send(socket.id);
   });
