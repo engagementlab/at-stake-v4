@@ -26,6 +26,9 @@ function Rolecard(props) {
       <Modal.Body>
         <Container>
           <Row>
+            <h2>Rolecard</h2>
+          </Row>
+          <Row>
             <Col>{role.bio.html}</Col>
           </Row>
 

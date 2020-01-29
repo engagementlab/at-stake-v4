@@ -102,10 +102,10 @@ class Common extends Core {
 
       // Get data about this session's deck
       require('bluebird').props({
-          deck: queryDeck,
-          facilitator: queryFacilitator,
-          events: queryEvent,
-        })
+        deck: queryDeck,
+        facilitator: queryFacilitator,
+        events: queryEvent,
+      })
         .then((results) => {
           this.deck_data = results.deck;
           this._active_deck_roles = results.deck.roles;

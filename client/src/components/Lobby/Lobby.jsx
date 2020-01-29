@@ -233,12 +233,14 @@ class Lobby extends Component {
                 <FormControl
                   type="text"
                   placeholder="room code"
+                  value={roomCode}
                   onChange={(event) => this.setState({ joinCode: event.target.value })}
                 />
 
                 <FormControl
                   type="text"
                   placeholder="name"
+                  value={playerName}
                   onChange={(event) => this.setState({ username: event.target.value })}
                 />
 
