@@ -1,79 +1,121 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-const Rolecard = props =>
-  props.role && props.role.bio ? (
-    <div className="rolecard-inner inner">
-      <div className="role-info{{#unless intro}} card{{/unless}}">
-        {/* {{#unless intro}}
-            <button id="btn-close-role-card" className="btn" type="submit" name="submit" data-keep_enabled="true">
-              {{{cloudinaryUrl '/v1540845195/at-stake/icons/close.svg' height=25}}}
-            </button>
-          {{/unless}} */}
+import Modal from 'react-bootstrap/Modal';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
-        <h2 className="title">
-          Your role: <b>{props.role.title}</b>
-        </h2>
-      </div>
+function Rolecard(props) {
+  const { role } = props;
+  const [show, setShow] = useState(false);
 
-      <div className="description">{props.role.bio.html}</div>
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
-      <div className="agenda-wrap form">
-        <div id="needs">
-          <h1 className="header">Needs</h1>
+  if (!(role && role.bio)) {
+    return null;
+  }
 
-          {props.role.needs ? (
-            <div>
-              <div className="agenda-item">
-                <div className="agenda">{props.role.needs[0]}</div>
-              </div>
-              <span id="div"></span>
-              <div className="agenda-item">
-                <div className="agenda">{props.role.needs[1]}</div>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div className="agenda-item">
-                <div className="agenda">Example need 1</div>
-              </div>
-              <span id="div"></span>
-              <div className="agenda-item">
-                <div className="agenda">Example need 2</div>
-              </div>
-            </div>
-          )}
-        </div>
+  return (
+    <Modal show={show} onHide={handleClose} size="lg" centered>
+      <Modal.Header closeButton>
+        <Modal.Title>{role.title}</Modal.Title>
+      </Modal.Header>
 
-        <h1 className="header">
-          <span className="star">&#9733;</span>Secret Goal
-          <span className="star">&#9733;</span>
-        </h1>
-        <div>
-          {props.role.secretGoal ? props.role.secretGoal : 'Example goal'}
-        </div>
+      <Modal.Body>
+        <Container>
+          <Row>
+            <Col>{role.bio.html}</Col>
+          </Row>
 
-        {props.intro ? (
-          <button
-            id="btn-role-next"
-            className="btn next-step"
-            type="submit"
-            name="submit"
-            onClick={() => {
-              props.close();
-            }}
-          >
-            Continue
-          </button>
-        ) : null}
-      </div>
-    </div>
-  ) : null;
+          <Row>
+            <Col>
+              <Container>
+                <Row>
+                  <Col>
+                    <h1 className="header">Needs</h1>
+                  </Col>
+                </Row>
+
+                {role.needs.map((need) => (
+                  <Row key={need} className="agenda-item">
+                    <Col className="agenda">{need}</Col>
+                  </Row>
+                ))}
+              </Container>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <Container>
+                <Row>
+                  <Col>
+                    <h1 className="header">
+                      <span className="star">&#9733;</span>
+                      Secret Goal
+                      <span className="star">&#9733;</span>
+                    </h1>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    {role.secretGoal}
+                  </Col>
+                </Row>
+              </Container>
+            </Col>
+          </Row>
+        </Container>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+// const Rolecard = (props) => props.role && props.role.bio ? (
+//     <div className="rolecard-inner inner">
+//       <div className="role-info{{#unless intro}} card{{/unless}}">
+//         {/* {{#unless intro}}
+//             <button id="btn-close-role-card" className="btn" type="submit"
+//              name="submit" data-keep_enabled="true">
+//               {{{cloudinaryUrl '/v1540845195/at-stake/icons/close.svg' height=25}}}
+//             </button>
+//           {{/unless}} */}
+
+//         {props.intro ? (
+//           <button
+//             id="btn-role-next"
+//             className="btn next-step"
+//             type="submit"
+//             name="submit"
+//             onClick={() => {
+//               props.close();
+//             }}
+//           >
+//             Continue
+//           </button>
+//         ) : null}
+//       </div>
+//     </div>
+//   ) : null;
 
 Rolecard.propTypes = {
-  visible: PropTypes.bool,
-  intro: PropTypes.bool,
-  close: PropTypes.func
+  role: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+    bio: PropTypes.shape({
+      html: PropTypes.string.isRequired,
+    }),
+    needs: PropTypes.arrayOf(PropTypes.string),
+    secretGoal: PropTypes.string,
+  }),
+};
+
+Rolecard.defaultProps = {
+  role: PropTypes.shape({
+    needs: ['Example need one', 'Example need two'],
+    secretGoal: 'Example Secret Goal',
+  }),
 };
 
 export default Rolecard;
