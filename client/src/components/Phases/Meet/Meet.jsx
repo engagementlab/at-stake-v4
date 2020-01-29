@@ -21,7 +21,7 @@ class Meet extends PureComponent {
       notReady: true,
       rolecardShow: true,
       timerStarted: false,
-      timerEnded: false
+      timerEnded: false,
     };
 
     this.socket = null;
@@ -33,12 +33,12 @@ class Meet extends PureComponent {
 
   componentDidMount() {
     // Set if facilitator, if rolecard shows, & if timer is running (player is 'ready')
-    let skipInitScreen = this.props.data.timerRunning;
+    const skipInitScreen = this.props.data.timerRunning;
     this.setState({
       isFacilitator: this.props.data.role.isFacilitator,
       rolecardShow: this.props.data.screen === 0,
       timerStarted: skipInitScreen,
-      notReady: !skipInitScreen
+      notReady: !skipInitScreen,
     });
 
     this.socket = this.props.socket;
@@ -55,7 +55,7 @@ class Meet extends PureComponent {
       // Run timer w/ remaining duration by updating prop used by timer
       this.timerData = {
         timerLength: this.props.data.timerLength,
-        timerDuration: this.props.data.timerDuration
+        timerDuration: this.props.data.timerDuration,
       };
     }
   }
@@ -87,7 +87,7 @@ class Meet extends PureComponent {
       notReady,
       rolecardShow,
       timerStarted,
-      timerEnded
+      timerEnded,
     } = this.state;
     const { data } = this.props;
 
@@ -101,7 +101,7 @@ class Meet extends PureComponent {
           {data && !data.timerRunning && rolecardShow ? (
             <div className="screen initial">
               <Rolecard
-                visible={rolecardShow}
+                show={rolecardShow}
                 intro
                 role={data.role}
                 close={this.proceedFromRolecard}
@@ -196,7 +196,7 @@ class Meet extends PureComponent {
 
               <div className="grid">
                 {/* Show all player role names */}
-                {Object.keys(data.shared.roles).map(key => {
+                {Object.keys(data.shared.roles).map((key) => {
                   const role = data.shared.roles[key];
 
                   return (
@@ -228,9 +228,9 @@ class Meet extends PureComponent {
   }
 }
 
-const MeetWithSocket = props => (
+const MeetWithSocket = (props) => (
   <SocketContext.Consumer>
-    {socket => <Meet {...props} socket={socket} />}
+    {(socket) => <Meet {...props} socket={socket} />}
   </SocketContext.Consumer>
 );
 

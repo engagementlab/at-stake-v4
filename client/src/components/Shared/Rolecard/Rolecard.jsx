@@ -7,8 +7,8 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 function Rolecard(props) {
-  const { role } = props;
-  const [show, setShow] = useState(false);
+  const { show, role } = props;
+  const [setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -108,6 +108,7 @@ Rolecard.propTypes = {
     needs: PropTypes.arrayOf(PropTypes.string),
     secretGoal: PropTypes.string,
   }),
+  show: PropTypes.bool,
 };
 
 Rolecard.defaultProps = {
@@ -115,6 +116,7 @@ Rolecard.defaultProps = {
     needs: ['Example need one', 'Example need two'],
     secretGoal: 'Example Secret Goal',
   }),
+  show: false,
 };
 
 export default Rolecard;

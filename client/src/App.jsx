@@ -19,7 +19,7 @@ const socket = io('http://localhost:3001', {
   path: '/at-stake-socket/',
   reconnection: true,
   reconnectionDelay: 500,
-  maxReconnectionAttempts: Infinity
+  maxReconnectionAttempts: Infinity,
 });
 
 class App extends Component {
@@ -33,7 +33,7 @@ class App extends Component {
 
       screens: ['meet', 'deliberate', 'ranking'],
       phaseIndex: -1,
-      screenData: null
+      screenData: null,
     };
 
     this.roleData = null;
@@ -55,8 +55,8 @@ class App extends Component {
           GameData.get().assemble({
             joinCode: sessionStorage.getItem('gameCode'),
             username: sessionStorage.getItem('username'),
-            uid: sessionStorage.getItem('uUID')
-          })
+            uid: sessionStorage.getItem('uUID'),
+          }),
         );
       }
 
@@ -71,26 +71,26 @@ class App extends Component {
       this.setState({ phaseIndex: 1 });
     });
 
-    socket.on('game:next_phase', screenData => {
+    socket.on('game:next_phase', (screenData) => {
       const { phaseIndex } = this.state;
       this.setState({ phaseIndex: phaseIndex + 1, screenData });
 
       // Cache player's role data as it is emitted only in first phase
       this.roleData = screenData.role;
     });
-    socket.on('game:refresh_screen', screenData => {
+    socket.on('game:refresh_screen', (screenData) => {
       // Cache player's role data as it is emitted only on refresh
       this.roleData = screenData.role;
 
       this.setState({ phaseIndex: screenData.phase, screenData });
 
       const roomData = {
-          type: this.roleData.isFacilitator ? 'decider' : 'player',
-          username: screenData.username,
-          uid: screenData.uid,
-          joinCode: sessionStorage.getItem('gameCode')
-        },
-        payload = GameData.get().assemble(roomData);
+        type: this.roleData.isFacilitator ? 'decider' : 'player',
+        username: screenData.username,
+        uid: screenData.uid,
+        joinCode: sessionStorage.getItem('gameCode'),
+      };
+      const payload = GameData.get().assemble(roomData);
 
       // Session re-started, let's signup again for room
       socket.emit('room', payload);
@@ -99,7 +99,7 @@ class App extends Component {
     socket.on('player:reconnected', () => {
       this.setState({ response: 'Player re-joined.' });
     });
-    socket.on('player:lost', eventData => {
+    socket.on('player:lost', (eventData) => {
       this.setState({ response: `${eventData.names.join(',')} disconnected.` });
     });
   }
@@ -125,7 +125,7 @@ class App extends Component {
       rolecardShow,
       phaseIndex,
       screenData,
-      screens
+      screens,
     } = this.state;
     const currentScreen = screens[phaseIndex];
 
@@ -158,9 +158,9 @@ class App extends Component {
             )}
 
             {/* ROLECARD */}
-            {rolecardShow ? (
-              <Rolecard role={this.roleData} close={this.closeRolecard} />
-            ) : null}
+            {rolecardShow && (
+              <Rolecard show role={this.roleData} close={this.closeRolecard} />
+            )}
 
             <div id="state">
               <em>Socket:</em>
