@@ -7,12 +7,16 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-import InputGroup from 'react-bootstrap/InputGroup';
 import Image from 'react-bootstrap/Image';
+import InputGroup from 'react-bootstrap/InputGroup';
+import FormControl from 'react-bootstrap/FormControl';
+import ListGroup from 'react-bootstrap/ListGroup';
 
 import GameData from '../../GameData';
 import SocketContext from '../../SocketContext';
 import Decks from './Decks';
+
+import './Lobby.scss';
 
 let socket = null;
 
@@ -31,7 +35,7 @@ class Lobby extends Component {
       // for dev only
       username: 'user1',
 
-      mode: ''
+      mode: '',
     };
 
     this.selectDeck = this.selectDeck.bind(this);
@@ -59,7 +63,7 @@ class Lobby extends Component {
   join() {
     this.setState({
       mode: 'join',
-      username: 'player1'
+      username: 'player1',
     });
   }
 
@@ -69,7 +73,7 @@ class Lobby extends Component {
 
       // Generate session
       fetch(`${process.env.REACT_APP_API_URL}/api/generate`, {
-        signal: this.abortCtrl.signal
+        signal: this.abortCtrl.signal,
       })
         .then(response => response.json())
         .then(response => {
@@ -77,7 +81,7 @@ class Lobby extends Component {
             data: response,
             mode: 'host',
             showDecks: true,
-            joinCode: response.code
+            joinCode: response.code,
           });
 
           // Cache game id in data singleton
@@ -87,7 +91,7 @@ class Lobby extends Component {
 
     socket.on('player:loggedin', () => {
       this.setState({
-        response: 'Player joined!'
+        response: 'Player joined!',
       });
     });
   }
@@ -109,16 +113,16 @@ class Lobby extends Component {
       data,
       {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        cancelToken: this.cancelSrc.token
-      }
+        cancelToken: this.cancelSrc.token,
+      },
     );
 
     if (response.data.sessionCreated) {
       this.setState({
         status: 'Session created',
-        showDecks: false
+        showDecks: false,
       });
 
       // Join host player to room
@@ -130,7 +134,7 @@ class Lobby extends Component {
     // Watch for new players in lobby
     socket.on('players:update', data => {
       this.setState({
-        playerData: data.players
+        playerData: data.players,
       });
     });
 
@@ -148,7 +152,7 @@ class Lobby extends Component {
       type: this.state.mode === 'host' ? 'decider' : 'player',
       username: this.state.username,
       uid: playerUID,
-      joinCode: code || this.state.joinCode
+      joinCode: code || this.state.joinCode,
     };
 
     const payload = GameData.get().assemble(roomData);
@@ -173,141 +177,173 @@ class Lobby extends Component {
   }
 
   render() {
-    const { data, mode, playerData, showDecks, status } = this.state;
+    const {
+      data, mode, playerData, showDecks, status,
+    } = this.state;
     // Pre-populated join form for dev
     const roomCode = process.env.NODE_ENV === 'development' ? 'TEST' : '';
     const playerName = process.env.NODE_ENV === 'development' ? 'player1' : '';
 
     return (
       // TODO: Implement initial name input screen
-      <div>
-        <Container>
-          <Row>
-            <Col>
-              {/* TODO: Load @1x, @2x, @3x resolutions depending on screen size? */}
-              <Image src="/img/intro/start-banner@2x.png" fluid />
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h1>
-                Hello,
-                <b>Player</b>!
-              </h1>
-            </Col>
-          </Row>
+      <Container>
 
+        <Row>
+          <Col>
+            {/* TODO: Load @1x, @2x, @3x resolutions depending on screen size? */}
+            <Image src="/img/intro/start-banner@2x.png" fluid />
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <h1>
+              Hello,
+              {' '}
+              {/* TODO: Make this use the name specified by the player */}
+              <b>Player</b>
+              !
+            </h1>
+          </Col>
+        </Row>
+
+        {/* Begin "Join" logic */}
+
+        <Row>
+          <Col>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => this.join()}
+              block
+            >
+              Join A Game
+            </Button>
+          </Col>
+        </Row>
+
+        {mode === 'join' ? (
           <Row>
             <Col>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => this.join()}
-                block
-              >
-                Join A Game
-              </Button>
+              {/* Input for room code shown when a player clicks "join" */}
+              <InputGroup className="playerJoinInput">
+                <InputGroup.Prepend>
+                  <InputGroup.Text>Player Join:</InputGroup.Text>
+                </InputGroup.Prepend>
+
+                <FormControl
+                  type="text"
+                  placeholder="room code"
+                  onChange={(event) => this.setState({ joinCode: event.target.value })}
+                />
+
+                <FormControl
+                  type="text"
+                  placeholder="name"
+                  onChange={(event) => this.setState({ username: event.target.value })}
+                />
+
+                <Button
+                  variant="success"
+                  onClick={() => this.playerJoin()}
+                >
+                  Start
+                </Button>
+              </InputGroup>
             </Col>
           </Row>
+        ) : null}
 
-          <Row>
-            <Col>
-              <hr />
-              <p className="monospace">
-                If you are a facilitator, start a new game.
-              </p>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <Button
-                variant="info"
-                size="lg"
-                onClick={() => this.start(true)}
-                block
-              >
-                Create A New Game
-              </Button>
-            </Col>
-          </Row>
-        </Container>
+        {/* Begin "Host" logic */}
 
-        <div>
-          {mode === 'host' && playerData && playerData.length >= 2 ? (
-            <div id="start">
-              <button
-                type="button"
-                id="btn-start-game"
-                onClick={() => {
-                  this.startGame();
-                }}
-              >
-                <h2>Start</h2>
-              </button>
-            </div>
-          ) : null}
-
-          {mode === 'join' ? (
-            <p>
-              Player Join:
-              <input
-                type="text"
-                placeholder="room code"
-                onChange={event =>
-                  this.setState({ joinCode: event.target.value })
-                }
-                value={roomCode}
-              />
-              <input
-                type="text"
-                placeholder="name"
-                onChange={event =>
-                  this.setState({ username: event.target.value })
-                }
-                value={playerName}
-              />
-              <button type="button" onClick={() => this.playerJoin()}>
-                Start
-              </button>
+        <Row>
+          <Col>
+            <hr />
+            <p className="monospace">
+              If you are a facilitator, start a new game.
             </p>
-          ) : null}
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <Button
+              variant="info"
+              size="lg"
+              onClick={() => this.start(true)}
+              block
+            >
+              Create A New Game
+            </Button>
+          </Col>
+        </Row>
 
-          {data ? (
-            <div>
+        {/* Display list of Decks for host to choose from */}
+
+        {data ? (
+          <Row>
+            <Col>
               <p>{`Room Code: ${data.code}`}</p>
+
               {showDecks && mode === 'host' ? (
                 <Decks decks={data.decks} callback={this.selectDeck} />
               ) : null}
-            </div>
-          ) : null}
+            </Col>
+          </Row>
+        ) : null}
 
-          <p>
-            <b>Lobby Status:</b>
-            {` ${status}`}
-          </p>
+        {/* Start Game button for Host */}
 
-          {playerData && (
-            <div>
+        {/* FIXME: disabled playerData.length check for testing */}
+        {mode === 'host' && playerData /* && playerData.length >= 2 */ ? (
+          <Row>
+            <Col id="start">
+              <Button
+                variant="success"
+                size="lg"
+                onClick={() => { this.startGame(); }}
+              >
+                Start
+              </Button>
+            </Col>
+          </Row>
+        ) : null}
+
+        <Row>
+          <Col>
+            <p>
+              <b>Lobby Status:</b>
+              {` ${status}`}
+            </p>
+          </Col>
+        </Row>
+
+        {/* Show list of connected players to Host */}
+
+        {playerData && (
+          <Row>
+            <Col>
               Players:
-              <ol>
+              <ListGroup>
                 {playerData.map(player => (
-                  <li key={player.username}>{player.username}</li>
+                  <ListGroup.Item key={player.username}>
+                    {player.username}
+                  </ListGroup.Item>
                 ))}
-              </ol>
-            </div>
-          )}
-        </div>
-      </div>
+              </ListGroup>
+            </Col>
+          </Row>
+        )}
+
+      </Container>
     );
   }
 }
 
 Lobby.defaultProps = {
-  mode: ''
+  mode: '',
 };
 
 Lobby.propTypes = {
-  mode: PropTypes.string
+  mode: PropTypes.string,
 };
 
 const LobbyWithSocket = props => (
