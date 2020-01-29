@@ -17,10 +17,10 @@
     }
   ],
   "settings": {
-    "editor.formatOnSave": true,
     "eslint.linkTask.enabled": true,
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": true
-    }
+    },
+    "eslint.autoFixOnSave": true
   }
 }
