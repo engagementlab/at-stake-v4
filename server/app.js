@@ -81,7 +81,13 @@ bootstrap.start(
 
     // Start redis on core lib
     const redis = require('learning-games-core').Redis;
-    redis.Init();
+    redis.Init(() => {
+      // Always delete "TEST" session on boot on dev
+      if (process.env.NODE_ENV === 'development') {
+        logger.info('Deleting TEST session');
+        redis.DeleteHash('TEST');
+      }
+    });
 
     http.listen(process.env.PORT);
   },
