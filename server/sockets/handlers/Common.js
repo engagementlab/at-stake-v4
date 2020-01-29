@@ -59,63 +59,93 @@ function Common(nsp, socket) {
 
         case 'game:intro':
           session.Intro(currentSpace);
+
           break;
 
         case 'game:ready':
           session.PlayerDone(payload.msgData);
+
           break;
 
         case 'game:event':
           session.ShowEvent(payload.msgData.state, payload.msgData.index);
+
           break;
 
         case 'game:tutorial':
           session.StartTutorial(currentSpace);
+
           break;
 
         case 'game:start':
           session.StartGame();
+
           break;
 
         case 'game:next':
           session.NextPhase();
+
           break;
+
         case 'game:skip_rules':
           session.SkipScreen();
+
           break;
+
         case 'game:next_screen':
           session.NextScreen();
+
           break;
+
         case 'game:load_screen':
           session.LoadScreenAtIndex(payload.msgData.index);
+
           break;
+
         case 'game:start_timer':
           session.StartTimer();
+
           break;
+
         case 'game:ranking':
           session.GameRating(payload.msgData);
+
           break;
+
         case 'game:stop_countdown':
           session.StopCountdown();
+
           break;
+
         case 'game:exit':
           session.EndGame();
+
           break;
+
 
         case 'player:met_goal':
           session.PlayerMetGoal(payload.msgData.uid);
+
           break;
+
         case 'player:met_need':
           session.PlayerMetNeed(payload.msgData.uid, payload.msgData.index);
+
           break;
+
         case 'player:call_vote':
           session.PlayerCallVote(currentSocket);
+
           break;
+
         case 'player:vote':
           session.PlayerVote(payload.msgData);
+
           break;
+
         case 'player:vote_end':
           session.PlayerVoteEnd(currentSpace);
+
           break;
       }
     });

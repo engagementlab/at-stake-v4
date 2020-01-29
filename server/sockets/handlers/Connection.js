@@ -16,56 +16,38 @@ const Session = require('learning-games-core').SessionManager;
 
 const JoinRoom = function (payload, currentSocket, currentSpace) {
   if (!payload.gameId) return;
+  const {
+    gameId,
+  } = payload;
+  const session = Session.Get(gameId);
 
-  this.playerGameId = payload.gameId;
-
-  if (!Session.Get(this.playerGameId)) {
+  if (!session) {
     currentSocket.emit('game:notfound');
     return;
   }
 
-  currentSocket.join(payload.gameId, (err) => {
+  currentSocket.join(gameId, (err) => {
     if (err) throw err;
   });
 
   // Decider registration
-  if (payload.msgData.type === 'decider' && Session.Get(this.playerGameId)) {
+  if (payload.msgData.type === 'decider' && session) {
     const player = {
       socket_id: currentSocket.id,
       username: payload.msgData.username,
       uid: payload.msgData.uid,
     };
 
-    Session.GroupView(payload.gameId, currentSocket.id);
-    Session.Get(this.playerGameId).ModeratorJoin(currentSpace, player);
+    Session.GroupView(gameId, currentSocket.id);
+    Session.Get(gameId).ModeratorJoin(currentSpace, player);
   }
 
   logger.info(`${currentSocket.id} connected to room.`);
-  if (!payload.gameId) return;
+  if (!gameId) return;
 
-  this.playerGameId = payload.gameId;
-
-  if (!Session.Get(this.playerGameId)) {
-    currentSocket.emit('game:notfound');
-    return;
-  }
-
-  currentSocket.join(payload.gameId, (err) => {
+  currentSocket.join(gameId, (err) => {
     if (err) throw err;
   });
-
-  // Decider registration
-  if (payload.msgData.type === 'decider' && Session.Get(this.playerGameId)) {
-    const player = {
-      socket_id: currentSocket.id,
-      username: payload.msgData.username,
-      uid: payload.msgData.uid,
-    };
-
-    Session.GroupView(payload.gameId, currentSocket.id);
-    Session.Get(this.playerGameId).ModeratorJoin(currentSpace, player);
-  }
-
   logger.info(`${currentSocket.id} connected to room.`);
 };
 
@@ -97,6 +79,8 @@ function PlayerLogin(payload, currentSocket, currentSpace) {
 }
 
 async function PlayerDisconnect(playerGameId, currentSocket) {
+  if (!playerGameId) return;
+
   const session = Session.Get(playerGameId);
 
   if (!session) return;
@@ -112,7 +96,7 @@ async function PlayerDisconnect(playerGameId, currentSocket) {
     if (player) logger.info(`Player '${player.username}' disconnecting. Nooooo!`);
   }
 
-  if (playerGameId && session) session.PlayerLost(currentSocket.id, currentSocket);
+  if (playerGameId && session) await session.PlayerLost(currentSocket.id, currentSocket);
 }
 
 async function PlayerCheckActive(payload, currentSocket) {
@@ -136,13 +120,13 @@ async function PlayerCheckActive(payload, currentSocket) {
     };
 
     // Mark player as ready inside game session
-    session.PlayerReady(
+    await session.PlayerReady(
       player,
       currentSocket,
       payload.msgData.decider,
     );
   } else {
-    logger.info('login:active', `Player "${payload.msgData.uid}" not active.`);
+    logger.info(`Player "${payload.msgData.uid}" not active.`);
   }
 }
 
@@ -167,6 +151,9 @@ const Connection = function (nsp, socket) {
         break;
 
       case 'room':
+
+        // Cache this game id and join
+        this.playerGameId = payload.gameId;
         JoinRoom(payload, currentSocket, currentSpace);
 
         break;

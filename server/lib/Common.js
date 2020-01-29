@@ -112,8 +112,6 @@ class Common extends Core {
           this._active_deck_facilitator = results.facilitator;
           this.game_events = results.events;
 
-          console.log('roles ===> ', results.facilitator);
-
           callback();
         }).catch((err) => {
           logger.error(err);
