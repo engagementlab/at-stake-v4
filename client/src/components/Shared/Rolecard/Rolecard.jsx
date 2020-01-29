@@ -13,10 +13,6 @@ function Rolecard(props) {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  if (!(role && role.bio)) {
-    return null;
-  }
-
   return (
     <Modal show={show} onHide={handleClose} size="lg" centered>
       <Modal.Header closeButton>
