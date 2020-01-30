@@ -295,15 +295,16 @@ class Lobby extends Component {
         {/* Start Game button for Host */}
 
         {/* FIXME: disabled playerData.length check for testing */}
-        {mode === 'host' && playerData /* && playerData.length >= 2 */ ? (
+        {mode === 'host' && playerData /* &&  */ ? (
           <Row>
             <Col id="start">
               <Button
                 variant="success"
                 size="lg"
                 onClick={() => { this.startGame(); }}
+                disabled={playerData.length < 2}
               >
-                Start
+                Start Game
               </Button>
             </Col>
           </Row>

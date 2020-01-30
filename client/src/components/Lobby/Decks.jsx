@@ -9,17 +9,16 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 class Decks extends Component {
   callback(deck) { }
 
-
   render() {
     const { decks, callback } = this.props;
 
     return (
 
       <ButtonGroup>
-        {decks && decks.map((deck, i) => (
-          <Row>
+        {decks && decks.map((deck) => (
+          <Row key={deck._id}>
             <Col>
-              <Button key={deck._id} variant="secondary" size="lg" onClick={() => callback(deck)}>
+              <Button variant="secondary" size="lg" onClick={() => callback(deck)}>
                 {deck.name}
               </Button>
             </Col>
