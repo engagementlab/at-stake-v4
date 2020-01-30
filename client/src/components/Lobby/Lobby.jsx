@@ -248,7 +248,7 @@ class Lobby extends Component {
                   variant="success"
                   onClick={() => this.playerJoin()}
                 >
-                  Start
+                  Join
                 </Button>
               </InputGroup>
             </Col>

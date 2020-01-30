@@ -5,8 +5,8 @@ import GameData from '../../../GameData';
 import SocketContext from '../../../SocketContext';
 
 import CdnImage from '../../Util/CdnImage/CdnImage';
+import Role from '../../Shared/Rolecard/Role/Role';
 import Interstitial from '../../Shared/Interstitial/Interstitial';
-import Rolecard from '../../Shared/Rolecard/Rolecard';
 import Instructions from '../../Shared/Instructions/Instructions';
 import Speech from '../../Shared/Speech/Speech';
 import Timer from '../../Shared/Timer/Timer';
@@ -101,16 +101,29 @@ class Meet extends PureComponent {
           {/* ROLECARD */}
 
           {/* Skip if timer running */}
-          {data && !data.timerRunning && rolecardShow ? (
-            <div className="screen initial">
-              <Rolecard
-                visible={rolecardShow}
-                intro
-                role={data.role}
-                close={this.proceedFromRolecard}
-              />
+          {data && !data.timerRunning && rolecardShow && (
+            <div>
+              <h2>
+Your role:
+                {' '}
+                <strong>
+                  {data.role.title}
+                </strong>
+
+              </h2>
+              <Role show data={data.role} />
+              <button
+                type="submit"
+                name="submit"
+                onClick={() => {
+                  this.proceedFromRolecard();
+                }}
+              >
+Continue
+
+              </button>
             </div>
-          ) : null}
+          )}
 
           <Interstitial title="Introduction" />
         </div>

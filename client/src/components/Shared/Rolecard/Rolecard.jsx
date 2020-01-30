@@ -2,71 +2,23 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import Modal from 'react-bootstrap/Modal';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import Role from './Role/Role';
 
 function Rolecard(props) {
   const { show, role } = props;
   const [setShow] = useState(false);
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  // const handleShow = () => setShow(true);
 
   return (
     <Modal show={show} onHide={handleClose} size="lg" centered>
-      <Modal.Header closeButton>
+      <Modal.Header>
         <Modal.Title>{role.title}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        <Container>
-          <Row>
-            <h2>Rolecard</h2>
-          </Row>
-          <Row>
-            <Col>{role.bio.html}</Col>
-          </Row>
-
-          <Row>
-            <Col>
-              <Container>
-                <Row>
-                  <Col>
-                    <h1 className="header">Needs</h1>
-                  </Col>
-                </Row>
-
-                {role.needs.map((need) => (
-                  <Row key={need} className="agenda-item">
-                    <Col className="agenda">{need}</Col>
-                  </Row>
-                ))}
-              </Container>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col>
-              <Container>
-                <Row>
-                  <Col>
-                    <h1 className="header">
-                      <span className="star">&#9733;</span>
-                      Secret Goal
-                      <span className="star">&#9733;</span>
-                    </h1>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    {role.secretGoal}
-                  </Col>
-                </Row>
-              </Container>
-            </Col>
-          </Row>
-        </Container>
+        <Role data={role} />
       </Modal.Body>
     </Modal>
   );
@@ -100,14 +52,6 @@ function Rolecard(props) {
 //   ) : null;
 
 Rolecard.propTypes = {
-  role: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    bio: PropTypes.shape({
-      html: PropTypes.string.isRequired,
-    }),
-    needs: PropTypes.arrayOf(PropTypes.string),
-    secretGoal: PropTypes.string,
-  }),
   show: PropTypes.bool,
 };
 
