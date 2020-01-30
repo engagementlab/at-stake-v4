@@ -19,7 +19,6 @@ router.use(middleware.locals);
 
 const routes = {
   api: importRoutes('./api'),
-  views: importRoutes('./views'),
 };
 
 // Setup Route Bindings
@@ -34,12 +33,6 @@ router.all('/*', (req, res, next) => {
   if (req.method === 'OPTIONS') res.sendStatus(200);
   else next();
 });
-
-// Views
-router.get('/', routes.views.index);
-router.get('/play/:accesscode?/:username?', routes.views.game.play);
-
-router.post('/login', routes.views.game.player);
 
 // API Endpoints
 router.get('/api/data/get/:type/:key?', keystone.middleware.api, routes.api.data.get);

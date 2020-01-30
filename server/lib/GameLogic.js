@@ -137,8 +137,6 @@ class GameLogic extends Common {
         screenData.roles = _.mapObject(screenData.players, (player) => ({
           username: player.username,
           title: player.role.title,
-          needs: player.role.needs,
-          secretGoal: player.role.secretGoal,
           isFacilitator: player.role.isFacilitator,
         }));
         break;
@@ -224,6 +222,10 @@ class GameLogic extends Common {
         const thisPlayer = arrPlayerUnique[playerIndex];
         // Players unneeded in share data
         thisPlayer.shared = _.omit(data, 'players');
+
+        // TEMP: Role bio needs to be converted to array for proper display
+        // If we keep roles as is, in future make textarray in CMS
+        thisPlayer.role.bio.html = thisPlayer.role.bio.html.split('<strong>—</strong>');
 
         _socket
           .to(arrPlayerUnique[playerIndex].socket_id)

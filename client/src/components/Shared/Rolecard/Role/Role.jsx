@@ -12,9 +12,19 @@ function Role(props) {
   return (
     <Container>
       <Row>
-        <Col>{data.bio.html}</Col>
+        <Col>
+          {data.bio.html.map((block) => (
+            <Row>
+              <p>
+                {block.replace('<p>', '').replace('</p>', '').replace(/&#39;/g, '\'')}
+              </p>
+            </Row>
+          ))}
+        </Col>
       </Row>
 
+      {/* Do not show needs for facilitator */}
+      {(data.needs && data.needs.length > 0) && (
       <Row>
         <Col>
           <Container>
@@ -32,7 +42,10 @@ function Role(props) {
           </Container>
         </Col>
       </Row>
+      )}
 
+      {/* Do not show goal for facilitator */}
+      {data.secretGoal && (
       <Row>
         <Col>
           <Container>
@@ -53,6 +66,7 @@ function Role(props) {
           </Container>
         </Col>
       </Row>
+      )}
 
     </Container>
   );
