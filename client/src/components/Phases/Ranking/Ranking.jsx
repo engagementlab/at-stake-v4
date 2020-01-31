@@ -1,8 +1,14 @@
 import React, { PureComponent } from 'react';
-import './Ranking.scss';
+import PropTypes from 'prop-types';
+
+import Button from 'react-bootstrap/Button';
+
 import SocketContext from '../../../SocketContext';
 import Instructions from '../../Shared/Instructions/Instructions';
 import GameData from '../../../GameData';
+import CdnImage from '../../Util/CdnImage/CdnImage';
+
+import './Ranking.scss';
 
 class Ranking extends PureComponent {
   constructor(props) {
@@ -122,6 +128,9 @@ class Ranking extends PureComponent {
 
     const { data } = this.props;
 
+    console.log(data);
+    console.log(data.shared.playerData);
+
     // RANKING UI
     return (
       <div id="ranking">
@@ -154,7 +163,7 @@ class Ranking extends PureComponent {
                 <h2>Did the team meet any secret goals?</h2>
 
                 {/* Show all player secret goals */}
-                {data.shared.playerData.map((player, i) => (
+                {Object.keys(data.shared.playerData).map((player, i) => (
                   <div key={player.uid} className="check toggle">
                     <p>{player.username}</p>
                     <div className="goal">{player.secretGoal}</div>
@@ -192,7 +201,7 @@ class Ranking extends PureComponent {
               <div id="pt2" className="form">
                 <h2>Did the team meet their needs?</h2>
 
-                {data.shared.playerData.map((player, i) => (
+                {Object.keys(data.shared.playerData).map((player, i) => (
                   <div key={player.uid} className="toggle">
                     <p>{player.username}</p>
                     <div className="needs">
@@ -288,15 +297,13 @@ class Ranking extends PureComponent {
               </div>
             )}
 
-            <button
-              type="submit"
-              name="submit"
-              onClick={() => {
-                screenIndex === 2 ? this.submitRating() : this.nextScreen();
-              }}
+            <Button
+              variant={screenIndex === 2 ? 'success' : 'info'}
+              size="lg"
+              onClick={() => { screenIndex === 2 ? this.submitRating() : this.nextScreen(); }}
             >
               {screenIndex === 2 ? 'Submit' : 'Continue'}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -305,24 +312,21 @@ class Ranking extends PureComponent {
           <div id="end">
             {/* Start over btn */}
             {isFacilitator && (
-              <button
-                id="btn-start-over"
-                className="btn submit decider"
-                type="submit"
-                onClick={() => {
-                  this.endGame();
-                }}
+              <Button
+                variant="success"
+                size="lg"
+                onClick={() => { this.endGame(); }}
               >
                 Play Again
-              </button>
+              </Button>
             )}
 
             {/* Game won/not won */}
             {gameWon ? (
               <div>
-                <img
-                  src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1541442374/at-stake/bg/win"
-                  alt="You won!"
+                <CdnImage
+                  publicId="v1541442374/at-stake/bg/win"
+                  width="425"
                 />
                 <h1>Congratulations</h1>
                 <div className="text">
@@ -332,9 +336,9 @@ class Ranking extends PureComponent {
               </div>
             ) : (
               <div>
-                <img
-                  src="https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1541442374/at-stake/bg/lose"
-                  alt="You lost."
+                <CdnImage
+                  publicId="v1541442374/at-stake/bg/lose"
+                  width="425"
                 />
                 <h1>Tragedy</h1>
                 <div className="text">
@@ -350,6 +354,17 @@ class Ranking extends PureComponent {
     );
   }
 }
+
+Ranking.propTypes = {
+  data: PropTypes.shape({
+    shared: PropTypes.shape({
+      events: PropTypes.array,
+      playerData: PropTypes.object,
+      roles: PropTypes.object,
+    }),
+    won: PropTypes.bool,
+  }).isRequired,
+};
 
 const RankingWithSocket = (props) => (
   <SocketContext.Consumer>

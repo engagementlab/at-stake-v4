@@ -1,4 +1,8 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
+
+import Button from 'react-bootstrap/Button';
+
 import './Meet.scss';
 
 import GameData from '../../../GameData';
@@ -34,6 +38,8 @@ class Meet extends PureComponent {
 
   componentDidMount() {
     const { data, socket } = this.props;
+    console.log('data:', data);
+    console.log('socket:', socket);
 
     // Set if facilitator, if rolecard shows, & if timer is running (player is 'ready')
     const skipInitScreen = data.timerRunning;
@@ -111,15 +117,14 @@ class Meet extends PureComponent {
                 <strong>{data.role.title}</strong>
               </h2>
               <Role show data={data.role} />
-              <button
-                type="submit"
-                name="submit"
-                onClick={() => {
-                  this.proceedFromRolecard();
-                }}
+
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => { this.proceedFromRolecard(); }}
               >
                 Continue
-              </button>
+              </Button>
             </div>
           )}
 
@@ -141,18 +146,16 @@ class Meet extends PureComponent {
             />
 
             {!isFacilitator && notReady && (
-              <button
-                id="btn-ready"
-                className="btn submit player"
-                type="submit"
-                name="submit"
+              <Button
+                variant="success"
+                size="lg"
                 onClick={() => {
                   this.socket.emit('game:ready', GameData.get().assemble());
                   this.setState({ notReady: false });
                 }}
               >
                 Ready
-              </button>
+              </Button>
             )}
 
             <Speech
@@ -215,19 +218,14 @@ class Meet extends PureComponent {
 
             {/* Skip to next phase */}
             {isFacilitator && (
-              <button
-                type="button"
-                id="skip-next"
-                onClick={() => {
-                  this.socket.emit('game:next', GameData.get().assemble());
-                }}
+              <Button
+                variant="warning"
+                size="lg"
+                onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
               >
                 Skip to Phase 2
-                <CdnImage
-                  publicId="v1540488090/at-stake/icons/check-btn"
-                  format="svg"
-                />
-              </button>
+                <CdnImage publicId="v1540488090/at-stake/icons/check-btn" format="svg" />
+              </Button>
             )}
           </div>
         )}
@@ -241,18 +239,15 @@ class Meet extends PureComponent {
                 <div>
                 Time’s up! Consider wrapping this discussion up
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    this.socket.emit('game:next', GameData.get().assemble());
-                  }}
+
+                <Button
+                  variant="success"
+                  size="lg"
+                  onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
                 >
-                Go to Phase 2
-                  <CdnImage
-                    publicId="v1540488090/at-stake/icons/check-btn"
-                    format="svg"
-                  />
-                </button>
+                  Go to Phase 2
+                  <CdnImage publicId="v1540488090/at-stake/icons/check-btn" format="svg" />
+                </Button>
               </div>
             )}
             {!isFacilitator && (
@@ -280,6 +275,57 @@ class Meet extends PureComponent {
     );
   }
 }
+
+Meet.propTypes = {
+  data: PropTypes.shape({
+    connected: PropTypes.bool,
+    decider: PropTypes.bool,
+    name: PropTypes.string,
+    phase: PropTypes.number,
+    prior_roles: PropTypes.array,
+    ready: PropTypes.bool,
+    role: PropTypes.shape({
+      __v: PropTypes.number,
+      _id: PropTypes.string,
+      bio: PropTypes.shape({
+        html: PropTypes.array,
+      }),
+      dateCreated: PropTypes.string,
+      isFacilitator: PropTypes.bool,
+      needs: PropTypes.array,
+      title: PropTypes.string,
+    }),
+    screen: PropTypes.number,
+    shared: PropTypes.shape({
+      decider: PropTypes.string,
+      question: PropTypes.string,
+      repeatScreen: PropTypes.bool,
+      roles: PropTypes.object,
+      timerRunning: PropTypes.bool,
+    }),
+    socket_id: PropTypes.string,
+    timerDuration: PropTypes.number,
+    timerLength: PropTypes.number,
+    timerRunning: PropTypes.bool,
+    uid: PropTypes.string,
+    username: PropTypes.string,
+  }).isRequired,
+  socket: PropTypes.shape({
+    _callbacks: PropTypes.object,
+    acks: PropTypes.object,
+    connected: PropTypes.bool,
+    disconnected: PropTypes.bool,
+    flags: PropTypes.object,
+    id: PropTypes.string,
+    ids: PropTypes.number,
+    io: PropTypes.object,
+    json: PropTypes.object,
+    nsp: PropTypes.string,
+    receiveBuffer: PropTypes.array,
+    sendBuffer: PropTypes.array,
+    subs: PropTypes.array,
+  }).isRequired,
+};
 
 const MeetWithSocket = (props) => (
   <SocketContext.Consumer>

@@ -1,6 +1,12 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
+
+import Container from 'react-bootstrap/Container';
+import Button from 'react-bootstrap/Button';
 
 import Socket from '../../GameData';
+import CdnImage from '../Util/CdnImage/CdnImage';
+
 
 class Intro extends PureComponent {
   constructor(props) {
@@ -17,7 +23,8 @@ class Intro extends PureComponent {
   }
 
   componentDidMount() {
-    this.socket = this.props.socket;
+    const { socket } = this.props;
+    this.socket = socket;
 
     // Listeners
     this.socket.on('game:next_screen', (data) => {
@@ -45,32 +52,47 @@ class Intro extends PureComponent {
     return (
 
       [0, 1, 2, 3].map((index) => (
-        <div>
+        <Container>
           {(screenIndex === index) ? (
             <div className="intro panel">
 
               <div className="content">
-                <img src={`https://res.cloudinary.com/engagement-lab-home/image/upload/c_scale,f_auto,w_425/v1540490701/at-stake/bg/${imageNames[index]}`} alt="Intro screen 1" />
-
+                <CdnImage
+                  publicId={`v1540490701/at-stake/bg/${imageNames[index]}`}
+                  width={425}
+                  format="png"
+                />
                 <div className="text">{text[index]}</div>
               </div>
 
               { host ? (
-                <button
-                  type="button"
-                  className="submit"
+                <Button
+                  variant="info"
+                  size="lg"
                   onClick={() => this.socket.emit(screenIndex === 3 ? 'game:start' : 'game:next_screen')}
                 >
-                  <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540488090/at-stake/icons/check-btn.svg" alt="Go to next screen" />
-                </button>
+                  <CdnImage
+                    publicId="v1540488090/at-stake/icons/check-btn"
+                    format="svg"
+                  />
+                </Button>
               ) : null }
 
             </div>
           ) : null }
-        </div>
+        </Container>
       ))
-
     );
   }
 }
+
+Intro.propTypes = {
+  host: PropTypes.bool,
+  socket: PropTypes.object.isRequired,
+};
+
+Intro.defaultProps = {
+  host: false,
+};
+
 export default Intro;

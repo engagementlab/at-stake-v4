@@ -15,17 +15,17 @@ const Speech = (props) => {
 };
 
 Speech.propTypes = {
-  facilitator: PropTypes.bool,
   body: PropTypes.string,
-  subBody: PropTypes.string,
   bold: PropTypes.bool,
+  facilitator: PropTypes.bool,
+  subBody: PropTypes.string,
 };
 
 Speech.defaultProps = {
-  body: 'Speech Text',
-  subBody: 'Speech Secondary Text',
+  body: 'Default Speech Text',
   bold: false,
   facilitator: false,
+  subBody: 'Default Speech Secondary Text',
 };
 
 export default Speech;

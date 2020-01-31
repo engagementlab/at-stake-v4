@@ -52,6 +52,11 @@ function Rolecard(props) {
 //   ) : null;
 
 Rolecard.propTypes = {
+  role: PropTypes.shape({
+    needs: PropTypes.arrayOf(PropTypes.string),
+    secretGoal: PropTypes.string,
+    title: PropTypes.string,
+  }),
   show: PropTypes.bool,
 };
 

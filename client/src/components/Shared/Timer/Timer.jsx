@@ -6,6 +6,8 @@
 import React, { PureComponent } from 'react';
 import PropTypes, { number } from 'prop-types';
 
+import Button from 'react-bootstrap/Button';
+
 import moment from 'moment';
 import GameData from '../../../GameData';
 import SocketContext from '../../../SocketContext';
@@ -37,8 +39,8 @@ class Timer extends PureComponent {
 
     // Is timer already running based on prop data from parent?
     if (isRunningData) {
-      const data = isRunningData;
-      this.startTimer(data.timerLength, data.timerDuration);
+      const { timerLength, timerDuration } = isRunningData;
+      this.startTimer(timerLength, timerDuration);
     }
   }
 
@@ -51,6 +53,8 @@ class Timer extends PureComponent {
   }
 
   startTimer(timerDuration, timerCurrent) {
+    const { done } = this.props;
+
     let currentTime = timerCurrent ? timerCurrent * 1000 : 0;
     const maxDuration = timerDuration * 1000;
 
@@ -75,7 +79,7 @@ class Timer extends PureComponent {
         //     $('#times-up, #go-to').fadeIn();
         // });
 
-        if (this.props.done) this.props.done();
+        if (done) done();
       }
     }, 1000);
   }
@@ -89,11 +93,10 @@ class Timer extends PureComponent {
       <div className="timer-wrap">
         {show ? (
           <div>
-            <button
-              id="btn-start-timer"
-              type="button"
-              className={disabled ? 'disabled' : ''}
-              disabled={disabled ? 'disabled' : null}
+            <Button
+              variant="info"
+              size="lg"
+              disabled={disabled}
               onClick={() => {
                 socket.emit(
                   'game:start_timer',
@@ -102,7 +105,7 @@ class Timer extends PureComponent {
               }}
             >
               <h1>Start Timer</h1>
-            </button>
+            </Button>
 
             <div>{countdownLabel}</div>
           </div>
@@ -113,17 +116,27 @@ class Timer extends PureComponent {
 }
 
 Timer.propTypes = {
-  socket: PropTypes.any,
-  facilitator: PropTypes.bool,
   disabled: PropTypes.bool,
+  done: PropTypes.func.isRequired,
+  facilitator: PropTypes.bool,
+  isRunningData: PropTypes.shape({
+    timerDuration: PropTypes.number,
+    timerLength: PropTypes.number,
+  }),
   show: PropTypes.bool,
-  isRunningData: PropTypes.object,
+  socket: PropTypes.object,
+  started: PropTypes.bool,
 };
 
 Timer.defaultProps = {
-  facilitator: false,
   disabled: true,
+  facilitator: false,
+  isRunningData: {
+    timerDuration: 5,
+    timerLength: 5,
+  },
   show: false,
+  started: false,
 };
 
 const TimerWithSocket = (props) => (

@@ -16,16 +16,16 @@ const Instructions = (props) => {
 };
 
 Instructions.propTypes = {
-  show: PropTypes.bool,
-  heading: PropTypes.string,
   body: PropTypes.string,
+  heading: PropTypes.string,
+  show: PropTypes.bool,
   subBody: PropTypes.string,
 };
 
 Instructions.defaultProps = {
-  show: false,
-  heading: 'Instructions',
   body: 'Body Text',
+  heading: 'Instructions',
+  show: false,
   subBody: 'Sub-body Text',
 };
 

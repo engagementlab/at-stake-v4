@@ -294,8 +294,7 @@ class Lobby extends Component {
 
         {/* Start Game button for Host */}
 
-        {/* FIXME: disabled playerData.length check for testing */}
-        {mode === 'host' && playerData /* &&  */ ? (
+        {mode === 'host' && playerData ? (
           <Row>
             <Col id="start">
               <Button
@@ -341,12 +340,12 @@ class Lobby extends Component {
   }
 }
 
-Lobby.defaultProps = {
-  mode: '',
-};
-
 Lobby.propTypes = {
   mode: PropTypes.string,
+};
+
+Lobby.defaultProps = {
+  mode: '',
 };
 
 const LobbyWithSocket = props => (

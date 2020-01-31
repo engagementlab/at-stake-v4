@@ -1,4 +1,8 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
+
+import Button from 'react-bootstrap/Button';
+
 import './Deliberate.scss';
 
 import GameData from '../../../GameData';
@@ -41,51 +45,59 @@ class Deliberate extends PureComponent {
   }
 
   componentDidMount() {
+    const { role, socket, data } = this.props;
     // Set if facilitator
     this.setState({
-      isFacilitator: this.props.role.isFacilitator,
+      isFacilitator: role.isFacilitator,
     });
 
-    this.socket = this.props.socket;
+    this.socket = socket;
 
     /* Socket Listeners */
 
     // Tell facilitator all players ready for deliberation and advance screen
     this.socket.on('game:ready', () => {
+      const { screenIndex } = this.state;
+
       this.setState({
         allPlayersReady: true,
-        screenIndex: this.state.screenIndex + 1,
+        screenIndex: screenIndex + 1,
       });
     });
+
     this.socket.on('game:next_screen', () => {
+      const { screenIndex, isFacilitator } = this.state;
+
       // Advance screen for non-fac
-      if (!this.state.isFacilitator) {
-        this.setState({ screenIndex: this.state.screenIndex + 1 });
+      if (!isFacilitator) {
+        this.setState({ screenIndex: screenIndex + 1 });
       }
     });
 
     // Tell non-fac to show event
-    this.socket.on('player:show_event', (data) => {
+    this.socket.on('player:show_event', (socketData) => {
       this.setState({
         showEvent: true,
-        visibleEventIndex: data,
+        visibleEventIndex: socketData,
       });
     });
 
     // Show voting
-    this.socket.on('player:call_vote', (data) => {
+    this.socket.on('player:call_vote', (socketData) => {
       this.setState({
         voting: {
           show: true,
-          callerName: data.username,
+          callerName: socketData.username,
         },
       });
     });
 
     // Show voting result
-    this.socket.on('players:voted', (data) => {
+    this.socket.on('players:voted', (socketData) => {
+      const { isFacilitator } = this.state;
+
       // If vote won, facilitator just moves to next phase
-      if (this.state.isFacilitator && data.yes) {
+      if (isFacilitator && socketData.yes) {
         this.socket.emit('game:next', GameData.get().assemble());
         return;
       }
@@ -94,15 +106,15 @@ class Deliberate extends PureComponent {
         voting: {
           show: true,
           callerName: null,
-          callerId: data.votecallerid,
+          callerId: socketData.votecallerid,
           resultsShow: true,
-          won: data.yes,
+          won: socketData.yes,
         },
       });
     });
 
     // Close voting
-    this.socket.on('players:vote_ended', (data) => {
+    this.socket.on('players:vote_ended', (socketData) => {
       this.setState({
         voting: {
           show: false,
@@ -111,11 +123,11 @@ class Deliberate extends PureComponent {
     });
 
     // If screen is refreshed, we check if timer should kick off
-    if (this.props.data.timerRunning) {
+    if (data.timerRunning) {
       // Run timer w/ remaining duration by updating prop used by timer
       this.timerData = {
-        timerLength: this.props.data.timerLength,
-        timerDuration: this.props.data.timerDuration,
+        timerLength: data.timerLength,
+        timerDuration: data.timerDuration,
       };
       // Player is in ready state/is deliberating
       this.setState({ playerReady: true, screenIndex: 1 });
@@ -123,7 +135,8 @@ class Deliberate extends PureComponent {
   }
 
   componentDidUpdate() {
-    console.log('DATA', this.props.data);
+    const { data } = this.props;
+    console.log('DATA', data);
   }
 
   componentWillUnmount() {
@@ -164,10 +177,12 @@ class Deliberate extends PureComponent {
   }
 
   showEvent() {
+    const { visibleEventIndex } = this.state;
+
     // Increment visible event and show
     this.setState({
       showEvent: true,
-      visibleEventIndex: this.state.visibleEventIndex + 1,
+      visibleEventIndex: visibleEventIndex + 1,
     });
 
     clearTimeout(this.eventCountdown);
@@ -230,22 +245,25 @@ class Deliberate extends PureComponent {
               subBody={data.question}
             />
 
-            {!isFacilitator
-              && (notReady ? (
-                <button
-                  id="btn-ready"
-                  className="btn submit player"
-                  type="submit"
-                  name="submit"
-                  onClick={() => {
-                    this.playerReady();
-                  }}
-                >
-                  Ready
-                </button>
-              ) : (
-                <button type="button">Waiting</button>
-              ))}
+            {!isFacilitator && (notReady ? (
+              <Button
+                variant="success"
+                size="lg"
+                onClick={() => {
+                  this.playerReady();
+                }}
+              >
+                Ready
+              </Button>
+            ) : (
+              <Button
+                variant="success"
+                size="lg"
+                disabled
+              >
+                Waiting
+              </Button>
+            ))}
           </div>
         )}
 
@@ -294,9 +312,7 @@ class Deliberate extends PureComponent {
                 <div className="grid">
                   {Object.keys(data.shared.roles).map((key) => {
                     const role = data.shared.roles[key];
-                    const classStr = `player${
-                      role.isFacilitator ? ' facilitator' : ''
-                    }`;
+                    const classStr = `player${role.isFacilitator ? ' facilitator' : ''}`;
 
                     return (
                       <div className={classStr} key={key}>
@@ -318,15 +334,16 @@ class Deliberate extends PureComponent {
                   })}
                 </div>
 
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  size="lg"
                   onClick={() => this.socket.emit(
-                      'player:call_vote',
-                      GameData.get().assemble(),
-                    )}
+                    'player:call_vote',
+                    GameData.get().assemble(),
+                  )}
                 >
-                  Call vote
-                </button>
+                  Call Vote
+                </Button>
               </div>
             )}
 
@@ -354,27 +371,27 @@ class Deliberate extends PureComponent {
                               </span>
                             )}
 
-                            <button
+                            <Button
                               id="btn-confirm"
-                              type="submit"
-                              name="submit"
+                              variant="success"
+                              size="lg"
                               onClick={() => {
                                 this.eventAction('accept', i);
                               }}
                             >
                               &#x2714;
-                            </button>
+                            </Button>
 
-                            <button
-                              id="btn-reject"
-                              type="submit"
-                              name="submit"
+                            <Button
+                              id="btn-confirm"
+                              variant="danger"
+                              size="lg"
                               onClick={() => {
                                 this.eventAction('reject', i);
                               }}
                             >
                               &#65794;
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -444,10 +461,9 @@ class Deliberate extends PureComponent {
                 <h1>{`${voting.callerName} called a vote!`}</h1>
                 <h2>Are you satisfied with this proposal?</h2>
 
-                <button
-                  id="btn-yes"
-                  className="btn submit player"
-                  type="submit"
+                <Button
+                  variant="success"
+                  size="lg"
                   onClick={() => {
                     this.socket.emit(
                       'player:vote',
@@ -456,21 +472,20 @@ class Deliberate extends PureComponent {
                   }}
                 >
                   Yes
-                </button>
+                </Button>
 
-                <button
-                  id="btn-no"
-                  className="btn submit player"
-                  type="submit"
+                <Button
+                  variant="danger"
+                  size="lg"
                   onClick={() => {
                     this.socket.emit(
                       'player:vote',
-                      GameData.get().assemble({ yes: false }),
+                      GameData.get().assemble({ yes: true }),
                     );
                   }}
                 >
                   No
-                </button>
+                </Button>
               </div>
             )}
 
@@ -481,10 +496,10 @@ class Deliberate extends PureComponent {
                 {isVoteCaller ? (
                   <div>
                     <p>Revise your proposal and submit again.</p>
-                    <button
-                      id="btn-try-again"
-                      type="submit"
-                      name="submit"
+
+                    <Button
+                      variant="primary"
+                      size="lg"
                       onClick={() => {
                         this.socket.emit(
                           'player:vote_end',
@@ -493,7 +508,7 @@ class Deliberate extends PureComponent {
                       }}
                     >
                       Try Again
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <div id="voter">
@@ -509,6 +524,27 @@ class Deliberate extends PureComponent {
     );
   }
 }
+
+Deliberate.propTypes = {
+  data: PropTypes.object.isRequired,
+  role: PropTypes.shape({
+    isFacilitator: PropTypes.bool,
+    needs: PropTypes.arrayOf(PropTypes.string),
+    username: PropTypes.string,
+  }),
+  socket: PropTypes.object.isRequired,
+};
+
+Deliberate.defaultProps = {
+  role: {
+    isFacilitator: false,
+    needs: [
+      'Default need one',
+      'Default need two',
+    ],
+    username: 'Default Username',
+  },
+};
 
 const DeliberateWithSocket = (props) => (
   <SocketContext.Consumer>

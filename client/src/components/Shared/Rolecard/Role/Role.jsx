@@ -53,7 +53,7 @@ function Role(props) {
               <Col>
                 <h1 className="header">
                   <span className="star">&#9733;</span>
-              Secret Goal
+                  Secret Goal
                   <span className="star">&#9733;</span>
                 </h1>
               </Col>
