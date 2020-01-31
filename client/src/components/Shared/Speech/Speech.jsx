@@ -1,16 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+
 const Speech = (props) => {
   const { body, subBody } = props;
 
   return (
-    <div className="SpeechWrapper">
+    <>
       <hr />
-      <p><em>{body}</em></p>
-      <h5>{subBody}</h5>
+      <Row className="SpeechWrapper">
+        <Col>
+          <p><em>{body}</em></p>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <h5>{subBody}</h5>
+        </Col>
+      </Row>
       <hr />
-    </div>
+    </>
   );
 };
 

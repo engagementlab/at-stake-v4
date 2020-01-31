@@ -1,6 +1,10 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 
 import './Meet.scss';
@@ -103,59 +107,83 @@ class Meet extends PureComponent {
     const { data } = this.props;
 
     return (
+      <Container>
+        {/* ROLECARD - FIRST SCREEN */}
+        {/* Skipped if timer is running */}
+        {screenIndex === 0 && (
+          <>
+            <Row>
+              <Col>
+                <h2>
+                  Your role:
+                  {' '}
+                  <strong>{data.role.title}</strong>
+                </h2>
+              </Col>
+            </Row>
 
-      <div>
-        {/* MEET PHASE UI */}
+            <Row>
+              <Col>
+                <Role show data={data.role} />
+              </Col>
+            </Row>
 
-        <div id="meet">
-          {/* ROLECARD */}
-          {/* Skipped if timer running */}
-          {screenIndex === 0 && (
-            <div>
-              <h2>
-                Your role:
-                <strong>{data.role.title}</strong>
-              </h2>
-              <Role show data={data.role} />
+            <Row>
+              <Col>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => { this.proceedFromRolecard(); }}
+                >
+                  Continue
+                </Button>
+              </Col>
+            </Row>
+          </>
+        )}
 
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => { this.proceedFromRolecard(); }}
-              >
-                Continue
-              </Button>
-            </div>
-          )}
+        <Interstitial title="Introduction" />
 
-          <Interstitial title="Introduction" />
-        </div>
-
-        {/* ROLECARD VIEWED */}
+        {/* ROLECARD VIEWED - SECOND SCREEN */}
         {screenIndex === 1 && (
-          <div className="screen">
-            <Instructions
-              show={!isFacilitator}
-              heading="Introductions"
-              body="Introduce your character and how this scenario impacts you. Try to mention your objective you need to meet."
-            />
-            <Instructions
-              show={isFacilitator}
-              heading="Introductions"
-              body="Give each player an equal opportunity to introduce their character and how they are impacted by this scenario."
-            />
+          <>
+            <Row>
+              <Col>
+                <h2>Introductions</h2>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                {isFacilitator ? (
+                  <Instructions
+                    body={`Give each player an equal opportunity to introduce
+                      their character and how they are impacted by this scenario.`}
+                  />
+                ) : (
+                  <Instructions
+                    body={`Introduce your character and how this scenario
+                      impacts you. Try to mention your objective you need to meet.`}
+                  />
+                )}
+              </Col>
+            </Row>
 
+            {/* Ready button for participants */}
             {!isFacilitator && notReady && (
-              <Button
-                variant="success"
-                size="lg"
-                onClick={() => {
-                  this.socket.emit('game:ready', GameData.get().assemble());
-                  this.setState({ notReady: false });
-                }}
-              >
-                Ready
-              </Button>
+              <Row>
+                <Col>
+                  <Button
+                    variant="success"
+                    size="lg"
+                    onClick={() => {
+                      this.socket.emit('game:ready', GameData.get().assemble());
+                      this.setState({ notReady: false });
+                    }}
+                  >
+                    Ready
+                  </Button>
+                </Col>
+              </Row>
             )}
 
             <Speech
@@ -166,26 +194,33 @@ class Meet extends PureComponent {
             />
 
             {isFacilitator && !allPlayersReady && (
-              <div className="not-ready decider">
-                Wait until every player is ready to continue
-              </div>
+              <Row className="not-ready decider">
+                <Col>
+                  <p>Wait until every player is ready to continue.</p>
+                </Col>
+              </Row>
             )}
-          </div>
+          </>
         )}
 
-        {/* TIMER RUNNING */}
+        {/* TIMER RUNNING - THIRD SCREEN */}
         {screenIndex === 2 && (
-          <div className="screen">
-            <Instructions
-              show={!isFacilitator}
-              heading="Introductions"
-              body="Introduce your character and how this scenario impacts you. Try to mention your objective you need to meet."
-            />
-            <Instructions
-              show={isFacilitator}
-              heading="Introductions"
-              body="Give each player an equal opportunity to introduce their character and how they are impacted by this scenario."
-            />
+          <>
+            <Row>
+              <Col>
+                {isFacilitator ? (
+                  <Instructions
+                    body={`Give each player an equal opportunity to introduce
+                      their character and how they are impacted by this scenario.`}
+                  />
+                ) : (
+                  <Instructions
+                    body={`Introduce your character and how this scenario
+                      impacts you. Try to mention your objective you need to meet.`}
+                  />
+                )}
+              </Col>
+            </Row>
 
             <Speech
               facilitator={isFacilitator}
@@ -194,73 +229,87 @@ class Meet extends PureComponent {
               bold
             />
 
-            {/* Roles */}
+            {/* List players & roles */}
             {!isFacilitator && (
-              <div className="player-roles col-sm-6">
-                <h3>Team's Roles</h3>
+              <>
+                <Row>
+                  <Col>
+                    <h3>Team's Roles</h3>
+                  </Col>
+                </Row>
 
-                <div className="grid">
+                <Table striped border>
                   {/* Show all player role names */}
                   {Object.keys(data.shared.roles).map((key) => {
                     const role = data.shared.roles[key];
-
                     return (
-                      <div key={key}>
-                        <b>{role.username}</b>
-                        <br />
-                        {role.isFacilitator ? 'Facilitator' : role.title}
-                      </div>
+                      <tr key={key}>
+                        <td>{role.username}</td>
+                        <td>{role.isFacilitator ? 'Facilitator' : role.title}</td>
+                      </tr>
                     );
                   })}
-                </div>
-              </div>
+                </Table>
+              </>
             )}
 
             {/* Skip to next phase */}
-            {isFacilitator && (
-              <Button
-                variant="warning"
-                size="lg"
-                onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
-              >
-                Skip to Phase 2
-                <CdnImage publicId="v1540488090/at-stake/icons/check-btn" format="svg" />
-              </Button>
-            )}
-          </div>
+            <Row>
+              <Col>
+                {isFacilitator && (
+                  <Button
+                    variant="warning"
+                    size="lg"
+                    onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
+                  >
+                    Skip to Phase 2
+                    <CdnImage publicId="v1540488090/at-stake/icons/check-btn" format="svg" />
+                  </Button>
+                )}
+              </Col>
+            </Row>
+          </>
         )}
 
-        {/* TIMER OVER */}
+        {/* TIMER OVER - FOURTH SCREEN */}
         {screenIndex === 3 && (
-          <div className="screen">
-            {/* Go to next phase */}
-            {isFacilitator && (
-              <div>
-                <div>
-                Time’s up! Consider wrapping this discussion up
-                </div>
-
-                <Button
-                  variant="success"
-                  size="lg"
-                  onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
-                >
-                  Go to Phase 2
-                  <CdnImage publicId="v1540488090/at-stake/icons/check-btn" format="svg" />
-                </Button>
-              </div>
-            )}
-            {!isFacilitator && (
-              <div id="time-up">
-                <CdnImage
-                  publicId="v1540488090/at-stake/bg/clock"
-                  width={319}
-                  format="png"
-                />
-                <h1>Time's up!</h1>
-              </div>
-            )}
-          </div>
+          // {/* Go to next phase */}
+          isFacilitator ? (
+            <>
+              <Row>
+                <Col>
+                  <p>Time’s up! Consider wrapping this discussion up</p>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <Button
+                    variant="success"
+                    size="lg"
+                    onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
+                  >
+                    Go to Phase 2
+                    <CdnImage publicId="v1540488090/at-stake/icons/check-btn" format="svg" />
+                  </Button>
+                </Col>
+              </Row>
+            </>
+          ) : (
+            <>
+              <Row>
+                <Col>
+                  <CdnImage
+                    publicId="v1540488090/at-stake/bg/clock"
+                    width={319}
+                    format="png"
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col><h1>Time's up!</h1></Col>
+              </Row>
+            </>
+          )
         )}
 
         <Timer
@@ -270,8 +319,7 @@ class Meet extends PureComponent {
           done={this.timerEnd}
           isRunningData={this.timerData}
         />
-      </div>
-
+      </Container>
     );
   }
 }
