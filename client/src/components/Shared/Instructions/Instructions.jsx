@@ -1,32 +1,38 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import { Test } from './Instructions.styles';
+
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 const Instructions = (props) => {
-  const { show, heading, body } = props;
-
-  if (!show) return null;
+  const { heading, body } = props;
 
   return (
-    <div className="InstructionsWrapper">
-      <h3>{heading}</h3>
-      <p>{body}</p>
-    </div>
+    <>
+      <Row>
+        <Col>
+          <h3>{heading}</h3>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <p>{body}</p>
+        </Col>
+      </Row>
+    </>
   );
 };
 
 Instructions.propTypes = {
-  show: PropTypes.bool,
-  heading: PropTypes.string,
   body: PropTypes.string,
+  heading: PropTypes.string,
   subBody: PropTypes.string,
 };
 
 Instructions.defaultProps = {
-  show: false,
-  heading: 'Instructions',
-  body: 'Body Text',
-  subBody: 'Sub-body Text',
+  body: 'Default Body Text',
+  heading: 'Default Instructions',
+  subBody: 'Default Sub-body Text',
 };
 
 export default Instructions;

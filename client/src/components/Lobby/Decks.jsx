@@ -15,10 +15,10 @@ class Decks extends Component {
     return (
 
       <ButtonGroup>
-        {decks && decks.map((deck) => (
+        {decks && decks.map((deck, i) => (
           <Row key={deck._id}>
             <Col>
-              <Button variant="secondary" size="lg" onClick={() => callback(deck)}>
+              <Button id={`btn-deck-${i}`} variant="secondary" size="lg" onClick={() => callback(deck)}>
                 {deck.name}
               </Button>
             </Col>

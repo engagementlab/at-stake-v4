@@ -14,15 +14,14 @@ const CdnImage = (props) => {
 };
 
 CdnImage.propTypes = {
-  publicId: PropTypes.string,
   format: PropTypes.string,
+  publicId: PropTypes.string.isRequired,
   width: PropTypes.number,
 };
 
 CdnImage.defaultProps = {
-  publicId: null,
-  width: 1080,
   format: 'auto',
+  width: 1080,
 };
 
 export default CdnImage;

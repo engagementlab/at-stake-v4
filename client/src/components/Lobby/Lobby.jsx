@@ -211,6 +211,7 @@ class Lobby extends Component {
         <Row>
           <Col>
             <Button
+              id="btn-join-game"
               variant="primary"
               size="lg"
               onClick={() => this.join()}
@@ -231,20 +232,21 @@ class Lobby extends Component {
                 </InputGroup.Prepend>
 
                 <FormControl
+                  id="input-room-code"
                   type="text"
                   placeholder="room code"
-                  value={roomCode}
                   onChange={(event) => this.setState({ joinCode: event.target.value })}
                 />
 
                 <FormControl
+                  id="input-name"
                   type="text"
                   placeholder="name"
-                  value={playerName}
                   onChange={(event) => this.setState({ username: event.target.value })}
                 />
 
                 <Button
+                  id="btn-join-submit"
                   variant="success"
                   onClick={() => this.playerJoin()}
                 >
@@ -268,6 +270,7 @@ class Lobby extends Component {
         <Row>
           <Col>
             <Button
+              id="btn-new-game"
               variant="info"
               size="lg"
               onClick={() => this.start(true)}
@@ -283,7 +286,12 @@ class Lobby extends Component {
         {data ? (
           <Row>
             <Col>
-              <p>{`Room Code: ${data.code}`}</p>
+              <p>
+Room Code:&nbsp;
+                <span id="room-code">
+                  {data.code}
+                </span>
+              </p>
 
               {showDecks && mode === 'host' ? (
                 <Decks decks={data.decks} callback={this.selectDeck} />
@@ -294,11 +302,11 @@ class Lobby extends Component {
 
         {/* Start Game button for Host */}
 
-        {/* FIXME: disabled playerData.length check for testing */}
-        {mode === 'host' && playerData /* &&  */ ? (
+        {mode === 'host' && playerData ? (
           <Row>
             <Col id="start">
               <Button
+                id="btn-start-game"
                 variant="success"
                 size="lg"
                 onClick={() => { this.startGame(); }}
@@ -341,12 +349,12 @@ class Lobby extends Component {
   }
 }
 
-Lobby.defaultProps = {
-  mode: '',
-};
-
 Lobby.propTypes = {
   mode: PropTypes.string,
+};
+
+Lobby.defaultProps = {
+  mode: '',
 };
 
 const LobbyWithSocket = props => (
