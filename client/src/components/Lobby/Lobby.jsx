@@ -234,14 +234,19 @@ class Lobby extends Component {
                 <FormControl
                   id="input-room-code"
                   type="text"
-                  placeholder="room code"
-                  onChange={(event) => this.setState({ joinCode: event.target.value })}
+                  placeholder="Room Code"
+                  className="roomCode"
+                  pattern="[a-zA-Z]{0,4}"
+                  maxLength="4"
+                  onChange={(event) => this.setState({
+                    joinCode: event.target.value.toUpperCase(),
+                  })}
                 />
 
                 <FormControl
                   id="input-name"
                   type="text"
-                  placeholder="name"
+                  placeholder="Name"
                   onChange={(event) => this.setState({ username: event.target.value })}
                 />
 

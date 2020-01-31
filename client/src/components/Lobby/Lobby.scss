@@ -3,3 +3,11 @@
 .playerJoinInput {
   margin-top: 0.2em;
 }
+
+.playerJoinInput input::placeholder {
+  text-transform: capitalize;
+}
+
+.roomCode {
+  text-transform: uppercase;
+}

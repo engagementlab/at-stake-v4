@@ -238,17 +238,24 @@ class Meet extends PureComponent {
                   </Col>
                 </Row>
 
-                <Table striped border>
-                  {/* Show all player role names */}
-                  {Object.keys(data.shared.roles).map((key) => {
-                    const role = data.shared.roles[key];
-                    return (
-                      <tr key={key}>
-                        <td>{role.username}</td>
-                        <td>{role.isFacilitator ? 'Facilitator' : role.title}</td>
-                      </tr>
-                    );
-                  })}
+                <Table striped border size="sm" responsive="sm">
+                  <thead>
+                    <th>Player</th>
+                    <th>Role</th>
+                  </thead>
+
+                  <tbody>
+                    {/* Show all player role names */}
+                    {Object.keys(data.shared.roles).map((key) => {
+                      const role = data.shared.roles[key];
+                      return (
+                        <tr key={key}>
+                          <td>{role.username}</td>
+                          <td>{role.isFacilitator ? 'Facilitator' : role.title}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
                 </Table>
               </>
             )}
