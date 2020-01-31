@@ -51,11 +51,11 @@ function Role(props) {
           <Container>
             <Row>
               <Col>
-                <h1 className="header">
-                  <span className="star">&#9733;</span>
-                  Secret Goal
-                  <span className="star">&#9733;</span>
-                </h1>
+                <h4 className="header">
+                  <span className="star" role="img" aria-label="star">&#x2B50;</span>
+                  {' Secret Goal '}
+                  <span className="star" role="img" aria-label="star">&#x2B50;</span>
+                </h4>
               </Col>
             </Row>
             <Row>
