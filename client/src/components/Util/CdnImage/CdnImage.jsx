@@ -14,13 +14,12 @@ const CdnImage = (props) => {
 };
 
 CdnImage.propTypes = {
-  publicId: PropTypes.string,
+  publicId: PropTypes.string.isRequired,
   format: PropTypes.string,
   width: PropTypes.number,
 };
 
 CdnImage.defaultProps = {
-  publicId: null,
   width: 1080,
   format: 'auto',
 };
