@@ -1,17 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<head>
+    <meta charset="utf-8">
     <title>@Stake</title>
+    <base href="/">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com/" />
-
-    <meta
-      name="description"
-      content="@Stake is a game that fosters democracy, empathy, and creative problem solving for civic issues."
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width">
 
     <link
       href="https://fonts.googleapis.com/css?family=Roboto:400,700|Source+Code+Pro&display=swap"
@@ -49,20 +45,51 @@
     <meta name="application-name" content="@Stake" />
     <meta name="msapplication-TileColor" content="#ffffff" />
     <meta name="theme-color" content="#ffffff" />
-  </head>
 
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+    <style>
+        @import url('"https://fonts.googleapis.com/css?family=Source+Code+Pro&display=swap');
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+        html,
+        body {
+            height: 100%;
+        }
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+        html {
+            display: table;
+            margin: auto;
+        }
+
+        body {
+            font-family: 'Source Code Pro', monospace;
+            display: table-cell;
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        a,
+        a:visited {
+            color: black;
+        }
+
+        #content {
+            text-align: center;
+
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div id="content">
+        <img src="https://res.cloudinary.com/engagement-lab-home/image/upload/v1540484156/at-stake/layout/logo.png"
+            alt="@Stake logo" role="img" />
+        <h1>Hmmmm....</h1>
+        <h3>Looks like we're having some technical difficulties. Please try again soon!</h3>
+        <a href=".">Try Again</a>
+    </div>
+</body>
+
 </html>
