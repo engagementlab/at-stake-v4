@@ -21,7 +21,7 @@ pm2 stop 'at-stake-client';
 if [ "$1" == "prod" ]; then
     npm run build;
 else
-    npm run build-qa;
+    npm run build;
 fi
 
 pm2 start 'at-stake-client';
