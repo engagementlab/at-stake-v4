@@ -15,7 +15,7 @@ import Ranking from './components/Phases/Ranking/Ranking';
 
 import Rolecard from './components/Shared/Rolecard/Rolecard';
 
-const socket = io('http://localhost:3001', {
+const socket = io(`${process.env.REACT_APP_SOCKET_URL}`, {
   path: '/at-stake-socket/',
   reconnection: true,
   reconnectionDelay: 500,
