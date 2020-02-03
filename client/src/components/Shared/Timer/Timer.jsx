@@ -96,6 +96,7 @@ class Timer extends PureComponent {
           <div>
             {this.showButton && (
             <Button
+              id="btn-start-timer"
               variant="info"
               size="lg"
               disabled={disabled}

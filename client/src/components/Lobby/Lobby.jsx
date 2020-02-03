@@ -32,6 +32,7 @@ class Lobby extends Component {
       playerData: null,
       showDecks: true,
       mode: '',
+      username: 'user1',
     };
 
     this.selectDeck = this.selectDeck.bind(this);

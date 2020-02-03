@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 
 namespace AtStake
@@ -49,26 +50,29 @@ namespace AtStake
     [SetUp]
     public void startBrowser()
     {
-      // driver = new ChromeDriver();
+      ChromeOptions options = new ChromeOptions();
+      options.AddArgument("--auto-open-devtools-for-tabs");
+      driver = new ChromeDriver(options);
 
-      var caps = new RemoteSessionSettings();
-      caps.AddMetadataSetting("browserName", "iPhone");
-      caps.AddMetadataSetting("device", "iPhone 8 Plus");
-      caps.AddMetadataSetting("realMobile", "true");
-      caps.AddMetadataSetting("os_version", "11");
-      caps.AddMetadataSetting("browserstack.user", "engagementlab1");
-      caps.AddMetadataSetting("browserstack.key", "JZ41mCB2nuWYzJhui7RN");
-      caps.AddMetadataSetting("name", "Bstack-[C_sharp] Sample Test");
-      
-      driver = new RemoteWebDriver(
-        new Uri("http://hub-cloud.browserstack.com/wd/hub/"), capability
-      );
+      // var caps = new DesiredCapabilities();
+      // caps.SetCapability("browserName", "iPhone");
+      // caps.SetCapability("device", "iPhone 8 Plus");
+      // caps.SetCapability("realMobile", "true");
+      // caps.SetCapability("os_version", "11");
+      // caps.SetCapability("browserstack.user", "engagementlab1");
+      // caps.SetCapability("browserstack.key", "JZ41mCB2nuWYzJhui7RN");
+      // caps.SetCapability("name", "Bstack-[C_sharp] Sample Test");
+      //
+      // driver = new RemoteWebDriver(
+      //   new Uri("http://hub-cloud.browserstack.com/wd/hub/"), caps
+      // );
     }
 
     [Test]
     public void test()
     {
-      driver.Navigate().GoToUrl("https://qa.atstakegame.org/");
+      //http://localhost:3000"
+      driver.Navigate().GoToUrl("http://localhost:3000/");
       
       const int timeoutSeconds = 15;
       var ts = new TimeSpan(0, 0, timeoutSeconds);
@@ -83,9 +87,10 @@ namespace AtStake
       wait.Until((driver) => driver.FindElement(By.Id("room-code")) != null);
       var roomCode = driver.FindElement(By.Id("room-code")).Text;
       
+      // New tab
       ((IJavaScriptExecutor)driver).ExecuteScript("window.open();");
       driver.SwitchTo().Window(driver.WindowHandles.Last());
-      driver.Navigate().GoToUrl("http://localhost:3000/");
+      driver.Navigate().GoToUrl("http://localhost:3000");
 
       IWebElement joinCodeInput = null;
       driver.FindElement(By.Id("btn-join-game")).Click();
@@ -94,10 +99,55 @@ namespace AtStake
         joinCodeInput = driver.FindElement(By.Id("input-room-code"));
         return joinCodeInput != null;
       });
+
+      var firstTabHandle = driver.CurrentWindowHandle;
       var usernameInput = driver.FindElement(By.Id("input-name"));
 
       joinCodeInput.SendKeys(roomCode);
       usernameInput.SendKeys(usernames[new Random().Next(0, usernames.Length)]);
+      
+      // Player 1 joins
+      driver.FindElement(By.Id("btn-join-submit")).Click();
+      
+      // Facilitator tab
+      driver.SwitchTo().Window(driver.WindowHandles.First());
+      driver.FindElement(By.Id("btn-start-game")).Click();
+      
+      // Player 1 tab hits 'continue' -> 'ready'
+      driver.SwitchTo().Window(driver.WindowHandles.Last());
+      IWebElement btnContinue = null;
+      IWebElement btnReady = null;
+      
+      wait.Until((driver) =>
+      {
+        btnContinue = driver.FindElement(By.Id("btn-continue"));
+        return btnContinue != null;
+      });
+      btnContinue.Click();
+      
+      wait.Until((driver) =>
+      {
+        btnReady = driver.FindElement(By.Id("btn-ready"));
+        return btnReady != null;
+      });
+      btnReady.Click();
+      
+      // Fac tab hit continue & start timer
+      driver.SwitchTo().Window(firstTabHandle);
+      IWebElement btnTimer = null;
+      btnContinue = null;
+      wait.Until((driver) =>
+      {
+        btnContinue = driver.FindElement(By.Id("btn-continue"));
+        return btnContinue != null;
+      });
+      wait.Until((driver) =>
+      {
+        btnTimer = driver.FindElement(By.Id("btn-start-timer"));
+        return btnTimer.Enabled;
+      });
+      btnTimer.Click();
+      
     }
 
     [TearDown]

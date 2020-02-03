@@ -131,6 +131,7 @@ class Meet extends PureComponent {
             <Row>
               <Col>
                 <Button
+                  id="btn-continue"
                   variant="primary"
                   size="lg"
                   onClick={() => { this.proceedFromRolecard(); }}
@@ -173,6 +174,7 @@ class Meet extends PureComponent {
               <Row>
                 <Col>
                   <Button
+                    id="btn-ready"
                     variant="success"
                     size="lg"
                     onClick={() => {
