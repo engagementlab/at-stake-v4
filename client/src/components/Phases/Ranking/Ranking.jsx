@@ -163,36 +163,40 @@ class Ranking extends PureComponent {
                 <h2>Did the team meet any secret goals?</h2>
 
                 {/* Show all player secret goals */}
-                {Object.keys(data.shared.playerData).map((player, i) => (
-                  <div key={player.uid} className="check toggle">
-                    <p>{player.username}</p>
-                    <div className="goal">{player.secretGoal}</div>
+                {Object.keys(data.shared.playerData).map((key) => {
+                  const player = data.shared.playerData[key];
 
-                    <label className="switch">
-                      {i === 0 && (
+                  return (
+                    <div key={player.uid} className="check toggle">
+                      <p>{player.username}</p>
+                      <div className="goal">{player.secretGoal}</div>
+
+                      <label className="switch">
+                        {/* {i === 0 && (
                         <span className="tooltip-content">
                           When a player meets their secret goal, you can check
                           it off. They&apos;ll score extra points at the end of the
                           game.
                         </span>
-                      )}
+                        )} */}
 
-                      {player.goalMet ? (
-                        <input
-                          type="checkbox"
-                          checked="checked"
-                          disabled="disabled"
-                        />
-                      ) : (
-                        <input
-                          type="checkbox"
-                          onClick={() => this.playerMetGoal(player.uid)}
-                        />
-                      )}
-                      <span className="slider round" />
-                    </label>
-                  </div>
-                ))}
+                        {player.goalMet ? (
+                          <input
+                            type="checkbox"
+                            checked="checked"
+                            disabled="disabled"
+                          />
+                        ) : (
+                          <input
+                            type="checkbox"
+                            onClick={() => this.playerMetGoal(player.uid)}
+                          />
+                        )}
+                        <span className="slider round" />
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -201,40 +205,48 @@ class Ranking extends PureComponent {
               <div id="pt2" className="form">
                 <h2>Did the team meet their needs?</h2>
 
-                {Object.keys(data.shared.playerData).map((player, i) => (
-                  <div key={player.uid} className="toggle">
-                    <p>{player.username}</p>
-                    <div className="needs">
-                      <div className="need">
-                        <label className="switch">
-                          <input
-                            type="checkbox"
-                            onClick={() => this.playerMetNeed(player.uid, 0)}
-                          />
-                          <span className="slider round" />
-                        </label>
+                {Object.keys(data.shared.playerData).map((key) => {
+                  const player = data.shared.playerData[key];
 
-                        <span>
-                          {player.needs ? player.needs[0] : 'Example need 1'}
-                        </span>
-                      </div>
-                      <div className="need">
-                        <label className="switch">
-                          <input
-                            type="checkbox"
-                            onClick={() => this.playerMetNeed(player.uid, 1)}
-                          />
-                          <span className="slider round" />
-                        </label>
+                  // Do not render facilitator
+                  if (player.isFacilitator) return null;
 
-                        <span>
-                          {player.needs ? player.needs[1] : 'Example need 2'}
-                        </span>
+                  return (
+
+                    <div key={player.uid} className="toggle">
+                      <p>{player.username}</p>
+                      <div className="needs">
+                        <div className="need">
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              onClick={() => this.playerMetNeed(player.uid, 0)}
+                            />
+                            <span className="slider round" />
+                          </label>
+
+                          <span>
+                            {player.needs ? player.needs[0] : 'Example need 1'}
+                          </span>
+                        </div>
+                        <div className="need">
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              onClick={() => this.playerMetNeed(player.uid, 1)}
+                            />
+                            <span className="slider round" />
+                          </label>
+
+                          <span>
+                            {player.needs ? player.needs[1] : 'Example need 2'}
+                          </span>
+                        </div>
                       </div>
+                      <hr />
                     </div>
-                    <hr />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -326,7 +338,7 @@ class Ranking extends PureComponent {
               <div>
                 <CdnImage
                   publicId="v1541442374/at-stake/bg/win"
-                  width="425"
+                  width={425}
                 />
                 <h1>Congratulations</h1>
                 <div className="text">
@@ -338,7 +350,7 @@ class Ranking extends PureComponent {
               <div>
                 <CdnImage
                   publicId="v1541442374/at-stake/bg/lose"
-                  width="425"
+                  width={425}
                 />
                 <h1>Tragedy</h1>
                 <div className="text">

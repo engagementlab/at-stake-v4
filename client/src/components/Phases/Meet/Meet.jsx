@@ -320,7 +320,7 @@ class Meet extends PureComponent {
         )}
 
         <Timer
-          show={isFacilitator}
+          show={isFacilitator && screenIndex >= 1}
           disabled={!allPlayersReady}
           started={this.timerStart}
           done={this.timerEnd}

@@ -24,6 +24,7 @@ class Timer extends PureComponent {
     };
 
     this.clockInterval = null;
+    this.showButton = true;
   }
 
   componentDidMount() {
@@ -93,11 +94,13 @@ class Timer extends PureComponent {
       <div className="timer-wrap">
         {show ? (
           <div>
+            {this.showButton && (
             <Button
               variant="info"
               size="lg"
               disabled={disabled}
               onClick={() => {
+                this.showButton = false;
                 socket.emit(
                   'game:start_timer',
                   GameData.get().assemble(),
@@ -106,6 +109,7 @@ class Timer extends PureComponent {
             >
               <h1>Start Timer</h1>
             </Button>
+            )}
 
             <div>{countdownLabel}</div>
           </div>
@@ -125,7 +129,7 @@ Timer.propTypes = {
   }),
   show: PropTypes.bool,
   socket: PropTypes.object,
-  started: PropTypes.bool,
+  started: PropTypes.func,
 };
 
 Timer.defaultProps = {
@@ -136,7 +140,7 @@ Timer.defaultProps = {
     timerLength: 5,
   },
   show: false,
-  started: false,
+  started: null,
 };
 
 const TimerWithSocket = (props) => (

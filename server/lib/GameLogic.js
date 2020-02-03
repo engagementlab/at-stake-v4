@@ -158,6 +158,7 @@ class GameLogic extends Common {
           needs: player.role.needs,
           secretGoal: player.role.secretGoal,
           goalMet: _.contains(this.playersMetGoal, player.uid),
+          isFacilitator: player.role.isFacilitator,
         }));
 
         break;
@@ -405,8 +406,9 @@ class GameLogic extends Common {
     this.groupSocket.to(this.players_id).emit('game:met_goal', player.username);
   }
 
-  PlayerMetNeed(playerUid, needIndex) {
-    const player = this.GetPlayerByUserId(playerUid);
+  async PlayerMetNeed(playerUid, needIndex) {
+    const uid = parseInt(playerUid, 10);
+    const player = await this.GetPlayerByUserId(uid);
 
     // Get need that was met
     const need = player.role.needs[needIndex];

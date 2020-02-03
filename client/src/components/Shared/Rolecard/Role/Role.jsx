@@ -13,8 +13,8 @@ function Role(props) {
     <Container>
       <Row>
         <Col>
-          {data.bio.html.map((block) => (
-            <Row>
+          {data.bio.html.map((block, i) => (
+            <Row key={`bio_${i}`}>
               <p>
                 {block.replace('<p>', '').replace('</p>', '').replace(/&#39;/g, '\'')}
               </p>
@@ -77,7 +77,7 @@ Role.propTypes = {
   data: PropTypes.shape({
     title: PropTypes.string.isRequired,
     bio: PropTypes.shape({
-      html: PropTypes.string.isRequired,
+      html: PropTypes.array.isRequired,
     }),
     needs: PropTypes.arrayOf(PropTypes.string),
     secretGoal: PropTypes.string,
