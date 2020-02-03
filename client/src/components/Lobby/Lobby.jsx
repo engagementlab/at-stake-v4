@@ -26,15 +26,11 @@ class Lobby extends Component {
 
     this.state = {
       data: null,
+      joinCode: '',
+      isTestGame: false,
       status: 'Waiting',
       playerData: null,
       showDecks: true,
-      // On dev, room code has default in form
-      joinCode: process.env.NODE_ENV === 'development' ? 'TEST' : '',
-
-      // for dev only
-      username: 'user1',
-
       mode: '',
     };
 
@@ -44,6 +40,8 @@ class Lobby extends Component {
     const { CancelToken } = axios;
     this.cancelSrc = CancelToken.source();
     this.abortCtrl = new AbortController();
+
+    this.isDev = process.env.NODE_ENV === 'development' ? 'TEST' : '';
   }
 
   componentDidMount() {
@@ -86,6 +84,8 @@ class Lobby extends Component {
 
           // Cache game id in data singleton
           GameData.get()._gameId = response.code;
+
+          if (this.state.isTestGame) { this.selectDeck(response.decks[0]); }
         });
     }
 
@@ -130,14 +130,7 @@ class Lobby extends Component {
     }
   }
 
-  playerJoin(code) {
-    // Watch for new players in lobby
-    socket.on('players:update', data => {
-      this.setState({
-        playerData: data.players,
-      });
-    });
-
+  playerJoin() {
     let playerUID = Math.floor(1000000000 + Math.random() * 900000);
 
     // Cache uid for player
@@ -146,16 +139,22 @@ class Lobby extends Component {
     } else {
       playerUID = sessionStorage.getItem('uUID');
     }
-
     // Host = "decider"
     const roomData = {
       type: this.state.mode === 'host' ? 'decider' : 'player',
       username: this.state.username,
       uid: playerUID,
-      joinCode: code || this.state.joinCode,
+      joinCode: this.state.joinCode,
     };
 
     const payload = GameData.get().assemble(roomData);
+
+    // Watch for new players in lobby
+    socket.on('players:update', data => {
+      this.setState({
+        playerData: data.players,
+      });
+    });
 
     // Session started, let's sign-up the decider for this room
     socket.emit('room', payload);
@@ -171,18 +170,23 @@ class Lobby extends Component {
     sessionStorage.setItem('username', roomData.username);
   }
 
+  joinTest() {
+    this.setState({
+      joinCode: 'TEST',
+      username: 'Test Player 1',
+      isTestGame: true,
+    },
+    () => this.playerJoin());
+  }
+
   startGame() {
     socket.emit('game:start', GameData.get().assemble());
-    // this.props.done();
   }
 
   render() {
     const {
       data, mode, playerData, showDecks, status,
     } = this.state;
-    // Pre-populated join form for dev
-    const roomCode = process.env.NODE_ENV === 'development' ? 'TEST' : '';
-    const playerName = process.env.NODE_ENV === 'development' ? 'player1' : '';
 
     return (
       // TODO: Implement initial name input screen
@@ -222,45 +226,63 @@ class Lobby extends Component {
           </Col>
         </Row>
 
-        {mode === 'join' ? (
-          <Row>
-            <Col>
-              {/* Input for room code shown when a player clicks "join" */}
-              <InputGroup className="playerJoinInput">
-                <InputGroup.Prepend>
-                  <InputGroup.Text>Player Join:</InputGroup.Text>
-                </InputGroup.Prepend>
+        {mode === 'join' && (
+          <div>
+            <Row>
+              <Col>
+                {/* Input for room code shown when a player clicks "join" */}
+                <InputGroup className="playerJoinInput">
+                  <InputGroup.Prepend>
+                    <InputGroup.Text>Player Join:</InputGroup.Text>
+                  </InputGroup.Prepend>
 
-                <FormControl
-                  id="input-room-code"
-                  type="text"
-                  placeholder="Room Code"
-                  className="roomCode"
-                  pattern="[a-zA-Z]{0,4}"
-                  maxLength="4"
-                  onChange={(event) => this.setState({
-                    joinCode: event.target.value.toUpperCase(),
-                  })}
-                />
+                  <FormControl
+                    id="input-room-code"
+                    type="text"
+                    placeholder="Room Code"
+                    className="roomCode"
+                    pattern="[a-zA-Z]{0,4}"
+                    maxLength="4"
+                    onChange={(event) => this.setState({
+                      joinCode: event.target.value.toUpperCase(),
+                    })}
+                  />
 
-                <FormControl
-                  id="input-name"
-                  type="text"
-                  placeholder="Name"
-                  onChange={(event) => this.setState({ username: event.target.value })}
-                />
+                  <FormControl
+                    id="input-name"
+                    type="text"
+                    placeholder="Name"
+                    onChange={(event) => this.setState({ username: event.target.value })}
+                  />
 
-                <Button
-                  id="btn-join-submit"
-                  variant="success"
-                  onClick={() => this.playerJoin()}
-                >
+                  <Button
+                    id="btn-join-submit"
+                    variant="success"
+                    onClick={() => this.playerJoin()}
+                  >
                   Join
+                  </Button>
+                </InputGroup>
+              </Col>
+            </Row>
+
+            {this.isDev && (
+            <Row>
+              <Col>
+                <Button
+                  id="btn-join-submit-test"
+                  size="sm"
+                  variant="dark"
+                  onClick={() => this.joinTest()}
+                >
+              Join TEST Game
                 </Button>
-              </InputGroup>
-            </Col>
-          </Row>
-        ) : null}
+              </Col>
+            </Row>
+            )}
+          </div>
+
+        )}
 
         {/* Begin "Host" logic */}
 
@@ -282,6 +304,18 @@ class Lobby extends Component {
               block
             >
               Create A New Game
+            </Button>
+            <Button
+              id="btn-new-game-test"
+              variant="dark"
+              size="sm"
+              onClick={() => {
+                this.setState({ isTestGame: true, username: 'Facilitator' });
+                this.start(true);
+              }}
+              block
+            >
+              Create TEST Game
             </Button>
           </Col>
         </Row>
