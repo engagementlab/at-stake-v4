@@ -49,13 +49,26 @@ namespace AtStake
     [SetUp]
     public void startBrowser()
     {
-      driver = new ChromeDriver();
+      // driver = new ChromeDriver();
+
+      var caps = new RemoteSessionSettings();
+      caps.AddMetadataSetting("browserName", "iPhone");
+      caps.AddMetadataSetting("device", "iPhone 8 Plus");
+      caps.AddMetadataSetting("realMobile", "true");
+      caps.AddMetadataSetting("os_version", "11");
+      caps.AddMetadataSetting("browserstack.user", "engagementlab1");
+      caps.AddMetadataSetting("browserstack.key", "JZ41mCB2nuWYzJhui7RN");
+      caps.AddMetadataSetting("name", "Bstack-[C_sharp] Sample Test");
+      
+      driver = new RemoteWebDriver(
+        new Uri("http://hub-cloud.browserstack.com/wd/hub/"), capability
+      );
     }
 
     [Test]
     public void test()
     {
-      driver.Url = "http://localhost:3000/";
+      driver.Navigate().GoToUrl("https://qa.atstakegame.org/");
       
       const int timeoutSeconds = 15;
       var ts = new TimeSpan(0, 0, timeoutSeconds);
