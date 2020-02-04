@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/john_richardson/RiderProjects/Selenium/AtStake/AtStake.csproj": {}
+    "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/AtStake.csproj": {}
   },
   "projects": {
-    "/Users/john_richardson/RiderProjects/Selenium/AtStake/AtStake.csproj": {
+    "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/AtStake.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/john_richardson/RiderProjects/Selenium/AtStake/AtStake.csproj",
+        "projectUniqueName": "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/AtStake.csproj",
         "projectName": "AtStake",
-        "projectPath": "/Users/john_richardson/RiderProjects/Selenium/AtStake/AtStake.csproj",
+        "projectPath": "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/AtStake.csproj",
         "packagesPath": "/Users/john_richardson/.nuget/packages/",
-        "outputPath": "/Users/john_richardson/RiderProjects/Selenium/AtStake/obj/",
+        "outputPath": "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/john_richardson/.config/NuGet/NuGet.Config"

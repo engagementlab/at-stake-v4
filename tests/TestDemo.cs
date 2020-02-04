@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using OpenQA.Selenium;
@@ -92,8 +93,19 @@ namespace AtStake
       driver.SwitchTo().Window(driver.WindowHandles.Last());
       driver.Navigate().GoToUrl("http://localhost:3000");
 
+      ((IJavaScriptExecutor) driver).ExecuteScript("sessionStorage.clear();");
+        
+      IWebElement joinBtn = null;
       IWebElement joinCodeInput = null;
-      driver.FindElement(By.Id("btn-join-game")).Click();
+
+      wait.Until((driver) =>
+      {
+        joinBtn = driver.FindElement(By.Id("btn-join-game"));
+
+        return joinBtn != null;
+      });
+      joinBtn.Click();
+
       wait.Until((driver) =>
       {
         joinCodeInput = driver.FindElement(By.Id("input-room-code"));
@@ -117,13 +129,14 @@ namespace AtStake
       driver.SwitchTo().Window(driver.WindowHandles.Last());
       IWebElement btnContinue = null;
       IWebElement btnReady = null;
-      
-      wait.Until((driver) =>
-      {
-        btnContinue = driver.FindElement(By.Id("btn-continue"));
-        return btnContinue != null;
-      });
-      btnContinue.Click();
+      IWebElement interstitial = null;
+      wait.Until((driver) => SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("interstitial")));
+      wait.Until((driver) => SeleniumExtras.WaitHelpers.ExpectedConditions.InvisibilityOfElementLocated(By.Id("interstitial")));
+
+      Debug.Write("click");
+      wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("btn-continue")));
+      driver.FindElement(By.Id("btn-continue")).Click();
+      return;
       
       wait.Until((driver) =>
       {
@@ -134,6 +147,7 @@ namespace AtStake
       
       // Fac tab hit continue & start timer
       driver.SwitchTo().Window(firstTabHandle);
+      
       IWebElement btnTimer = null;
       btnContinue = null;
       wait.Until((driver) =>

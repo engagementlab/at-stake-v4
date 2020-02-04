@@ -1,10 +1,10 @@
 ﻿{
   "version": "1.0.0",
   "restore": {
-    "projectUniqueName": "/Users/john_richardson/RiderProjects/Selenium/AtStake/AtStake.csproj",
+    "projectUniqueName": "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/AtStake.csproj",
     "projectName": "AtStake",
-    "projectPath": "/Users/john_richardson/RiderProjects/Selenium/AtStake/AtStake.csproj",
-    "outputPath": "/Users/john_richardson/RiderProjects/Selenium/AtStake/obj/",
+    "projectPath": "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/AtStake.csproj",
+    "outputPath": "/Users/john_richardson/Documents/Projects/at-stake-v4/tests/obj/",
     "projectStyle": "PackageReference",
     "originalTargetFrameworks": [
       "netcoreapp3.0"

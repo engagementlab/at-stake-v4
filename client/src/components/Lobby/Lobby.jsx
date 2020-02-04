@@ -152,6 +152,7 @@ class Lobby extends Component {
 
     // Watch for new players in lobby
     socket.on('players:update', data => {
+      console.log(data);
       this.setState({
         playerData: data.players,
       });
@@ -161,6 +162,7 @@ class Lobby extends Component {
     socket.emit('room', payload);
 
     // Log player in (non-fac only)
+    console.log(payload);
     if (roomData.type === 'player') socket.emit('login:submit', payload);
 
     // Save game code for resuming
