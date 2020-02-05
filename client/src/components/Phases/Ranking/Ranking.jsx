@@ -48,7 +48,7 @@ class Ranking extends PureComponent {
   }
 
   componentWillUnmount() {
-    console.log('Ranking will unmount');
+    console.log('[Ranking] componentWillUnmount() called.');
   }
 
   nextScreen() {

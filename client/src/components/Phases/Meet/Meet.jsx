@@ -42,8 +42,8 @@ class Meet extends PureComponent {
 
   componentDidMount() {
     const { data, socket } = this.props;
-    console.log('data:', data);
-    console.log('socket:', socket);
+    console.log('[Meet] componentDidMount() data:', data);
+    console.log('[Meet] componentDidMount() socket:', socket);
 
     // Set if facilitator, if rolecard shows, & if timer is running (player is 'ready')
     const skipInitScreen = data.timerRunning;
@@ -75,7 +75,7 @@ class Meet extends PureComponent {
 
   componentDidUpdate() {
     const { data } = this.props;
-    console.log('DATA', data);
+    console.log('[Meet] componentDidUpdate() data: ', data);
   }
 
   componentWillUnmount() {

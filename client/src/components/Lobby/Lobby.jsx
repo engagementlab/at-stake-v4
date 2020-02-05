@@ -157,7 +157,7 @@ class Lobby extends Component {
 
     // Watch for new players in lobby
     socket.on('players:update', data => {
-      console.log(data);
+      console.log('[Lobby] ws players:update data:', data);
       this.setState({
         playerData: data.players,
       });
@@ -167,7 +167,7 @@ class Lobby extends Component {
     socket.emit('room', payload);
 
     // Log player in (non-fac only)
-    console.log(payload);
+    console.log('[Lobby] playerJoin() payload:', payload);
     if (roomData.type === 'player') socket.emit('login:submit', payload);
 
     // Save game code for resuming
@@ -382,7 +382,7 @@ class Lobby extends Component {
               Players:
               <ListGroup>
                 {playerData.map(player => (
-                  <ListGroup.Item key={player.username}>
+                  <ListGroup.Item key={player.uid}>
                     {player.username}
                   </ListGroup.Item>
                 ))}

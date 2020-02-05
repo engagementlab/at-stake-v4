@@ -141,7 +141,7 @@ class Deliberate extends PureComponent {
 
   componentDidUpdate() {
     const { data } = this.props;
-    console.log('DATA', data);
+    console.log('[Deliberate] componentDidUpdate() data:', data);
   }
 
   componentWillUnmount() {
@@ -331,7 +331,6 @@ class Deliberate extends PureComponent {
                   <tbody>
                     {Object.keys(data.shared.roles).map((key) => {
                       const role = data.shared.roles[key];
-                      const classStr = `player${role.isFacilitator ? ' facilitator' : ''}`;
 
                       return (
                         <tr key={key}>

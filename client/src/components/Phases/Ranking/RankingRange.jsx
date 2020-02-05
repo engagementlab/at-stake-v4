@@ -6,8 +6,6 @@ function RankingRange(props) {
     id, min, max, value, onChangeFunc, onChangeTarget,
   } = props;
 
-  console.log('RankingRange props:', props);
-
   return (
     <>
       <input
