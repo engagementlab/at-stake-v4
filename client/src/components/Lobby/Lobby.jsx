@@ -176,7 +176,7 @@ class Lobby extends Component {
   joinTest() {
     this.setState({
       joinCode: 'TEST',
-      username: 'Test Player 1',
+      username: `Test Player ${Math.floor(Math.random() * 100)}`,
       isTestGame: true,
     },
     () => this.playerJoin());

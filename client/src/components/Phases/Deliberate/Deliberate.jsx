@@ -245,6 +245,7 @@ class Deliberate extends PureComponent {
               subBody={data.question}
             />
 
+            {/* FIXME: This doesn't switch this to "waiting" */}
             {!isFacilitator && (notReady ? (
               <Button
                 variant="success"
@@ -403,6 +404,7 @@ class Deliberate extends PureComponent {
             {/* Timer over */}
             {timerEnded && (
               <div id="time-up">
+                {/* FIXME: Image overlaps page size */}
                 <CdnImage
                   publicId="v1540488090/at-stake/bg/clock"
                   width={319}

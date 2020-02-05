@@ -170,6 +170,7 @@ class Meet extends PureComponent {
             </Row>
 
             {/* Ready button for participants */}
+            {/* TODO: Instead of hiding ready button, change it to "waiting..." */}
             {!isFacilitator && notReady && (
               <Row>
                 <Col>
@@ -307,6 +308,7 @@ class Meet extends PureComponent {
             <>
               <Row>
                 <Col>
+                  {/* FIXME: Image isn't responsively sized. */}
                   <CdnImage
                     publicId="v1540488090/at-stake/bg/clock"
                     width={319}
