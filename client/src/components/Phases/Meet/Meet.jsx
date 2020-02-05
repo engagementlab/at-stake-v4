@@ -170,20 +170,22 @@ class Meet extends PureComponent {
             </Row>
 
             {/* Ready button for participants */}
-            {/* TODO: Instead of hiding ready button, change it to "waiting..." */}
-            {!isFacilitator && notReady && (
+            {!isFacilitator && (
               <Row>
                 <Col>
                   <Button
                     id="btn-ready"
-                    variant="success"
+                    variant={notReady ? 'success' : 'warning'}
+                    disabled={!notReady}
                     size="lg"
                     onClick={() => {
-                      this.socket.emit('game:ready', GameData.get().assemble());
-                      this.setState({ notReady: false });
+                      if (notReady) {
+                        this.socket.emit('game:ready', GameData.get().assemble());
+                        this.setState({ notReady: false });
+                      }
                     }}
                   >
-                    Ready
+                    {notReady ? 'Ready' : 'Waiting'}
                   </Button>
                 </Col>
               </Row>

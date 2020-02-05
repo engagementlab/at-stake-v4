@@ -66,9 +66,12 @@ class Lobby extends Component {
     });
   }
 
-  start(host) {
-    if (host) {
-      this.props.host();
+  start(isHost) {
+    const { host } = this.props;
+    const { isTestGame } = this.state;
+
+    if (isHost) {
+      host();
 
       // Generate session
       fetch(`${process.env.REACT_APP_API_URL}/api/generate`, {
@@ -86,7 +89,7 @@ class Lobby extends Component {
           // Cache game id in data singleton
           GameData.get()._gameId = response.code;
 
-          if (this.state.isTestGame) { this.selectDeck(response.decks[0]); }
+          if (isTestGame) { this.selectDeck(response.decks[0]); }
         });
     }
 
@@ -132,6 +135,8 @@ class Lobby extends Component {
   }
 
   playerJoin() {
+    const { username, joinCode, mode } = this.state;
+
     let playerUID = Math.floor(1000000000 + Math.random() * 900000);
 
     // Cache uid for player
@@ -142,10 +147,10 @@ class Lobby extends Component {
     }
     // Host = "decider"
     const roomData = {
-      type: this.state.mode === 'host' ? 'decider' : 'player',
-      username: this.state.username,
+      type: mode === 'host' ? 'decider' : 'player',
+      username,
       uid: playerUID,
-      joinCode: this.state.joinCode,
+      joinCode,
     };
 
     const payload = GameData.get().assemble(roomData);
@@ -168,7 +173,7 @@ class Lobby extends Component {
     // Save game code for resuming
     sessionStorage.setItem('gameCode', roomData.joinCode);
     // Flag client if is host/facilitator
-    sessionStorage.setItem('isModerator', this.state.mode === 'host');
+    sessionStorage.setItem('isModerator', mode === 'host');
     // Save username
     sessionStorage.setItem('username', roomData.username);
   }
@@ -278,7 +283,7 @@ class Lobby extends Component {
                   variant="dark"
                   onClick={() => this.joinTest()}
                 >
-              Join TEST Game
+                Join TEST Game
                 </Button>
               </Col>
             </Row>
@@ -329,7 +334,7 @@ class Lobby extends Component {
           <Row>
             <Col>
               <p>
-Room Code:&nbsp;
+                Room Code:&nbsp;
                 <span id="room-code">
                   {data.code}
                 </span>
@@ -393,6 +398,7 @@ Room Code:&nbsp;
 
 Lobby.propTypes = {
   mode: PropTypes.string,
+  host: PropTypes.func.isRequired,
 };
 
 Lobby.defaultProps = {
