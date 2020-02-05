@@ -42,8 +42,8 @@ class Meet extends PureComponent {
 
   componentDidMount() {
     const { data, socket } = this.props;
-    console.log('data:', data);
-    console.log('socket:', socket);
+    console.log('[Meet] componentDidMount() data:', data);
+    console.log('[Meet] componentDidMount() socket:', socket);
 
     // Set if facilitator, if rolecard shows, & if timer is running (player is 'ready')
     const skipInitScreen = data.timerRunning;
@@ -71,6 +71,11 @@ class Meet extends PureComponent {
         timerDuration: data.timerDuration,
       };
     }
+  }
+
+  componentDidUpdate() {
+    const { data } = this.props;
+    console.log('[Meet] componentDidUpdate() data: ', data);
   }
 
   componentWillUnmount() {
@@ -165,19 +170,22 @@ class Meet extends PureComponent {
             </Row>
 
             {/* Ready button for participants */}
-            {!isFacilitator && notReady && (
+            {!isFacilitator && (
               <Row>
                 <Col>
                   <Button
                     id="btn-ready"
-                    variant="success"
+                    variant={notReady ? 'success' : 'warning'}
+                    disabled={!notReady}
                     size="lg"
                     onClick={() => {
-                      this.socket.emit('game:ready', GameData.get().assemble());
-                      this.setState({ notReady: false });
+                      if (notReady) {
+                        this.socket.emit('game:ready', GameData.get().assemble());
+                        this.setState({ notReady: false });
+                      }
                     }}
                   >
-                    Ready
+                    {notReady ? 'Ready' : 'Waiting'}
                   </Button>
                 </Col>
               </Row>
@@ -288,7 +296,6 @@ class Meet extends PureComponent {
               <Row>
                 <Col>
                   <Button
-
                     variant="success"
                     size="lg"
                     onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
@@ -303,6 +310,7 @@ class Meet extends PureComponent {
             <>
               <Row>
                 <Col>
+                  {/* FIXME: Image isn't responsively sized. */}
                   <CdnImage
                     publicId="v1540488090/at-stake/bg/clock"
                     width={319}
@@ -360,7 +368,7 @@ Meet.propTypes = {
     timerDuration: PropTypes.number,
     timerLength: PropTypes.number,
     timerRunning: PropTypes.bool,
-    uid: PropTypes.number,
+    uid: PropTypes.string,
     username: PropTypes.string,
   }).isRequired,
   socket: PropTypes.shape({

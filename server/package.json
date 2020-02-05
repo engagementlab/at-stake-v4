@@ -3,7 +3,7 @@
   "version": "4.0.0",
   "homepage": "https://atstakegame.org/",
   "scripts": {
-    "client": "FORCE_COLOR=true cd ../client && npm start | cat",
+    "client": "FORCE_COLOR=true cd ../client && yarn start | cat",
     "server": "nodemon --inspect app.js",
     "lint": "eslint . --fix",
     "start": "npm-run-all --parallel client server",

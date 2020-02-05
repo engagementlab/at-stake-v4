@@ -6,6 +6,8 @@
 import React, { PureComponent } from 'react';
 import PropTypes, { number } from 'prop-types';
 
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 
 import moment from 'moment';
@@ -89,33 +91,35 @@ class Timer extends PureComponent {
     const { countdownLabel } = this.state;
     const { show, disabled, socket } = this.props;
 
-    return (
-      // TIMER at 0
-      <div className="timer-wrap">
-        {show ? (
-          <div>
-            {this.showButton && (
-            <Button
-              id="btn-start-timer"
-              variant="info"
-              size="lg"
-              disabled={disabled}
-              onClick={() => {
-                this.showButton = false;
-                socket.emit(
-                  'game:start_timer',
-                  GameData.get().assemble(),
-                );
-              }}
-            >
-              <h1>Start Timer</h1>
-            </Button>
-            )}
+    if (!show) { return null; }
 
-            <div>{countdownLabel}</div>
-          </div>
-        ) : null}
-      </div>
+    return (
+      <>
+        <Row className="timer-wrap">
+          <Col>
+            {this.showButton && (
+              <Button
+                id="btn-start-timer"
+                variant="info"
+                size="lg"
+                disabled={disabled}
+                onClick={() => {
+                  this.showButton = false;
+                  socket.emit(
+                    'game:start_timer',
+                    GameData.get().assemble(),
+                  );
+                }}
+              >
+                <h1>Start Timer</h1>
+              </Button>
+            )}
+          </Col>
+        </Row>
+        <Row>
+          <Col>{countdownLabel}</Col>
+        </Row>
+      </>
     );
   }
 }
