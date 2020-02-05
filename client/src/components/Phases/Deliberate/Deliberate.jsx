@@ -1,6 +1,11 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+
+import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 
 import './Deliberate.scss';
@@ -146,6 +151,7 @@ class Deliberate extends PureComponent {
 
   // Send that player is ready
   playerReady() {
+    this.setState({ notReady: false });
     this.socket.emit('game:ready', GameData.get().assemble());
   }
 
@@ -222,11 +228,12 @@ class Deliberate extends PureComponent {
     const isVoteCaller = sessionStorage.getItem('uUID') === voting.callerId;
 
     return (
-      <div>
+      <Container>
+
         <Interstitial title="Deliberation" />
 
         {screenIndex === 0 && (
-          <div className="screen">
+          <>
             <Instructions
               show={!isFacilitator}
               heading="Deliberation"
@@ -245,32 +252,28 @@ class Deliberate extends PureComponent {
               subBody={data.question}
             />
 
-            {/* FIXME: This doesn't switch this to "waiting" */}
-            {!isFacilitator && (notReady ? (
-              <Button
-                variant="success"
-                size="lg"
-                onClick={() => {
-                  this.playerReady();
-                }}
-              >
-                Ready
-              </Button>
-            ) : (
-              <Button
-                variant="success"
-                size="lg"
-                disabled
-              >
-                Waiting
-              </Button>
-            ))}
-          </div>
+            {!isFacilitator && (
+              <Row>
+                <Col>
+                  <Button
+                    variant={notReady ? 'success' : 'warning'}
+                    disabled={!notReady}
+                    size="lg"
+                    onClick={() => {
+                      if (notReady) { this.playerReady(); }
+                    }}
+                  >
+                    {notReady ? 'Ready' : 'Waiting'}
+                  </Button>
+                </Col>
+              </Row>
+            )}
+          </>
         )}
 
         {/* Player ready/is deliberating */}
         {screenIndex === 1 && (
-          <div className="screen">
+          <>
             <Instructions
               show={!isFacilitator}
               heading="Deliberation"
@@ -287,121 +290,126 @@ class Deliberate extends PureComponent {
 
             {/* Show team/events to non-facilitator */}
             {!isFacilitator && (
-              <div>
-                <div id="events">
-                  {data.shared.events.map(
-                    (evt, i) =>
-                      // Show event only if it's the one broadcast
-                      visibleEventIndex === i
-                      && showEvent && (
-                        <div
-                          key={i}
-                          className="event"
-                          onClick={() => this.dismissEvent()}
-                        >
-                          <div className="content">
-                            <h3>Breaking News</h3>
-                            <div>{evt.text}</div>
-                            <span>(tap to dismiss)</span>
-                          </div>
-                        </div>
-                      ),
-                  )}
-                </div>
+              <>
+                {/* EVENTS */}
 
-                <h2>Team's Needs</h2>
-                <div className="grid">
-                  {Object.keys(data.shared.roles).map((key) => {
-                    const role = data.shared.roles[key];
-                    const classStr = `player${role.isFacilitator ? ' facilitator' : ''}`;
+                {data.shared.events.map((evt, i) =>
+                  // Show event only if it's the one broadcast
+                  visibleEventIndex === i && showEvent && (
+                    <Row
+                      key={i}
+                      className="event"
+                      onClick={() => this.dismissEvent()}
+                    >
+                      <Col className="content">
+                        <h3>Breaking News</h3>
+                        <p>{evt.text}</p>
+                        <span>(tap to dismiss)</span>
+                      </Col>
+                    </Row>
+                  ))}
 
-                    return (
-                      <div className={classStr} key={key}>
-                        <div>
-                          <b>{role.username}</b>
-                          <br />
+                <hr />
+
+                {/* NEEDS */}
+
+                <Row>
+                  <Col>
+                    <h2>Team&apos;s Needs</h2>
+                  </Col>
+                </Row>
+
+                <Table striped border>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>First Need</th>
+                      <th>Second Need</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {Object.keys(data.shared.roles).map((key) => {
+                      const role = data.shared.roles[key];
+                      const classStr = `player${role.isFacilitator ? ' facilitator' : ''}`;
+
+                      return (
+                        <tr key={key}>
+                          <td>{role.username}</td>
+
                           {!role.isFacilitator ? (
-                            <div>
-                              <span>{role.needs[0]}</span>
-                              <br />
-                              <span>{role.needs[1]}</span>
-                            </div>
+                            <>
+                              <td>{role.needs[0]}</td>
+                              <td>{role.needs[1]}</td>
+                            </>
                           ) : (
-                            <span>Facilitator</span>
+                            <td colSpan="2">Facilitator</td>
                           )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
 
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => this.socket.emit(
-                    'player:call_vote',
-                    GameData.get().assemble(),
-                  )}
-                >
-                  Call Vote
-                </Button>
-              </div>
+                <Row>
+                  <Col>
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      onClick={() => this.socket.emit(
+                        'player:call_vote',
+                        GameData.get().assemble(),
+                      )}
+                    >
+                      Call Vote
+                    </Button>
+                  </Col>
+                </Row>
+              </>
             )}
 
             {/* Show 'random' events to facilitator */}
             {isFacilitator && (
-              <div id="events">
-                {data.shared.events.map(
-                  (evt, i) =>
-                    // Show event only if it's the current one in state
-                    visibleEventIndex === i
-                    && showEvent && (
-                      <div key={i} className="event">
-                        <div className="content">
-                          <div>
-                            <h3>New Event</h3>
-                            <h1>{evt.text}</h1>
-                          </div>
+              data.shared.events.map((evt, i) => visibleEventIndex === i && showEvent && (
+                <Row key={i}>
+                  <Col sm="6">
+                    <h3>New Event</h3>
+                    <h1>{evt.text}</h1>
+                  </Col>
 
-                          <div className="buttons">
-                            {/* Tooltip on first event */}
-                            {i === 0 && (
-                              <span className="tooltip-content">
-                                You can choose to accept or ignore events that
-                                will complicate players' solutions.
-                              </span>
-                            )}
+                  {/* Yes */}
+                  <Col sm="3">
+                    <Button
+                      id="btn-confirm"
+                      variant="success"
+                      size="lg"
+                      onClick={() => {
+                        this.eventAction('accept', i);
+                      }}
+                    >
+                      &#x2714;
+                    </Button>
+                  </Col>
 
-                            <Button
-                              id="btn-confirm"
-                              variant="success"
-                              size="lg"
-                              onClick={() => {
-                                this.eventAction('accept', i);
-                              }}
-                            >
-                              &#x2714;
-                            </Button>
-
-                            <Button
-                              id="btn-confirm"
-                              variant="danger"
-                              size="lg"
-                              onClick={() => {
-                                this.eventAction('reject', i);
-                              }}
-                            >
-                              &#65794;
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ),
-                )}
-              </div>
+                  {/* No */}
+                  <Col sm="3">
+                    <Button
+                      id="btn-confirm"
+                      variant="danger"
+                      size="lg"
+                      onClick={() => {
+                        this.eventAction('reject', i);
+                      }}
+                    >
+                      &#65794;
+                    </Button>
+                  </Col>
+                </Row>
+              ))
             )}
 
             {/* Timer over */}
+            {/* TODO: Convert this to a Bootstrap Modal? */}
             {timerEnded && (
               <div id="time-up">
                 {/* FIXME: Image overlaps page size */}
@@ -410,11 +418,11 @@ class Deliberate extends PureComponent {
                   width={319}
                   format="png"
                 />
-                <h1>Time's up!</h1>
+                <h1>Time&apos;s up!</h1>
                 <p>This would be a good time to call to vote.</p>
               </div>
             )}
-          </div>
+          </>
         )}
 
         {/* Voting screen */}
@@ -522,7 +530,8 @@ class Deliberate extends PureComponent {
             {/* end voting screen */}
           </div>
         )}
-      </div>
+
+      </Container>
     );
   }
 }
