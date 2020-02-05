@@ -27,19 +27,6 @@ class GameData {
     this.send('room', data);
   }
 
-  // If client has stored UID, attempt to re-join a game
-  checkActive() {
-    if (sessionStorage.getItem('uUID') && sessionStorage.getItem('gameCode')) {
-      const data = {
-        joinCode: sessionStorage.getItem('gameCode'),
-        decider: sessionStorage.getItem('isModerator') ? 'decider' : 'player',
-        username: sessionStorage.getItem('username'),
-        uid: sessionStorage.getItem('uUID'),
-      };
-      this.send('login:active', data);
-    }
-  }
-
   assemble(appendData) {
     // Append game ID if provided or does not match cached
     if (appendData) {

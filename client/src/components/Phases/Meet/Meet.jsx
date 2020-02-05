@@ -73,11 +73,6 @@ class Meet extends PureComponent {
     }
   }
 
-  componentDidUpdate() {
-    const { data } = this.props;
-    console.log('DATA', data);
-  }
-
   componentWillUnmount() {
     this.socket.off('game:ready');
   }
@@ -293,6 +288,7 @@ class Meet extends PureComponent {
               <Row>
                 <Col>
                   <Button
+
                     variant="success"
                     size="lg"
                     onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}
@@ -364,7 +360,7 @@ Meet.propTypes = {
     timerDuration: PropTypes.number,
     timerLength: PropTypes.number,
     timerRunning: PropTypes.bool,
-    uid: PropTypes.string,
+    uid: PropTypes.number,
     username: PropTypes.string,
   }).isRequired,
   socket: PropTypes.shape({

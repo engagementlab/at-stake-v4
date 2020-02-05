@@ -56,6 +56,7 @@ class App extends Component {
             joinCode: sessionStorage.getItem('gameCode'),
             username: sessionStorage.getItem('username'),
             uid: sessionStorage.getItem('uUID'),
+            decider: sessionStorage.getItem('isModerator'),
           }),
         );
       }
@@ -77,6 +78,11 @@ class App extends Component {
 
       // Cache player's role data as it is emitted only in first phase
       this.roleData = screenData.role;
+
+      console.log(
+        'role',
+        this.roleData,
+      );
     });
     socket.on('game:refresh_screen', (screenData) => {
       // Cache player's role data as it is emitted only on refresh

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
@@ -48,11 +49,21 @@ namespace AtStake
     "Thomas R. Toe", "Miles Tone", "Ravi O'Leigh",
     "Barry Tone"};
 
+    private static bool waitTime(DateTime now, TimeSpan then)
+    {
+      return (DateTime.Now - now) > then;
+    }
+
     [SetUp]
     public void startBrowser()
     {
       ChromeOptions options = new ChromeOptions();
       options.AddArgument("--auto-open-devtools-for-tabs");
+      options.SetLoggingPreference(LogType.Browser, LogLevel.All);
+      
+      var service = ChromeDriverService.CreateDefaultService();
+      service.LogPath = "./chromedriver.log";
+      service.EnableVerboseLogging = true;
       driver = new ChromeDriver(options);
 
       // var caps = new DesiredCapabilities();
@@ -75,6 +86,8 @@ namespace AtStake
       //http://localhost:3000"
       driver.Navigate().GoToUrl("http://localhost:3000/");
       
+      ((IJavaScriptExecutor) driver).ExecuteScript("localStorage.debug = '*';");
+      
       const int timeoutSeconds = 15;
       var ts = new TimeSpan(0, 0, timeoutSeconds);
       var wait = new WebDriverWait(driver, ts);
@@ -87,6 +100,7 @@ namespace AtStake
       
       wait.Until((driver) => driver.FindElement(By.Id("room-code")) != null);
       var roomCode = driver.FindElement(By.Id("room-code")).Text;
+      // return;
       
       // New tab
       ((IJavaScriptExecutor)driver).ExecuteScript("window.open();");
@@ -94,6 +108,7 @@ namespace AtStake
       driver.Navigate().GoToUrl("http://localhost:3000");
 
       ((IJavaScriptExecutor) driver).ExecuteScript("sessionStorage.clear();");
+      ((IJavaScriptExecutor) driver).ExecuteScript("localStorage.debug = '*';");
         
       IWebElement joinBtn = null;
       IWebElement joinCodeInput = null;
@@ -112,7 +127,6 @@ namespace AtStake
         return joinCodeInput != null;
       });
 
-      var firstTabHandle = driver.CurrentWindowHandle;
       var usernameInput = driver.FindElement(By.Id("input-name"));
 
       joinCodeInput.SendKeys(roomCode);
@@ -129,14 +143,13 @@ namespace AtStake
       driver.SwitchTo().Window(driver.WindowHandles.Last());
       IWebElement btnContinue = null;
       IWebElement btnReady = null;
-      IWebElement interstitial = null;
-      wait.Until((driver) => SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("interstitial")));
-      wait.Until((driver) => SeleniumExtras.WaitHelpers.ExpectedConditions.InvisibilityOfElementLocated(By.Id("interstitial")));
 
-      Debug.Write("click");
-      wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("btn-continue")));
+      // Checking for interstitial being invisible doesn't work, so just wait the time
+      var now = DateTime.Now;
+      var then = new TimeSpan(0, 0, 0, 2, 100);
+      wait.Until(driver => waitTime(now, then));
+      
       driver.FindElement(By.Id("btn-continue")).Click();
-      return;
       
       wait.Until((driver) =>
       {
@@ -146,15 +159,23 @@ namespace AtStake
       btnReady.Click();
       
       // Fac tab hit continue & start timer
-      driver.SwitchTo().Window(firstTabHandle);
+      driver.SwitchTo().Window(driver.WindowHandles.First());
       
       IWebElement btnTimer = null;
-      btnContinue = null;
       wait.Until((driver) =>
       {
         btnContinue = driver.FindElement(By.Id("btn-continue"));
         return btnContinue != null;
       });
+      btnContinue.Click();
+      
+      wait.Until((driver) =>
+      {
+        btnTimer = driver.FindElement(By.Id("btn-start-timer"));
+        return btnTimer.Enabled;
+      });
+      btnTimer.Click();
+      
       wait.Until((driver) =>
       {
         btnTimer = driver.FindElement(By.Id("btn-start-timer"));
@@ -167,7 +188,7 @@ namespace AtStake
     [TearDown]
     public void closeBrowser()
     {
-      // driver.Close();
+      // driver.Quit();
     }
     
   }

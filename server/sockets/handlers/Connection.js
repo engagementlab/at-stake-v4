@@ -13,7 +13,7 @@
 
 const Session = require('learning-games-core').SessionManager;
 
-const JoinRoom = function(payload, currentSocket, currentSpace) {
+const JoinRoom = function (payload, currentSocket, currentSpace) {
   if (!payload.gameId) return;
   const { gameId } = payload;
   const session = Session.Get(gameId);
@@ -23,7 +23,7 @@ const JoinRoom = function(payload, currentSocket, currentSpace) {
     return;
   }
 
-  currentSocket.join(gameId, err => {
+  currentSocket.join(gameId, (err) => {
     if (err) throw err;
   });
 
@@ -32,7 +32,7 @@ const JoinRoom = function(payload, currentSocket, currentSpace) {
     const player = {
       socket_id: currentSocket.id,
       username: payload.msgData.username,
-      uid: payload.msgData.uid
+      uid: payload.msgData.uid,
     };
 
     Session.GroupView(gameId, currentSocket.id);
@@ -42,7 +42,7 @@ const JoinRoom = function(payload, currentSocket, currentSpace) {
   logger.info(`${currentSocket.id} connected to room.`);
   if (!gameId) return;
 
-  currentSocket.join(gameId, err => {
+  currentSocket.join(gameId, (err) => {
     if (err) throw err;
   });
 
@@ -53,7 +53,7 @@ function PlayerLogin(payload, currentSocket, currentSpace) {
   const player = {
     socket_id: currentSocket.id,
     username: payload.msgData.username,
-    uid: payload.msgData.uid
+    uid: payload.msgData.uid,
   };
 
   if (!Session.Get(payload.gameId)) return;
@@ -66,7 +66,7 @@ function PlayerLogin(payload, currentSocket, currentSpace) {
   // Advance player to waiting screen
   const data = {
     code: payload.gameId,
-    id: currentSocket.id
+    id: currentSocket.id,
   };
 
   currentSocket.emit('player:loggedin', data);
@@ -83,17 +83,14 @@ async function PlayerDisconnect(playerGameId, currentSocket) {
 
   if (isFacilitator) {
     logger.info(`${playerGameId} group view disconnecting. Bu-bye.`);
-    if (process.env.NODE_ENV === 'development')
-      session.End(currentSocket, true);
+    if (process.env.NODE_ENV === 'development') { session.End(currentSocket, true); }
   } else {
     const player = await session.GetPlayerById(currentSocket.id);
 
-    if (player)
-      logger.info(`Player '${player.username}' disconnecting. Nooooo!`);
+    if (player) { logger.info(`Player '${player.username}' disconnecting. Nooooo!`); }
   }
 
-  if (playerGameId && session)
-    await session.PlayerLost(currentSocket.id, currentSocket);
+  if (playerGameId && session) { await session.PlayerLost(currentSocket.id, currentSocket); }
 }
 
 async function PlayerCheckActive(payload, currentSocket) {
@@ -113,8 +110,10 @@ async function PlayerCheckActive(payload, currentSocket) {
     const player = {
       socket_id: currentSocket.id,
       username: payload.msgData.username,
-      uid: payload.msgData.uid
+      uid: payload.msgData.uid,
     };
+
+    console.log('=>>>>>> join dcider', payload);
 
     // Mark player as ready inside game session
     await session.PlayerReady(player, currentSocket, payload.msgData.decider);
@@ -125,7 +124,7 @@ async function PlayerCheckActive(payload, currentSocket) {
 
 // Arrow functions can't be used as constructors, so we must use function()
 // eslint-disable-next-line func-names
-const Connection = function(nsp, socket) {
+const Connection = function (nsp, socket) {
   const currentSpace = nsp;
   const currentSocket = socket;
 
