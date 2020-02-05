@@ -296,6 +296,7 @@ class Meet extends PureComponent {
               <Row>
                 <Col>
                   <Button
+                    id="btn-next-phase"
                     variant="success"
                     size="lg"
                     onClick={() => { this.socket.emit('game:next', GameData.get().assemble()); }}

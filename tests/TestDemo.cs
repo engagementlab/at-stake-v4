@@ -175,13 +175,14 @@ namespace AtStake
         return btnTimer.Enabled;
       });
       btnTimer.Click();
-      
+
+      IWebElement btnNextPhase = null;
       wait.Until((driver) =>
       {
-        btnTimer = driver.FindElement(By.Id("btn-start-timer"));
-        return btnTimer.Enabled;
+        btnNextPhase = driver.FindElement(By.Id("btn-next-phase"));
+        return btnNextPhase != null;
       });
-      btnTimer.Click();
+      btnNextPhase.Click();
       
     }
 

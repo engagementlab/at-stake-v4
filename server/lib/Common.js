@@ -171,10 +171,11 @@ class Common extends Core {
   }
 
   // Get if player w/ provided uid is decider
-  IsDecider(uid) {
-    if (!this._current_players[uid]) return false;
+  async IsDecider(uid) {
+    const player = await this.GetPlayerByUserId(uid);
 
-    return this._current_players[uid].decider;
+    if (player) return false;
+    return player.decider;
   }
 
   async AssignRoleToPlayer(player, isDecider) {
