@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import Button from 'react-bootstrap/Button';
 
+import RankingRange from './RankingRange';
 import SocketContext from '../../../SocketContext';
 import Instructions from '../../Shared/Instructions/Instructions';
 import GameData from '../../../GameData';
@@ -30,7 +31,8 @@ class Ranking extends PureComponent {
   }
 
   componentDidMount() {
-    this.socket = this.props.socket;
+    const { socket } = this.props;
+    this.socket = socket;
 
     /* Socket Listeners */
 
@@ -85,7 +87,6 @@ class Ranking extends PureComponent {
     let state = {};
 
     switch (index) {
-      default:
       case 0:
         state = { ratingEquity: val };
         break;
@@ -94,6 +95,9 @@ class Ranking extends PureComponent {
         break;
       case 2:
         state = { ratingCreativity: val };
+        break;
+      default:
+        console.warn(`WARNING: val is ${val}`);
         break;
     }
 
@@ -128,9 +132,6 @@ class Ranking extends PureComponent {
 
     const { data } = this.props;
 
-    console.log(data);
-    console.log(data.shared.playerData);
-
     // RANKING UI
     return (
       <div id="ranking">
@@ -151,11 +152,12 @@ class Ranking extends PureComponent {
         {/* RANKING */}
         {!showResult && (
           <div className="screen decider">
-            <Instructions
-              show={isFacilitator}
-              heading="Vote Ranking"
-              body="Rate how well the team's proposal meets the criteria below."
-            />
+            {isFacilitator && (
+              <Instructions
+                heading="Vote Ranking"
+                body="Rate how well the team's proposal meets the criteria below."
+              />
+            )}
 
             {/* Goals */}
             {screenIndex === 0 && (
@@ -171,7 +173,7 @@ class Ranking extends PureComponent {
                       <p>{player.username}</p>
                       <div className="goal">{player.secretGoal}</div>
 
-                      <label className="switch">
+                      <label className="switch" htmlFor="secretGoalCheckbox">
                         {/* {i === 0 && (
                         <span className="tooltip-content">
                           When a player meets their secret goal, you can check
@@ -180,18 +182,15 @@ class Ranking extends PureComponent {
                         </span>
                         )} */}
 
-                        {player.goalMet ? (
-                          <input
-                            type="checkbox"
-                            checked="checked"
-                            disabled="disabled"
-                          />
-                        ) : (
-                          <input
-                            type="checkbox"
-                            onClick={() => this.playerMetGoal(player.uid)}
-                          />
-                        )}
+                        <input
+                          type="checkbox"
+                          name="secretGoalCheckbox"
+                          id="secretGoalCheckbox"
+                          disabled={player.goalMet}
+                          onClick={() => {
+                            if (!player.goalMet) { this.playerMetGoal(player.uid); }
+                          }}
+                        />
                         <span className="slider round" />
                       </label>
                     </div>
@@ -217,8 +216,9 @@ class Ranking extends PureComponent {
                       <p>{player.username}</p>
                       <div className="needs">
                         <div className="need">
-                          <label className="switch">
+                          <label className="switch" htmlFor="firstNeedCheckbox">
                             <input
+                              id="firstNeedCheckbox"
                               type="checkbox"
                               onClick={() => this.playerMetNeed(player.uid, 0)}
                             />
@@ -230,8 +230,9 @@ class Ranking extends PureComponent {
                           </span>
                         </div>
                         <div className="need">
-                          <label className="switch">
+                          <label className="switch" htmlFor="secondNeedCheckbox">
                             <input
+                              id="secondNeedCheckbox"
                               type="checkbox"
                               onClick={() => this.playerMetNeed(player.uid, 1)}
                             />
@@ -254,65 +255,41 @@ class Ranking extends PureComponent {
             {screenIndex === 2 && (
               <div id="pt3">
                 <h2>Equity</h2>
-                <input
-                  type="range"
+                <RankingRange
                   id="equity"
-                  min="1"
-                  max="5"
-                  step="1"
                   value={ratingEquity}
-                  onChange={(e) => this.sliderChange(e, 0)}
+                  onChangeFunc={this.sliderChange}
+                  onChangeTarget={0}
                 />
-                <div className="labels">
-                  <span>1</span>
-                  <span>2</span>
-                  <span>3</span>
-                  <span>4</span>
-                  <span>5</span>
-                </div>
 
                 <h2>Inclusivity</h2>
-                <input
-                  type="range"
+                <RankingRange
                   id="inclusivity"
-                  min="1"
-                  max="5"
-                  step="1"
                   value={ratingInclusivity}
-                  onChange={(e) => this.sliderChange(e, 1)}
+                  onChangeFunc={this.sliderChange}
+                  onChangeTarget={1}
                 />
-                <div className="labels">
-                  <span>1</span>
-                  <span>2</span>
-                  <span>3</span>
-                  <span>4</span>
-                  <span>5</span>
-                </div>
 
                 <h2>Creativity</h2>
-                <input
-                  type="range"
+                <RankingRange
                   id="creativity"
-                  min="1"
-                  max="5"
-                  step="1"
                   value={ratingCreativity}
-                  onChange={(e) => this.sliderChange(e, 2)}
+                  onChangeFunc={this.sliderChange}
+                  onChangeTarget={2}
                 />
-                <div className="labels">
-                  <span>1</span>
-                  <span>2</span>
-                  <span>3</span>
-                  <span>4</span>
-                  <span>5</span>
-                </div>
               </div>
             )}
 
             <Button
               variant={screenIndex === 2 ? 'success' : 'info'}
               size="lg"
-              onClick={() => { screenIndex === 2 ? this.submitRating() : this.nextScreen(); }}
+              onClick={() => {
+                if (screenIndex === 2) {
+                  this.submitRating();
+                } else {
+                  this.nextScreen();
+                }
+              }}
             >
               {screenIndex === 2 ? 'Submit' : 'Continue'}
             </Button>
@@ -376,6 +353,7 @@ Ranking.propTypes = {
     }),
     won: PropTypes.bool,
   }).isRequired,
+  socket: PropTypes.object.isRequired,
 };
 
 const RankingWithSocket = (props) => (
