@@ -48,6 +48,8 @@ class App extends Component {
       // Cache socket id in data singleton
       GameData.get().socketId = socket.id;
 
+      console.log(`[App] Socket connected, ID: ${socket.id}`);
+
       if (sessionStorage.getItem('gameCode')) {
         // Check if player is active in game
         socket.emit(
@@ -65,6 +67,7 @@ class App extends Component {
     });
 
     socket.on('disconnect', () => {
+      console.log('[App]] Socket disconnected');
       this.setState({ response: 'Disconnected' });
     });
 

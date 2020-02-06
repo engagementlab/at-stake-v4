@@ -60,6 +60,7 @@ class Meet extends PureComponent {
 
     // Tell facilitator all players ready for intros
     this.socket.on('game:ready', () => {
+      console.log('[Meet] Players ready');
       this.setState({ allPlayersReady: true });
     });
 
@@ -79,6 +80,7 @@ class Meet extends PureComponent {
   }
 
   componentWillUnmount() {
+    console.log('[Meet] componentWillUnmount()');
     this.socket.off('game:ready');
   }
 

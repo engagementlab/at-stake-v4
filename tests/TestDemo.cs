@@ -11,7 +11,10 @@ using OpenQA.Selenium.Support.UI;
 namespace AtStake
 {
   public class TestDemo
-  { IWebDriver driver;
+  {
+    
+    IWebDriver driver;
+    private WebDriverWait wait;
     
     string[] usernames = { "Bartholomew Shoe", "Weir Doe",
     "Abraham Pigeon", "Gunther Beard",
@@ -85,12 +88,16 @@ namespace AtStake
     {
       //http://localhost:3000"
       driver.Navigate().GoToUrl("http://localhost:3000/");
-      
-      ((IJavaScriptExecutor) driver).ExecuteScript("localStorage.debug = '*';");
-      
+
       const int timeoutSeconds = 15;
       var ts = new TimeSpan(0, 0, timeoutSeconds);
-      var wait = new WebDriverWait(driver, ts);
+      wait = new WebDriverWait(driver, ts);
+
+      var socketStatus = driver.FindElement(By.Id("state"));
+      var txt = socketStatus.Text;
+      wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.TextToBePresentInElement(socketStatus, "Socket: Connected"));
+
+      ((IJavaScriptExecutor) driver).ExecuteScript("localStorage.debug = '*';");
       
       driver.FindElement(By.Id("btn-new-game")).Click();
 
@@ -100,10 +107,9 @@ namespace AtStake
       
       wait.Until((driver) => driver.FindElement(By.Id("room-code")) != null);
       var roomCode = driver.FindElement(By.Id("room-code")).Text;
-      // return;
       
       // New tab
-      ((IJavaScriptExecutor)driver).ExecuteScript("window.open();");
+      ((IJavaScriptExecutor)driver).ExecuteScript("window.open('http://localhost:3000')");
       driver.SwitchTo().Window(driver.WindowHandles.Last());
       driver.Navigate().GoToUrl("http://localhost:3000");
 

@@ -392,6 +392,7 @@ class GameLogic extends Common {
     const playerCt = _.keys(await this.GetActivePlayers()).length;
 
     if (this.playersReady === playerCt) {
+      console.log('this._current_decider.socket_id', this._current_decider.socket_id);
       this.groupSocket
         .to(this._current_decider.socket_id)
         .emit('game:ready', data);
