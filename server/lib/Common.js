@@ -170,21 +170,21 @@ class Common extends Core {
     return players[uids[this._active_player_index]];
   }
 
-  // Get if player w/ provided uid is decider
-  async IsDecider(uid) {
+  // Get if player w/ provided uid is facilitator
+  async IsFacilitator(uid) {
     const player = await this.GetPlayerByUserId(uid);
 
-    if (player) return false;
+    if (!player) return false;
     return player.decider;
   }
 
-  async AssignRoleToPlayer(player, isDecider) {
+  async AssignRoleToPlayer(player, isFacilitator) {
     const playerObj = await this.Redis.GetHash(this._game_session.accessCode, player.uid);
 
-    // Is decider (ensure falsey is false)?
-    if (!isDecider) playerObj.decider = false;
+    // Is facilitator (ensure falsey is false)?
+    if (!isFacilitator) playerObj.decider = false;
     else {
-      // Player is decider; no role this turn
+      // Player is facilitator; no role this turn
       this._current_decider = player;
       playerObj.decider = true;
       playerObj.role = this._active_deck_facilitator;
@@ -264,9 +264,9 @@ class Common extends Core {
   /**
    * @override
    */
-  async PlayerReady(player, socket, assignDecider) {
+  async PlayerReady(player, socket, assignFacilitator) {
     const playerRejoining = await this.GetPlayerByUserId(player.uid);
-    const isDecider = this.IsDecider(player.uid) || (assignDecider === true);
+    const isFacilitator = await this.IsFacilitator(player.uid) || (assignFacilitator === true);
 
     // Was player disconnected?
     let wasDisconnected = false;
@@ -293,15 +293,15 @@ class Common extends Core {
         role,
       } = updatedPlayer;
 
-      // Is decider?
-      reconnectInfo.is_decider = isDecider;
+      // Is facilitator?
+      reconnectInfo.is_decider = isFacilitator;
 
       reconnectInfo.disconnected_players = _.pluck(disconnectedPlayers, 'username');
       reconnectInfo.timeout_remaining = this._player_timeout_time_left;
       reconnectInfo.role = role;
 
       // Set client to reconnected state
-      if (isDecider) this._current_decider = player;
+      if (isFacilitator) this._current_decider = player;
 
       socket.emit('player:reconnected', reconnectInfo);
 
@@ -311,7 +311,7 @@ class Common extends Core {
       });
 
       if (allPlayersActive) clearTimeout(this._player_timeout);
-    } else this.AssignRoleToPlayer(player, isDecider);
+    } else this.AssignRoleToPlayer(player, isFacilitator);
 
     const allPlayers = await this.GetAllPlayers();
     const data = {
@@ -390,13 +390,13 @@ class Common extends Core {
     // Reset active player
     this._active_player_index = 0;
 
-    // Tell current decider to stop being decider
+    // Tell current facilitator to stop being facilitator
     this.groupSocket.to(this._current_decider.socket_id).emit('game:decider', false);
 
     _.each(this._current_players, (player, index) => {
       const isDecider = (this._current_winner.uid === player.uid);
 
-      // Assign new decider and new roles
+      // Assign new facilitator and new roles
       this.AssignRoleToPlayer(player, isDecider);
     });
 

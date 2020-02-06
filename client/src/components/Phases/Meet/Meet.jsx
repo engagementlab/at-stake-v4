@@ -369,7 +369,7 @@ Meet.propTypes = {
     timerDuration: PropTypes.number,
     timerLength: PropTypes.number,
     timerRunning: PropTypes.bool,
-    uid: PropTypes.string,
+    uid: PropTypes.number,
     username: PropTypes.string,
   }).isRequired,
   socket: PropTypes.shape({
