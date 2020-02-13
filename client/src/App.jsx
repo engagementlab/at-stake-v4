@@ -63,7 +63,7 @@ class App extends Component {
         );
       }
 
-      this.setState({ response: 'Connected' });
+      this.setState({ response: `Connected (${socket.id})` });
     });
 
     socket.on('disconnect', () => {

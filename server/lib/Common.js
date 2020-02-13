@@ -393,7 +393,7 @@ class Common extends Core {
     // Tell current facilitator to stop being facilitator
     this.groupSocket.to(this._current_decider.socket_id).emit('game:decider', false);
 
-    _.each(this._current_players, (player, index) => {
+    _.each(this._current_players, (player) => {
       const isDecider = (this._current_winner.uid === player.uid);
 
       // Assign new facilitator and new roles

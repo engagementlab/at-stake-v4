@@ -12,11 +12,14 @@ namespace SeleniumTest
 {
   class Program
   {
-    static void Main(string[] args)
+
+    private static bool waitTime(DateTime now, TimeSpan then)
     {
+      return (DateTime.Now - now) > then;
+    }
 
-      IWebDriver driver;
-
+    private static void Main(string[] args)
+    {
       string[] usernames =
       {
         "Bartholomew Shoe", "Weir Doe",
@@ -54,14 +57,14 @@ namespace SeleniumTest
         "Barry Tone"
       };
 
-      ChromeOptions options = new ChromeOptions();
+      var options = new ChromeOptions();
       options.AddArgument("--auto-open-devtools-for-tabs");
       options.SetLoggingPreference(LogType.Browser, LogLevel.All);
 
       var service = ChromeDriverService.CreateDefaultService();
       service.LogPath = "./chromedriver.log";
       service.EnableVerboseLogging = true;
-      driver = new ChromeDriver(options);
+      IWebDriver driver = new ChromeDriver(options);
 
       // var caps = new DesiredCapabilities();
       // caps.SetCapability("browserName", "iPhone");
@@ -76,15 +79,18 @@ namespace SeleniumTest
       //   new Uri("http://hub-cloud.browserstack.com/wd/hub/"), caps
       // );
 
-      //http://localhost:3000"
       driver.Navigate().GoToUrl("http://localhost:3000/");
-
+      
       ((IJavaScriptExecutor) driver).ExecuteScript("localStorage.debug = '*';");
 
-      const int timeoutSeconds = 15;
+      const int timeoutSeconds = 135;
       var ts = new TimeSpan(0, 0, timeoutSeconds);
       var wait = new WebDriverWait(driver, ts);
 
+      var socketStatus = driver.FindElement(By.Id("state"));
+      var txt = socketStatus.Text;
+      wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.TextToBePresentInElement(socketStatus, "Socket: Connected"));
+      
       driver.FindElement(By.Id("btn-new-game")).Click();
 
       wait.Until((driver) => driver.FindElement(By.Id("btn-deck-0")) != null);
@@ -93,12 +99,13 @@ namespace SeleniumTest
 
       wait.Until((driver) => driver.FindElement(By.Id("room-code")) != null);
       var roomCode = driver.FindElement(By.Id("room-code")).Text;
+
       // return;
 
-      // New tab
-      ((IJavaScriptExecutor) driver).ExecuteScript("window.open();");
+      // Player 1 tab
+      ((IJavaScriptExecutor)driver).ExecuteScript("window.open('http://localhost:3000')");
       driver.SwitchTo().Window(driver.WindowHandles.Last());
-      driver.Navigate().GoToUrl("http://localhost:3000");
+      // driver.Navigate().GoToUrl("http://localhost:3000");
 
       ((IJavaScriptExecutor) driver).ExecuteScript("sessionStorage.clear();");
       ((IJavaScriptExecutor) driver).ExecuteScript("localStorage.debug = '*';");
@@ -155,8 +162,6 @@ namespace SeleniumTest
       driver.SwitchTo().Window(driver.WindowHandles.First());
 
       IWebElement btnTimer = null;
-      IWebElement btnNextPhase = null;
-      
       wait.Until((driver) =>
       {
         btnContinue = driver.FindElement(By.Id("btn-continue"));
@@ -171,19 +176,17 @@ namespace SeleniumTest
       });
       btnTimer.Click();
 
+      IWebElement btnNextPhase = null;
       wait.Until((driver) =>
       {
         btnNextPhase = driver.FindElement(By.Id("btn-next-phase"));
         return btnNextPhase != null;
       });
       btnNextPhase.Click();
+      
+      driver.Close();
 
     }
     
-    private static bool waitTime(DateTime now, TimeSpan then)
-    {
-      return (DateTime.Now - now) > then;
-    }
-
   }
 }

@@ -113,8 +113,6 @@ async function PlayerCheckActive(payload, currentSocket) {
       uid: payload.msgData.uid,
     };
 
-    console.log('=>>>>>> join dcider', payload);
-
     // Mark player as ready inside game session
     await session.PlayerReady(player, currentSocket, payload.msgData.decider);
   } else {
