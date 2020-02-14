@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { CloudinaryContext } from 'cloudinary-react';
 import io from 'socket.io-client';
 import SocketContext from './SocketContext';
@@ -181,5 +182,9 @@ class App extends Component {
     );
   }
 }
+
+App.propTypes = {
+  cloudName: PropTypes.string.isRequired,
+};
 
 export default App;
